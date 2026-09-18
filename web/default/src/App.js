@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useContext, useEffect } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import Loading from './components/Loading';
 import User from './pages/User';
 import { PrivateRoute } from './components/PrivateRoute';
@@ -22,6 +22,9 @@ import EditChannel from './pages/Channel/EditChannel';
 import Redemption from './pages/Redemption';
 import EditRedemption from './pages/Redemption/EditRedemption';
 import TopUp from './pages/TopUp';
+import Pricing from './pages/Pricing';
+import Rankings from './pages/Rankings';
+import Marketplace from './pages/Marketplace';
 import Log from './pages/Log';
 import Chat from './pages/Chat';
 import LarkOAuth from './components/LarkOAuth';
@@ -29,6 +32,8 @@ import Dashboard from './pages/Dashboard';
 
 const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
+const Landing = lazy(() => import('./pages/Landing'));
+const Playground = lazy(() => import('./pages/Playground'));
 
 function App() {
   const [userState, userDispatch] = useContext(UserContext);
@@ -58,6 +63,21 @@ function App() {
           localStorage.setItem('chat_link', data.chat_link);
         } else {
           localStorage.removeItem('chat_link');
+        }
+        if (data.playground_enabled === true) {
+          localStorage.setItem('playground_enabled', 'true');
+        } else {
+          localStorage.removeItem('playground_enabled');
+        }
+        if (data.ranking_enabled === true) {
+          localStorage.setItem('ranking_enabled', 'true');
+        } else {
+          localStorage.removeItem('ranking_enabled');
+        }
+        if (data.marketplace_enabled === true) {
+          localStorage.setItem('marketplace_enabled', 'true');
+        } else {
+          localStorage.removeItem('marketplace_enabled');
         }
         if (
           data.version !== process.env.REACT_APP_VERSION &&
@@ -94,8 +114,18 @@ function App() {
 
   return (
     <Routes>
+      {/* D1：根路径为新落地页；旧首页迁至 /home；/landing 重定向到 / */}
       <Route
         path='/'
+        element={
+          <Suspense fallback={<Loading></Loading>}>
+            <Landing />
+          </Suspense>
+        }
+      />
+      <Route path='/landing' element={<Navigate to='/' replace />} />
+      <Route
+        path='/home'
         element={
           <Suspense fallback={<Loading></Loading>}>
             <Home />
@@ -291,11 +321,45 @@ function App() {
         }
       />
       <Route
+        path='/pricing'
+        element={
+          <Suspense fallback={<Loading></Loading>}>
+            <Pricing />
+          </Suspense>
+        }
+      />
+      <Route
+        path='/rankings'
+        element={
+          <Suspense fallback={<Loading></Loading>}>
+            <Rankings />
+          </Suspense>
+        }
+      />
+      <Route
+        path='/marketplace'
+        element={
+          <Suspense fallback={<Loading></Loading>}>
+            <Marketplace />
+          </Suspense>
+        }
+      />
+      <Route
         path='/chat'
         element={
           <Suspense fallback={<Loading></Loading>}>
             <Chat />
           </Suspense>
+        }
+      />
+      <Route
+        path='/playground'
+        element={
+          <PrivateRoute>
+            <Suspense fallback={<Loading></Loading>}>
+              <Playground />
+            </Suspense>
+          </PrivateRoute>
         }
       />
       <Route

@@ -5,6 +5,7 @@ import {
   Form,
   Header,
   Message,
+  Modal,
   Segment,
   Card,
 } from 'semantic-ui-react';
@@ -25,6 +26,8 @@ const EditToken = () => {
   const isEdit = tokenId !== undefined;
   const [loading, setLoading] = useState(isEdit);
   const [modelOptions, setModelOptions] = useState([]);
+  const [batchResultOpen, setBatchResultOpen] = useState(false);
+  const [batchTokens, setBatchTokens] = useState([]);
   const originInputs = {
     name: '',
     remain_quota: isEdit ? 0 : 500000,
@@ -32,6 +35,7 @@ const EditToken = () => {
     unlimited_quota: false,
     models: [],
     subnet: '',
+    batch_count: 1,
   };
   const [inputs, setInputs] = useState(originInputs);
   const { name, remain_quota, expired_time, unlimited_quota } = inputs;
@@ -137,18 +141,37 @@ const EditToken = () => {
         id: parseInt(tokenId),
       });
     } else {
-      res = await API.post(`/api/token/`, localInputs);
+      const count = parseInt(localInputs.batch_count) || 1;
+      res = await API.post(`/api/token/`, {
+        ...localInputs,
+        count: Math.max(1, Math.min(100, count)),
+      });
     }
-    const { success, message } = res.data;
+    const { success, message, data } = res.data;
     if (success) {
       if (isEdit) {
         showSuccess(t('token.edit.messages.update_success'));
+      } else if (Array.isArray(data) && data.length > 0) {
+        setBatchTokens(data);
+        setBatchResultOpen(true);
+        setInputs(originInputs);
       } else {
         showSuccess(t('token.edit.messages.create_success'));
         setInputs(originInputs);
       }
     } else {
       showError(message);
+    }
+  };
+
+  const copyBatchKeys = async () => {
+    const text = batchTokens
+      .map((token) => `${token.name}: sk-${token.key}`)
+      .join('\n');
+    if (await copy(text)) {
+      showSuccess(t('token.messages.copy_success'));
+    } else {
+      showError(t('token.messages.copy_failed'));
     }
   };
 
@@ -171,6 +194,21 @@ const EditToken = () => {
                 required={!isEdit}
               />
             </Form.Field>
+            {!isEdit && (
+              <Form.Field>
+                <Form.Input
+                  label={t('token.edit.batch_count')}
+                  name='batch_count'
+                  placeholder={t('token.edit.batch_count_placeholder')}
+                  onChange={handleInputChange}
+                  value={inputs.batch_count}
+                  autoComplete='new-password'
+                  type='number'
+                  min='1'
+                  max='100'
+                />
+              </Form.Field>
+            )}
             <Form.Field>
               <Form.Dropdown
                 label={t('token.edit.models')}
@@ -287,6 +325,31 @@ const EditToken = () => {
           </Form>
         </Card.Content>
       </Card>
+      <Modal
+        open={batchResultOpen}
+        onClose={() => setBatchResultOpen(false)}
+        size='small'
+      >
+        <Header icon='key' content={t('token.edit.batch_result_title')} />
+        <Modal.Content>
+          <Message info>{t('token.edit.batch_result_notice')}</Message>
+          <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+            {batchTokens.map((token) => (
+              <p key={token.id} style={{ wordBreak: 'break-all' }}>
+                <strong>{token.name}</strong>
+                <br />
+                sk-{token.key}
+              </p>
+            ))}
+          </div>
+        </Modal.Content>
+        <Modal.Actions>
+          <Button onClick={copyBatchKeys}>{t('token.edit.copy_all')}</Button>
+          <Button positive onClick={() => setBatchResultOpen(false)}>
+            {t('token.edit.batch_done')}
+          </Button>
+        </Modal.Actions>
+      </Modal>
     </div>
   );
 };

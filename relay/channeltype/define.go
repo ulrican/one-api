@@ -53,5 +53,7 @@ const (
 	AliBailian
 	OpenAICompatible
 	GeminiOpenAICompatible
+	QiniuLibrary  // 52：七牛模型库渠道（转发走 OpenAI 兼容，零开发）
+	OtherLibrary   // 53：其他模型库渠道（预留框架，待接入具体供应商）
 	Dummy
 )

@@ -109,11 +109,8 @@ func RelayAudioHelper(c *gin.Context, relayMode int) *relaymodel.ErrorWithStatus
 		}
 	}()
 
-	// map model name
-	modelMapping := c.GetStringMapString(ctxkey.ModelMapping)
-	if modelMapping != nil && modelMapping[audioModel] != "" {
-		audioModel = modelMapping[audioModel]
-	}
+	// map model name（F9b: 统一走 getMappedModelName，支持正则映射）
+	audioModel, _ = getMappedModelName(audioModel, c.GetStringMapString(ctxkey.ModelMapping))
 
 	baseURL := channeltype.ChannelBaseURLs[channelType]
 	requestURL := c.Request.URL.String()

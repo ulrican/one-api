@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { UserContext } from '../context/User';
 import { useTranslation } from 'react-i18next';
 
@@ -19,76 +19,23 @@ import {
   isMobile,
   showSuccess,
 } from '../helpers';
+import ThemeToggle from './ThemeToggle';
+import { getChatItem, getVisibleNavGroups, topNavLinks } from './navConfig';
 import '../index.css';
 
-// Header Buttons
-let headerButtons = [
-  {
-    name: 'header.channel',
-    to: '/channel',
-    icon: 'sitemap',
-    admin: true,
-  },
-  {
-    name: 'header.token',
-    to: '/token',
-    icon: 'key',
-  },
-  {
-    name: 'header.redemption',
-    to: '/redemption',
-    icon: 'dollar sign',
-    admin: true,
-  },
-  {
-    name: 'header.topup',
-    to: '/topup',
-    icon: 'cart',
-  },
-  {
-    name: 'header.user',
-    to: '/user',
-    icon: 'user',
-    admin: true,
-  },
-  {
-    name: 'header.dashboard',
-    to: '/dashboard',
-    icon: 'chart bar',
-  },
-  {
-    name: 'header.log',
-    to: '/log',
-    icon: 'book',
-  },
-  {
-    name: 'header.setting',
-    to: '/setting',
-    icon: 'setting',
-  },
-  {
-    name: 'header.about',
-    to: '/about',
-    icon: 'info circle',
-  },
-];
-
-if (localStorage.getItem('chat_link')) {
-  headerButtons.splice(1, 0, {
-    name: 'header.chat',
-    to: '/chat',
-    icon: 'comments',
-  });
-}
+// Task3-1：顶部导航菜单项与首页顶部导航栏一致（topNavLinks），
+// 功能菜单全部移入左侧菜单栏（SideNav）；移动端抽屉复用 navConfig。
 
 const Header = () => {
   const { t, i18n } = useTranslation();
   const [userState, userDispatch] = useContext(UserContext);
   let navigate = useNavigate();
+  const { pathname } = useLocation();
 
   const [showSidebar, setShowSidebar] = useState(false);
   const systemName = getSystemName();
   const logo = getLogo();
+  const loggedIn = !!userState.user;
 
   async function logout() {
     setShowSidebar(false);
@@ -103,39 +50,47 @@ const Header = () => {
     setShowSidebar(!showSidebar);
   };
 
-  const renderButtons = (isMobile) => {
-    return headerButtons.map((button) => {
-      if (button.admin && !isAdmin()) return <></>;
-      if (isMobile) {
-        return (
+  const isActive = (to) => pathname === to || pathname.startsWith(to + '/');
+
+  // 移动端抽屉：聊天独立项置顶 + 按 navConfig 分组渲染功能菜单
+  const renderSideGroups = () => {
+    const chatItem = getChatItem();
+    return (
+      <>
+        {chatItem && (
           <Menu.Item
-            key={button.name}
-            onClick={() => {
-              navigate(button.to);
-              setShowSidebar(false);
-            }}
-            style={{ fontSize: '15px' }}
+            as={Link}
+            to={chatItem.to}
+            className={isActive(chatItem.to) ? 'app-nav-active' : ''}
+            onClick={() => setShowSidebar(false)}
           >
-            {t(button.name)}
+            <Icon name={chatItem.icon} />
+            {t(chatItem.name)}
           </Menu.Item>
-        );
-      }
-      return (
-        <Menu.Item
-          key={button.name}
-          as={Link}
-          to={button.to}
-          style={{
-            fontSize: '15px',
-            fontWeight: '400',
-            color: '#666',
-          }}
-        >
-          <Icon name={button.icon} style={{ marginRight: '4px' }} />
-          {t(button.name)}
-        </Menu.Item>
-      );
-    });
+        )}
+        {getVisibleNavGroups()
+          .filter((group) => !group.admin || isAdmin())
+          .map((group) => (
+            <React.Fragment key={group.key}>
+              <Menu.Item as='span' className='app-mobile-group-title'>
+                {t(group.titleKey)}
+              </Menu.Item>
+              {group.items.map((item) => (
+                <Menu.Item
+                  key={item.name}
+                  as={Link}
+                  to={item.to}
+                  className={isActive(item.to) ? 'app-nav-active' : ''}
+                  onClick={() => setShowSidebar(false)}
+                >
+                  <Icon name={item.icon} />
+                  {t(item.name)}
+                </Menu.Item>
+              ))}
+            </React.Fragment>
+          ))}
+      </>
+    );
   };
 
   // Add language switcher dropdown
@@ -148,55 +103,60 @@ const Header = () => {
     i18n.changeLanguage(language);
   };
 
+  const brandTo = loggedIn ? '/dashboard' : '/';
+
   if (isMobile()) {
     return (
       <>
-        <Menu
-          borderless
-          size='large'
-          style={
-            showSidebar
-              ? {
-                  borderBottom: 'none',
-                  marginBottom: '0',
-                  borderTop: 'none',
-                  height: '51px',
-                }
-              : { borderTop: 'none', height: '52px' }
-          }
-        >
+        <Menu borderless size='large' className='app-header'>
           <Container
             style={{
               width: '100%',
-              maxWidth: isMobile() ? '100%' : '1200px',
-              padding: isMobile() ? '0 10px' : '0 20px',
+              maxWidth: '100%',
+              padding: '0 14px',
             }}
           >
-            <Menu.Item as={Link} to='/'>
-              <img src={logo} alt='logo' style={{ marginRight: '0.75em' }} />
-              <div style={{ fontSize: '20px' }}>
-                <b>{systemName}</b>
-              </div>
+            <Menu.Item as={Link} to={brandTo}>
+              <img
+                src={logo}
+                alt='logo'
+                className='app-brand-logo'
+                style={{ marginRight: '0.6em' }}
+              />
+              <div className='app-brand-name'>{systemName}</div>
             </Menu.Item>
             <Menu.Menu position='right'>
-              <Menu.Item onClick={toggleSidebar}>
+              <Menu.Item className='app-burger' onClick={toggleSidebar}>
                 <Icon name={showSidebar ? 'close' : 'sidebar'} />
               </Menu.Item>
             </Menu.Menu>
           </Container>
         </Menu>
         {showSidebar ? (
-          <Segment style={{ marginTop: 0, borderTop: '0' }}>
+          <Segment className='app-mobile-menu'>
             <Menu secondary vertical style={{ width: '100%', margin: 0 }}>
-              {renderButtons(true)}
+              {topNavLinks.map((link) => (
+                <Menu.Item
+                  key={link.name}
+                  as={Link}
+                  to={link.to}
+                  className={isActive(link.to) ? 'app-nav-active' : ''}
+                  onClick={() => setShowSidebar(false)}
+                >
+                  {t(link.name)}
+                </Menu.Item>
+              ))}
+              <Menu.Item as='span' className='app-nav-divider' />
+              {renderSideGroups()}
+              <Menu.Item as='span' className='app-nav-divider' />
+              <Menu.Item>
+                <ThemeToggle />
+              </Menu.Item>
               <Menu.Item>
                 <Dropdown
                   selection
                   trigger={
-                    <Icon
-                      name='language'
-                      style={{ margin: 0, fontSize: '18px' }}
-                    />
+                    <Icon name='language' style={{ margin: 0, fontSize: '18px' }} />
                   }
                   options={languageOptions}
                   value={i18n.language}
@@ -204,13 +164,12 @@ const Header = () => {
                 />
               </Menu.Item>
               <Menu.Item>
-                {userState.user ? (
-                  <Button onClick={logout} style={{ color: '#666666' }}>
-                    {t('header.logout')}
-                  </Button>
+                {loggedIn ? (
+                  <Button onClick={logout}>{t('header.logout')}</Button>
                 ) : (
                   <>
                     <Button
+                      primary
                       onClick={() => {
                         setShowSidebar(false);
                         navigate('/login');
@@ -239,92 +198,68 @@ const Header = () => {
   }
 
   return (
-    <>
-      <Menu
-        borderless
+    <Menu borderless className='app-header'>
+      <Container
         style={{
-          borderTop: 'none',
-          boxShadow: 'rgba(0, 0, 0, 0.04) 0px 2px 12px 0px',
-          border: 'none',
+          width: '100%',
+          maxWidth: '100%',
+          padding: '0 24px',
         }}
       >
-        <Container
-          style={{
-            width: '100%',
-            maxWidth: isMobile() ? '100%' : '1200px',
-            padding: isMobile() ? '0 10px' : '0 20px',
-          }}
-        >
-          <Menu.Item as={Link} to='/' className={'hide-on-mobile'}>
-            <img src={logo} alt='logo' style={{ marginRight: '0.75em' }} />
-            <div
-              style={{
-                fontSize: '18px',
-                fontWeight: '500',
-                color: '#333',
-              }}
-            >
-              {systemName}
-            </div>
+        <Menu.Item as={Link} to={brandTo} className='hide-on-mobile'>
+          <img
+            src={logo}
+            alt='logo'
+            className='app-brand-logo'
+            style={{ marginRight: '0.75em' }}
+          />
+          <div className='app-brand-name'>{systemName}</div>
+        </Menu.Item>
+        {topNavLinks.map((link) => (
+          <Menu.Item
+            key={link.name}
+            as={Link}
+            to={link.to}
+            className={isActive(link.to) ? 'app-nav-active' : ''}
+          >
+            {t(link.name)}
           </Menu.Item>
-          {renderButtons(false)}
-          <Menu.Menu position='right'>
+        ))}
+        <Menu.Menu position='right'>
+          <Menu.Item as='span' className='app-theme-toggle-item'>
+            <ThemeToggle />
+          </Menu.Item>
+          <Dropdown
+            item
+            trigger={<Icon name='language' style={{ margin: 0, fontSize: '18px' }} />}
+            options={languageOptions}
+            value={i18n.language}
+            onChange={(_, { value }) => changeLanguage(value)}
+          />
+          {loggedIn ? (
             <Dropdown
-              item
-              trigger={
-                <Icon name='language' style={{ margin: 0, fontSize: '18px' }} />
-              }
-              options={languageOptions}
-              value={i18n.language}
-              onChange={(_, { value }) => changeLanguage(value)}
-              style={{
-                fontSize: '16px',
-                fontWeight: '400',
-                color: '#666',
-                padding: '0 10px',
-              }}
+              text={userState.user.username}
+              pointing
+              className='link item'
+              icon='user circle'
+            >
+              <Dropdown.Menu>
+                <Dropdown.Item onClick={logout}>
+                  {t('header.logout')}
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+          ) : (
+            <Menu.Item
+              name={t('header.login')}
+              as={Link}
+              to='/login'
+              className='btn btn-link'
             />
-            {userState.user ? (
-              <Dropdown
-                text={userState.user.username}
-                pointing
-                className='link item'
-                style={{
-                  fontSize: '15px',
-                  fontWeight: '400',
-                  color: '#666',
-                }}
-              >
-                <Dropdown.Menu>
-                  <Dropdown.Item
-                    onClick={logout}
-                    style={{
-                      fontSize: '15px',
-                      fontWeight: '400',
-                      color: '#666',
-                    }}
-                  >
-                    {t('header.logout')}
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
-            ) : (
-              <Menu.Item
-                name={t('header.login')}
-                as={Link}
-                to='/login'
-                className='btn btn-link'
-                style={{
-                  fontSize: '15px',
-                  fontWeight: '400',
-                  color: '#666',
-                }}
-              />
-            )}
-          </Menu.Menu>
-        </Container>
-      </Menu>
-    </>
+          )}
+        </Menu.Menu>
+      </Container>
+    </Menu>
   );
 };
 

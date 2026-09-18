@@ -2,14 +2,39 @@
 <html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="logo.png" />
+    <link rel="icon" href="/favicon.ico?v=20260914" sizes="any" />
+    <link rel="icon" type="image/png" href="/logo.png?v=20260914" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#ffffff" />
+    <meta name="theme-color" content="#0a1020" />
     <meta
       name="description"
-      content="OpenAI 接口聚合管理，支持多种渠道包括 Azure，可用于二次分发管理 key，仅单可执行文件，已打包好 Docker 镜像，一键部署，开箱即用"
+      content="FluxAI 流光算力：大模型 API 聚合与算力分发平台，多渠道统一接入、智能路由、在线充值与用量看板，开箱即用"
     />
-    <title>One API</title>
+    <title>FluxAI - 流光算力</title>
+    <script>
+      // 首帧前确定全站主题（theme-dark / theme-light），避免暗色页面白闪
+      (function () {
+        try {
+          var t = localStorage.getItem('app_theme');
+          if (t !== 'dark' && t !== 'light') {
+            // 迁移 Task01 落地页旧偏好（tech=暗色 / simple=亮色）
+            var legacy = localStorage.getItem('landing_theme');
+            if (legacy === 'tech') t = 'dark';
+            else if (legacy === 'simple') t = 'light';
+          }
+          if (t !== 'dark' && t !== 'light') {
+            t =
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: light)').matches
+                ? 'light'
+                : 'dark';
+          }
+          document.documentElement.classList.add('theme-' + t);
+        } catch (e) {
+          document.documentElement.classList.add('theme-dark');
+        }
+      })();
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

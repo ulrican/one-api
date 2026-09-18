@@ -1,0 +1,91 @@
+/* 排行榜页 F15 — Task3-3：占满内容区，去除 1100px 居中收窄 */
+:where(html.theme-dark, html.theme-light) .rankings-page {
+  max-width: none;
+  margin: 0;
+  padding: 12px 16px 16px;
+}
+:where(html.theme-dark, html.theme-light) .rankings-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 16px;
+  margin-bottom: 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+}
+:where(html.theme-dark, html.theme-light) .rankings-hero-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+:where(html.theme-dark, html.theme-light) .rankings-hero-title i {
+  color: var(--brand-blue);
+}
+:where(html.theme-dark, html.theme-light) .rankings-hero-sub {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+:where(html.theme-dark, html.theme-light) .rankings-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+:where(html.theme-dark, html.theme-light) .rankings-table-wrap {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+:where(html.theme-dark, html.theme-light) .rankings-table {
+  margin: 0 !important;
+  background: transparent !important;
+}
+:where(html.theme-dark, html.theme-light) .rankings-table thead th {
+  background: var(--bg-subtle) !important;
+  color: var(--text-secondary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  font-weight: 600;
+}
+:where(html.theme-dark, html.theme-light) .rankings-table tbody td {
+  border-bottom: 1px solid var(--border-color) !important;
+  color: var(--text-primary);
+}
+:where(html.theme-dark, html.theme-light) .rankings-rank {
+  font-weight: 700;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  color: var(--brand-blue);
+}
+:where(html.theme-dark, html.theme-light) .rankings-name {
+  font-weight: 600;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+}
+:where(html.theme-dark, html.theme-light) .rankings-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+:where(html.theme-dark, html.theme-light) .rankings-share {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+:where(html.theme-dark, html.theme-light) .rankings-loading,
+:where(html.theme-dark, html.theme-light) .rankings-empty {
+  text-align: center;
+  padding: 32px;
+  color: var(--text-tertiary);
+}
+@media (max-width: 640px) {
+  :where(html.theme-dark, html.theme-light) .rankings-page {
+    padding: 12px 8px 32px;
+  }
+  :where(html.theme-dark, html.theme-light) .rankings-hero-title {
+    font-size: 22px;
+  }
+}

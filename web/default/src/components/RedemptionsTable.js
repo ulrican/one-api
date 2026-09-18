@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import EmptyState from './EmptyState';
 import {
   Button,
   Form,
@@ -252,6 +253,17 @@ const RedemptionsTable = () => {
         </Table.Header>
 
         <Table.Body>
+          {!loading && redemptions.length === 0 && (
+            <Table.Row>
+              <Table.Cell colSpan='7' textAlign='center'>
+                <EmptyState
+                  icon='ticket'
+                  title={t('redemption.empty.title')}
+                  description={t('redemption.empty.desc')}
+                />
+              </Table.Cell>
+            </Table.Row>
+          )}
           {redemptions
             .slice(
               (activePage - 1) * ITEMS_PER_PAGE,

@@ -1,0 +1,7 @@
+data
+logs
+.git
+web/node_modules
+web/*/node_modules
+web/*/build
+web/default/src/locales/*.bak

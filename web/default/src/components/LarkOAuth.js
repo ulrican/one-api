@@ -1,20 +1,25 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Dimmer, Loader, Segment } from 'semantic-ui-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { API, showError, showSuccess } from '../helpers';
 import { UserContext } from '../context/User';
+import Loading from './Loading';
 
 const LarkOAuth = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [userState, userDispatch] = useContext(UserContext);
   const [prompt, setPrompt] = useState('处理中...');
-  const [processing, setProcessing] = useState(true);
 
   let navigate = useNavigate();
 
   const sendCode = async (code, state, count) => {
     const res = await API.get(`/api/oauth/lark?code=${code}&state=${state}`);
+    // 网络错误时拦截器返回 undefined，避免 res.data 解构崩溃
+    if (!res?.data) {
+      setPrompt(`操作失败，重定向至登录界面中...`);
+      navigate('/setting');
+      return;
+    }
     const { success, message, data } = res.data;
     if (success) {
       if (message === 'bind') {
@@ -24,7 +29,7 @@ const LarkOAuth = () => {
         userDispatch({ type: 'login', payload: data });
         localStorage.setItem('user', JSON.stringify(data));
         showSuccess('登录成功！');
-        navigate('/');
+        navigate('/dashboard');
       }
     } else {
       showError(message);
@@ -46,13 +51,7 @@ const LarkOAuth = () => {
     sendCode(code, state, 0).then();
   }, []);
 
-  return (
-    <Segment style={{ minHeight: '300px' }}>
-      <Dimmer active inverted>
-        <Loader size='large'>{prompt}</Loader>
-      </Dimmer>
-    </Segment>
-  );
+  return <Loading text={prompt} />;
 };
 
 export default LarkOAuth;

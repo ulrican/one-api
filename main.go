@@ -18,6 +18,7 @@ import (
 	"github.com/songquanpeng/one-api/common/logger"
 	"github.com/songquanpeng/one-api/controller"
 	"github.com/songquanpeng/one-api/middleware"
+	"github.com/songquanpeng/one-api/monitor"
 	"github.com/songquanpeng/one-api/model"
 	"github.com/songquanpeng/one-api/relay/adaptor/openai"
 	"github.com/songquanpeng/one-api/router"
@@ -29,7 +30,7 @@ var buildFS embed.FS
 func main() {
 	common.Init()
 	logger.SetupLogger()
-	logger.SysLogf("One API %s started", common.Version)
+	logger.SysLogf("FluxAI %s started", common.Version)
 
 	if os.Getenv("GIN_MODE") != gin.DebugMode {
 		gin.SetMode(gin.ReleaseMode)
@@ -83,6 +84,12 @@ func main() {
 		}
 		go controller.AutomaticallyTestChannels(frequency)
 	}
+	// F10 配额警告协程（管控面，不进 relay 链路）
+	go monitor.WarnQuotaUsers(config.QuotaWarningInterval)
+	// F1 充值订单超时扫描协程（管控面，仅批量更新过期订单状态，不进 relay 链路）
+	model.StartOrderExpireSweeper()
+	// Task4-1 七牛模型库每日同步协程（管控面，仅主节点，不进 relay 链路）
+	model.StartMarketplaceSync()
 	if os.Getenv("BATCH_UPDATE_ENABLED") == "true" {
 		config.BatchUpdateEnabled = true
 		logger.SysLog("batch update enabled with interval " + strconv.Itoa(config.BatchUpdateInterval) + "s")

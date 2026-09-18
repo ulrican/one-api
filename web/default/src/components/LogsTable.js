@@ -20,6 +20,7 @@ import {
   timestamp2string,
 } from '../helpers';
 import { useTranslation } from 'react-i18next';
+import EmptyState from './EmptyState';
 
 import { ITEMS_PER_PAGE } from '../constants';
 import { renderColorLabel, renderQuota } from '../helpers/render';
@@ -316,7 +317,7 @@ const LogsTable = () => {
         {!showStat && (
           <span
             onClick={handleEyeClick}
-            style={{ cursor: 'pointer', color: 'gray' }}
+            style={{ cursor: 'pointer', color: 'var(--text-tertiary)' }}
           >
             {t('log.click_to_view')}
           </span>
@@ -505,6 +506,17 @@ const LogsTable = () => {
         </Table.Header>
 
         <Table.Body>
+          {!loading && logs.length === 0 && (
+            <Table.Row>
+              <Table.Cell colSpan='11' textAlign='center'>
+                <EmptyState
+                  icon='file alternate outline'
+                  title={t('log.empty.title')}
+                  description={t('log.empty.desc')}
+                />
+              </Table.Cell>
+            </Table.Row>
+          )}
           {logs
             .slice(
               (activePage - 1) * ITEMS_PER_PAGE,

@@ -1,0 +1,496 @@
+﻿docker : #0 building with "desktop-linux" instance using docker driver
+At line:15 char:2371
++ ... de\ripgrep\bin'; docker build -t one-api-custom:latest . 2>&1 | Tee-O ...
++                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (#0 building wit...g docker driver:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.29kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/golang:alpine
+#2 ...
+
+#3 [internal] load metadata for docker.io/library/alpine:latest
+#3 DONE 0.2s
+
+#4 [internal] load metadata for docker.io/library/node:16
+#4 DONE 0.8s
+
+#2 [internal] load metadata for docker.io/library/golang:alpine
+#2 DONE 2.2s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 133B done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 DONE 0.0s
+
+#7 [builder2 1/8] FROM docker.io/library/golang:alpine@sha256:cf6fca6641884b8433441b2b0652976f975e1d0fdd26d177eaaf85960
+87f3125
+#7 resolve docker.io/library/golang:alpine@sha256:cf6fca6641884b8433441b2b0652976f975e1d0fdd26d177eaaf8596087f3125 0.1s
+ done
+#7 DONE 0.1s
+
+#8 [builder 1/6] FROM docker.io/library/node:16@sha256:f77a1aef2da8d83e45ec990f45df50f1a286c5fe8bbfb8c6e4246c6389705c0b
+#8 resolve docker.io/library/node:16@sha256:f77a1aef2da8d83e45ec990f45df50f1a286c5fe8bbfb8c6e4246c6389705c0b
+#8 resolve docker.io/library/node:16@sha256:f77a1aef2da8d83e45ec990f45df50f1a286c5fe8bbfb8c6e4246c6389705c0b 0.1s done
+#8 DONE 0.1s
+
+#9 [stage-2 1/4] FROM docker.io/library/alpine:latest@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434
+943f8b
+#9 resolve docker.io/library/alpine:latest@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b 0.1s
+ done
+#9 DONE 0.1s
+
+#6 [internal] load build context
+#6 transferring context: 9.58MB 0.7s done
+#6 DONE 0.7s
+
+#10 [builder 2/6] WORKDIR /web
+#10 CACHED
+
+#11 [builder2 2/8] RUN apk add --no-cache     gcc     musl-dev     sqlite-dev     build-base
+#11 CACHED
+
+#12 [builder2 3/8] WORKDIR /build
+#12 CACHED
+
+#13 [builder2 4/8] ADD go.mod go.sum ./
+#13 CACHED
+
+#14 [builder 3/6] COPY ./VERSION .
+#14 CACHED
+
+#15 [builder2 5/8] RUN go mod download
+#15 CACHED
+
+#16 [builder 4/6] COPY ./web .
+#16 DONE 0.2s
+
+#17 [builder2 6/8] COPY . .
+#17 DONE 0.3s
+
+#18 [builder 5/6] RUN npm install --legacy-peer-deps --prefix /web/default &     npm install --legacy-peer-deps --prefi
+x /web/berry &     npm install --legacy-peer-deps --prefix /web/air &     wait
+#18 1.369 npm WARN EBADENGINE Unsupported engine {
+#18 1.369 npm WARN EBADENGINE   package: 'node-releases@2.0.54',
+#18 1.369 npm WARN EBADENGINE   required: { node: '>=18' },
+#18 1.369 npm WARN EBADENGINE   current: { node: 'v16.20.2', npm: '8.19.4' }
+#18 1.369 npm WARN EBADENGINE }
+#18 1.373 npm WARN EBADENGINE Unsupported engine {
+#18 1.373 npm WARN EBADENGINE   package: 'postcss-load-config@6.0.1',
+#18 1.373 npm WARN EBADENGINE   required: { node: '>= 18' },
+#18 1.373 npm WARN EBADENGINE   current: { node: 'v16.20.2', npm: '8.19.4' }
+#18 1.373 npm WARN EBADENGINE }
+#18 5.512 npm WARN deprecated whatwg-encoding@1.0.5: Use @exodus/bytes instead for a more spec-conformant and faster im
+plementation
+#18 5.567 npm WARN deprecated workbox-cacheable-response@6.6.0: workbox-background-sync@6.6.0
+#18 5.586 npm WARN deprecated w3c-hr-time@1.0.2: Use your platform's native performance.now() and performance.timeOrigi
+n.
+#18 5.804 npm WARN deprecated workbox-google-analytics@6.6.0: It is not compatible with newer versions of GA starting w
+ith v4, as long as you are using GAv3 it should be ok, but the package is not longer being maintained
+#18 6.421 npm WARN deprecated stable@0.1.8: Modern JS already guarantees Array#sort() is a stable sort, so this library
+ is deprecated. See the compatibility table on MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/G
+lobal_Objects/Array/sort#browser_compatibility
+#18 6.464 npm WARN deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
+#18 6.664 npm WARN deprecated uuid@8.3.2: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@
+latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+#18 6.822 npm WARN deprecated rollup-plugin-terser@7.0.2: This package has been deprecated and is no longer maintained.
+ Please use @rollup/plugin-terser
+#18 6.884 npm WARN deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+#18 7.019 npm WARN deprecated svgo@1.3.2: This SVGO version is no longer supported. Upgrade to v2.x.x.
+#18 8.369 npm WARN deprecated q@1.5.1: You or someone you depend on is using Q, the JavaScript Promise library that gav
+e JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript prom
+ise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+#18 8.369 npm WARN deprecated 
+#18 8.369 npm WARN deprecated (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
+#18 11.28 npm WARN deprecated recharts@2.15.4: 1.x and 2.x branches are no longer active. Bump to Recharts v3 to receiv
+e latest features and bugfixes. See https://github.com/recharts/recharts/wiki/3.0-migration-guide
+#18 12.64 npm WARN deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out 
+lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive
+ and powerful.
+#18 13.21 npm WARN deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized securit
+y vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchas
+ed (at exorbitant rates) by contacting i@izs.me
+#18 14.30 npm WARN deprecated domexception@2.0.1: Use your platform's native DOMException instead
+#18 16.35 npm WARN deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
+#18 18.39 npm WARN deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
+#18 18.42 npm WARN deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead
+#18 20.57 npm WARN deprecated @babel/plugin-proposal-optional-chaining@7.21.0: This proposal has been merged to the ECM
+AScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-optional-chaining ins
+tead.
+#18 20.63 npm WARN deprecated @babel/plugin-proposal-class-properties@7.18.6: This proposal has been merged to the ECMA
+Script standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-class-properties inste
+ad.
+#18 20.67 npm WARN deprecated @babel/plugin-proposal-numeric-separator@7.18.6: This proposal has been merged to the ECM
+AScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-numeric-separator ins
+tead.
+#18 20.73 npm WARN deprecated @babel/plugin-proposal-private-methods@7.18.6: This proposal has been merged to the ECMAS
+cript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-private-methods instead
+.
+#18 20.75 npm WARN deprecated @babel/plugin-proposal-nullish-coalescing-operator@7.18.6: This proposal has been merged 
+to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-nullish-coa
+lescing-operator instead.
+#18 21.34 npm WARN deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version
+-support for other options.
+#18 26.86 npm WARN deprecated @babel/plugin-proposal-private-property-in-object@7.21.11: This proposal has been merged 
+to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-private-pro
+perty-in-object instead.
+#18 35.33 
+#18 35.33 added 1368 packages, and audited 1369 packages in 35s
+#18 35.33 
+#18 35.33 273 packages are looking for funding
+#18 35.33   run `npm fund` for details
+#18 35.40 
+#18 35.40 34 vulnerabilities (9 low, 10 moderate, 15 high)
+#18 35.40 
+#18 35.40 To address issues that do not require attention, run:
+#18 35.40   npm audit fix
+#18 35.40 
+#18 35.40 To address all issues (including breaking changes), run:
+#18 35.40   npm audit fix --force
+#18 35.40 
+#18 35.40 Run `npm audit` for details.
+#18 35.40 npm notice 
+#18 35.40 npm notice New major version of npm available! 8.19.4 -> 12.0.2
+#18 35.40 npm notice Changelog: <https://github.com/npm/cli/releases/tag/v12.0.2>
+#18 35.40 npm notice Run `npm install -g npm@12.0.2` to update!
+#18 35.40 npm notice 
+#18 62.80 npm WARN EBADENGINE Unsupported engine {
+#18 62.80 npm WARN EBADENGINE   package: 'sass@1.104.1',
+#18 62.80 npm WARN EBADENGINE   required: { node: '>=20.19.0' },
+#18 62.80 npm WARN EBADENGINE   current: { node: 'v16.20.2', npm: '8.19.4' }
+#18 62.80 npm WARN EBADENGINE }
+#18 62.80 npm WARN EBADENGINE Unsupported engine {
+#18 62.80 npm WARN EBADENGINE   package: 'node-releases@2.0.55',
+#18 62.80 npm WARN EBADENGINE   required: { node: '>=18' },
+#18 62.80 npm WARN EBADENGINE   current: { node: 'v16.20.2', npm: '8.19.4' }
+#18 62.80 npm WARN EBADENGINE }
+#18 62.81 npm WARN EBADENGINE Unsupported engine {
+#18 62.81 npm WARN EBADENGINE   package: 'chokidar@5.0.0',
+#18 62.81 npm WARN EBADENGINE   required: { node: '>= 20.19.0' },
+#18 62.81 npm WARN EBADENGINE   current: { node: 'v16.20.2', npm: '8.19.4' }
+#18 62.81 npm WARN EBADENGINE }
+#18 62.81 npm WARN EBADENGINE Unsupported engine {
+#18 62.81 npm WARN EBADENGINE   package: 'postcss-load-config@6.0.1',
+#18 62.81 npm WARN EBADENGINE   required: { node: '>= 18' },
+#18 62.81 npm WARN EBADENGINE   current: { node: 'v16.20.2', npm: '8.19.4' }
+#18 62.81 npm WARN EBADENGINE }
+#18 62.81 npm WARN EBADENGINE Unsupported engine {
+#18 62.81 npm WARN EBADENGINE   package: 'readdirp@5.1.1',
+#18 62.81 npm WARN EBADENGINE   required: { node: '>= 20.19.0' },
+#18 62.81 npm WARN EBADENGINE   current: { node: 'v16.20.2', npm: '8.19.4' }
+#18 62.81 npm WARN EBADENGINE }
+#18 64.26 npm WARN EBADENGINE Unsupported engine {
+#18 64.26 npm WARN EBADENGINE   package: 'node-releases@2.0.55',
+#18 64.26 npm WARN EBADENGINE   required: { node: '>=18' },
+#18 64.26 npm WARN EBADENGINE   current: { node: 'v16.20.2', npm: '8.19.4' }
+#18 64.26 npm WARN EBADENGINE }
+#18 64.26 npm WARN EBADENGINE Unsupported engine {
+#18 64.26 npm WARN EBADENGINE   package: 'postcss-load-config@6.0.1',
+#18 64.26 npm WARN EBADENGINE   required: { node: '>= 18' },
+#18 64.26 npm WARN EBADENGINE   current: { node: 'v16.20.2', npm: '8.19.4' }
+#18 64.26 npm WARN EBADENGINE }
+#18 68.52 npm WARN deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out 
+lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive
+ and powerful.
+#18 68.85 npm WARN deprecated stable@0.1.8: Modern JS already guarantees Array#sort() is a stable sort, so this library
+ is deprecated. See the compatibility table on MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/G
+lobal_Objects/Array/sort#browser_compatibility
+#18 69.02 npm WARN deprecated @babel/plugin-proposal-private-methods@7.18.6: This proposal has been merged to the ECMAS
+cript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-private-methods instead
+.
+#18 69.02 npm WARN deprecated @babel/plugin-proposal-numeric-separator@7.18.6: This proposal has been merged to the ECM
+AScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-numeric-separator ins
+tead.
+#18 69.03 npm WARN deprecated @babel/plugin-proposal-nullish-coalescing-operator@7.18.6: This proposal has been merged 
+to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-nullish-coa
+lescing-operator instead.
+#18 69.03 npm WARN deprecated @babel/plugin-proposal-class-properties@7.18.6: This proposal has been merged to the ECMA
+Script standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-class-properties inste
+ad.
+#18 69.38 npm WARN deprecated rollup-plugin-terser@7.0.2: This package has been deprecated and is no longer maintained.
+ Please use @rollup/plugin-terser
+#18 69.56 npm WARN deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead
+#18 69.67 npm WARN deprecated whatwg-encoding@1.0.5: Use @exodus/bytes instead for a more spec-conformant and faster im
+plementation
+#18 69.68 npm WARN deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
+#18 69.80 npm WARN deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+#18 69.84 npm WARN deprecated @babel/plugin-proposal-private-property-in-object@7.21.11: This proposal has been merged 
+to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-private-pro
+perty-in-object instead.
+#18 69.84 npm WARN deprecated @babel/plugin-proposal-optional-chaining@7.21.0: This proposal has been merged to the ECM
+AScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-optional-chaining ins
+tead.
+#18 70.58 npm WARN deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized securit
+y vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchas
+ed (at exorbitant rates) by contacting i@izs.me
+#18 70.73 npm WARN deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
+#18 70.84 npm WARN deprecated domexception@2.0.1: Use your platform's native DOMException instead
+#18 71.11 npm WARN deprecated w3c-hr-time@1.0.2: Use your platform's native performance.now() and performance.timeOrigi
+n.
+#18 71.34 npm WARN deprecated q@1.5.1: You or someone you depend on is using Q, the JavaScript Promise library that gav
+e JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript prom
+ise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+#18 71.34 npm WARN deprecated 
+#18 71.34 npm WARN deprecated (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
+#18 72.39 npm WARN deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out 
+lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive
+ and powerful.
+#18 72.61 npm WARN deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
+#18 72.65 npm WARN deprecated stable@0.1.8: Modern JS already guarantees Array#sort() is a stable sort, so this library
+ is deprecated. See the compatibility table on MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/G
+lobal_Objects/Array/sort#browser_compatibility
+#18 72.80 npm WARN deprecated @babel/plugin-proposal-numeric-separator@7.18.6: This proposal has been merged to the ECM
+AScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-numeric-separator ins
+tead.
+#18 72.81 npm WARN deprecated @babel/plugin-proposal-nullish-coalescing-operator@7.18.6: This proposal has been merged 
+to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-nullish-coa
+lescing-operator instead.
+#18 72.81 npm WARN deprecated @babel/plugin-proposal-private-methods@7.18.6: This proposal has been merged to the ECMAS
+cript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-private-methods instead
+.
+#18 72.82 npm WARN deprecated @babel/plugin-proposal-class-properties@7.18.6: This proposal has been merged to the ECMA
+Script standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-class-properties inste
+ad.
+#18 73.31 npm WARN deprecated rollup-plugin-terser@7.0.2: This package has been deprecated and is no longer maintained.
+ Please use @rollup/plugin-terser
+#18 73.45 npm WARN deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead
+#18 73.69 npm WARN deprecated whatwg-encoding@1.0.5: Use @exodus/bytes instead for a more spec-conformant and faster im
+plementation
+#18 73.72 npm WARN deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
+#18 73.72 npm WARN deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+#18 73.78 npm WARN deprecated @babel/plugin-proposal-optional-chaining@7.21.0: This proposal has been merged to the ECM
+AScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-optional-chaining ins
+tead.
+#18 73.91 npm WARN deprecated @babel/plugin-proposal-private-property-in-object@7.21.11: This proposal has been merged 
+to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-private-pro
+perty-in-object instead.
+#18 74.41 npm WARN deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized securit
+y vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchas
+ed (at exorbitant rates) by contacting i@izs.me
+#18 74.44 npm WARN deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
+#18 74.52 npm WARN deprecated workbox-cacheable-response@6.6.0: workbox-background-sync@6.6.0
+#18 74.64 npm WARN deprecated domexception@2.0.1: Use your platform's native DOMException instead
+#18 74.81 npm WARN deprecated w3c-hr-time@1.0.2: Use your platform's native performance.now() and performance.timeOrigi
+n.
+#18 74.84 npm WARN deprecated workbox-google-analytics@6.6.0: It is not compatible with newer versions of GA starting w
+ith v4, as long as you are using GAv3 it should be ok, but the package is not longer being maintained
+#18 75.00 npm WARN deprecated q@1.5.1: You or someone you depend on is using Q, the JavaScript Promise library that gav
+e JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript prom
+ise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+#18 75.00 npm WARN deprecated 
+#18 75.00 npm WARN deprecated (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
+#18 75.14 npm WARN deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
+#18 77.40 npm WARN deprecated uuid@8.3.2: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@
+latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+#18 78.15 npm WARN deprecated svgo@1.3.2: This SVGO version is no longer supported. Upgrade to v2.x.x.
+#18 78.39 npm WARN deprecated geojson-linestring-dissolve@0.0.1: Package no longer supported. Contact Support at https:
+//www.npmjs.com/support for more info.
+#18 78.51 npm WARN deprecated workbox-cacheable-response@6.6.0: workbox-background-sync@6.6.0
+#18 79.27 npm WARN deprecated workbox-google-analytics@6.6.0: It is not compatible with newer versions of GA starting w
+ith v4, as long as you are using GAv3 it should be ok, but the package is not longer being maintained
+#18 81.54 npm WARN deprecated text-encoding@0.6.4: no longer maintained
+#18 83.59 npm WARN deprecated uuid@8.3.2: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@
+latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+#18 84.40 npm WARN deprecated svgo@1.3.2: This SVGO version is no longer supported. Upgrade to v2.x.x.
+#18 87.76 npm WARN deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version
+-support for other options.
+#18 92.28 npm WARN deprecated @mui/base@5.0.0-beta.40-1: This package has been replaced by @base-ui/react
+#18 92.59 npm WARN deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version
+-support for other options.
+#18 112.7 
+#18 112.7 added 1411 packages, and audited 1412 packages in 2m
+#18 112.7 
+#18 112.7 294 packages are looking for funding
+#18 112.7   run `npm fund` for details
+#18 112.8 
+#18 112.8 33 vulnerabilities (9 low, 9 moderate, 15 high)
+#18 112.8 
+#18 112.8 To address issues that do not require attention, run:
+#18 112.8   npm audit fix
+#18 112.8 
+#18 112.8 To address all issues (including breaking changes), run:
+#18 112.8   npm audit fix --force
+#18 112.8 
+#18 112.8 Run `npm audit` for details.
+#18 112.8 npm notice 
+#18 112.8 npm notice New major version of npm available! 8.19.4 -> 12.0.2
+#18 112.8 npm notice Changelog: <https://github.com/npm/cli/releases/tag/v12.0.2>
+#18 112.8 npm notice Run `npm install -g npm@12.0.2` to update!
+#18 112.8 npm notice 
+#18 116.0 
+#18 116.0 added 1610 packages, and audited 1611 packages in 2m
+#18 116.0 
+#18 116.0 424 packages are looking for funding
+#18 116.0   run `npm fund` for details
+#18 116.0 
+#18 116.0 35 vulnerabilities (9 low, 9 moderate, 15 high, 2 critical)
+#18 116.0 
+#18 116.0 To address issues that do not require attention, run:
+#18 116.0   npm audit fix
+#18 116.0 
+#18 116.0 To address all issues (including breaking changes), run:
+#18 116.0   npm audit fix --force
+#18 116.0 
+#18 116.0 Run `npm audit` for details.
+#18 116.0 npm notice 
+#18 116.0 npm notice New major version of npm available! 8.19.4 -> 12.0.2
+#18 116.0 npm notice Changelog: <https://github.com/npm/cli/releases/tag/v12.0.2>
+#18 116.0 npm notice Run `npm install -g npm@12.0.2` to update!
+#18 116.0 npm notice 
+#18 DONE 116.7s
+
+#19 [builder 6/6] RUN DISABLE_ESLINT_PLUGIN='true' REACT_APP_VERSION=$(cat ./VERSION) npm run build --prefix /web/defau
+lt &     DISABLE_ESLINT_PLUGIN='true' REACT_APP_VERSION=$(cat ./VERSION) npm run build --prefix /web/berry &     DISABL
+E_ESLINT_PLUGIN='true' REACT_APP_VERSION=$(cat ./VERSION) npm run build --prefix /web/air &     wait
+#19 2.541 
+#19 2.541 > one_api_web@1.0.0 build
+#19 2.541 > react-scripts build && mv -f build ../build/berry
+#19 2.541 
+#19 2.544 
+#19 2.544 > react-template@0.1.0 build
+#19 2.544 > react-scripts build && mv -f build ../build/air
+#19 2.544 
+#19 2.544 
+#19 2.544 > react-template@0.1.0 build
+#19 2.544 > react-scripts build && rm -rf ../build/default && mv -f build ../build/default
+#19 2.544 
+#19 4.286 node:internal/modules/cjs/loader:1031
+#19 4.286   throw err;
+#19 4.286   ^
+#19 4.286 
+#19 4.286 Error: Cannot find module 'ajv/dist/compile/codegen'
+#19 4.286 Require stack:
+#19 4.286 - /web/air/node_modules/ajv-keywords/dist/definitions/typeof.js
+#19 4.286 - /web/air/node_modules/ajv-keywords/dist/keywords/typeof.js
+#19 4.286 - /web/air/node_modules/ajv-keywords/dist/keywords/index.js
+#19 4.286 - /web/air/node_modules/ajv-keywords/dist/index.js
+#19 4.286 - /web/air/node_modules/schema-utils/dist/validate.js
+#19 4.286 - /web/air/node_modules/schema-utils/dist/index.js
+#19 4.286 - /web/air/node_modules/terser-webpack-plugin/dist/index.js
+#19 4.286 - /web/air/node_modules/react-scripts/config/webpack.config.js
+#19 4.286 - /web/air/node_modules/react-scripts/scripts/build.js
+#19 4.286     at Function.Module._resolveFilename (node:internal/modules/cjs/loader:1028:15)
+#19 4.286     at Function.Module._load (node:internal/modules/cjs/loader:873:27)
+#19 4.286     at Module.require (node:internal/modules/cjs/loader:1100:19)
+#19 4.286     at require (node:internal/modules/cjs/helpers:119:18)
+#19 4.286     at Object.<anonymous> (/web/air/node_modules/ajv-keywords/dist/definitions/typeof.js:3:19)
+#19 4.286     at Module._compile (node:internal/modules/cjs/loader:1198:14)
+#19 4.286     at Object.Module._extensions..js (node:internal/modules/cjs/loader:1252:10)
+#19 4.286     at Module.load (node:internal/modules/cjs/loader:1076:32)
+#19 4.286     at Function.Module._load (node:internal/modules/cjs/loader:911:12)
+#19 4.286     at Module.require (node:internal/modules/cjs/loader:1100:19) {
+#19 4.286   code: 'MODULE_NOT_FOUND',
+#19 4.286   requireStack: [
+#19 4.286     '/web/air/node_modules/ajv-keywords/dist/definitions/typeof.js',
+#19 4.286     '/web/air/node_modules/ajv-keywords/dist/keywords/typeof.js',
+#19 4.286     '/web/air/node_modules/ajv-keywords/dist/keywords/index.js',
+#19 4.286     '/web/air/node_modules/ajv-keywords/dist/index.js',
+#19 4.286     '/web/air/node_modules/schema-utils/dist/validate.js',
+#19 4.286     '/web/air/node_modules/schema-utils/dist/index.js',
+#19 4.286     '/web/air/node_modules/terser-webpack-plugin/dist/index.js',
+#19 4.286     '/web/air/node_modules/react-scripts/config/webpack.config.js',
+#19 4.286     '/web/air/node_modules/react-scripts/scripts/build.js'
+#19 4.286   ]
+#19 4.286 }
+#19 4.326 node:internal/modules/cjs/loader:1031
+#19 4.326   throw err;
+#19 4.326   ^
+#19 4.326 
+#19 4.326 Error: Cannot find module 'ajv/dist/compile/codegen'
+#19 4.326 Require stack:
+#19 4.326 - /web/berry/node_modules/ajv-keywords/dist/definitions/typeof.js
+#19 4.326 - /web/berry/node_modules/ajv-keywords/dist/keywords/typeof.js
+#19 4.326 - /web/berry/node_modules/ajv-keywords/dist/keywords/index.js
+#19 4.326 - /web/berry/node_modules/ajv-keywords/dist/index.js
+#19 4.326 - /web/berry/node_modules/schema-utils/dist/validate.js
+#19 4.326 - /web/berry/node_modules/schema-utils/dist/index.js
+#19 4.326 - /web/berry/node_modules/terser-webpack-plugin/dist/index.js
+#19 4.326 - /web/berry/node_modules/react-scripts/config/webpack.config.js
+#19 4.326 - /web/berry/node_modules/react-scripts/scripts/build.js
+#19 4.326     at Function.Module._resolveFilename (node:internal/modules/cjs/loader:1028:15)
+#19 4.326     at Function.Module._load (node:internal/modules/cjs/loader:873:27)
+#19 4.326     at Module.require (node:internal/modules/cjs/loader:1100:19)
+#19 4.326     at require (node:internal/modules/cjs/helpers:119:18)
+#19 4.326     at Object.<anonymous> (/web/berry/node_modules/ajv-keywords/dist/definitions/typeof.js:3:19)
+#19 4.326     at Module._compile (node:internal/modules/cjs/loader:1198:14)
+#19 4.326     at Object.Module._extensions..js (node:internal/modules/cjs/loader:1252:10)
+#19 4.326     at Module.load (node:internal/modules/cjs/loader:1076:32)
+#19 4.326     at Function.Module._load (node:internal/modules/cjs/loader:911:12)
+#19 4.326     at Module.require (node:internal/modules/cjs/loader:1100:19) {
+#19 4.326   code: 'MODULE_NOT_FOUND',
+#19 4.326   requireStack: [
+#19 4.326     '/web/berry/node_modules/ajv-keywords/dist/definitions/typeof.js',
+#19 4.326     '/web/berry/node_modules/ajv-keywords/dist/keywords/typeof.js',
+#19 4.326     '/web/berry/node_modules/ajv-keywords/dist/keywords/index.js',
+#19 4.326     '/web/berry/node_modules/ajv-keywords/dist/index.js',
+#19 4.326     '/web/berry/node_modules/schema-utils/dist/validate.js',
+#19 4.326     '/web/berry/node_modules/schema-utils/dist/index.js',
+#19 4.326     '/web/berry/node_modules/terser-webpack-plugin/dist/index.js',
+#19 4.326     '/web/berry/node_modules/react-scripts/config/webpack.config.js',
+#19 4.326     '/web/berry/node_modules/react-scripts/scripts/build.js'
+#19 4.326   ]
+#19 4.326 }
+#19 4.553 Creating an optimized production build...
+#19 33.36 Compiled successfully.
+#19 33.36 
+#19 33.36 File sizes after gzip:
+#19 33.36 
+#19 33.44   321.75 kB  build/static/js/main.f1f6e412.js
+#19 33.44   108.36 kB  build/static/css/main.decb4d3f.css
+#19 33.44   3.35 kB    build/static/css/665.e647bd8c.chunk.css
+#19 33.44   2.99 kB    build/static/js/665.2ccb4922.chunk.js
+#19 33.44   2.55 kB    build/static/js/622.a485ed8a.chunk.js
+#19 33.44   1.59 kB    build/static/js/151.b1e51667.chunk.js
+#19 33.44   968 B      build/static/css/622.1427a1ec.chunk.css
+#19 33.44   744 B      build/static/js/585.80af3e0c.chunk.js
+#19 33.44 
+#19 33.44 The project was built assuming it is hosted at /.
+#19 33.44 You can control this with the homepage field in your package.json.
+#19 33.44 
+#19 33.44 The build folder is ready to be deployed.
+#19 33.44 You may serve it with a static server:
+#19 33.44 
+#19 33.45   npm install -g serve
+#19 33.45   serve -s build
+#19 33.45 
+#19 33.45 Find out more about deployment here:
+#19 33.45 
+#19 33.45   https://cra.link/deployment
+#19 33.45 
+#19 DONE 33.7s
+
+#20 [builder2 7/8] COPY --from=builder /web/build ./web/build
+#20 DONE 0.2s
+
+#21 [builder2 8/8] RUN go build -trimpath -ldflags "-s -w -X 'github.com/songquanpeng/one-api/common.Version=$(cat VERS
+ION)' -linkmode external -extldflags '-static'" -o one-api
+#21 DONE 86.2s
+
+#22 [stage-2 2/4] RUN apk add --no-cache ca-certificates tzdata
+#22 CACHED
+
+#23 [stage-2 3/4] COPY --from=builder2 /build/one-api /
+#23 DONE 0.2s
+
+#24 [stage-2 4/4] WORKDIR /data
+#24 DONE 0.1s
+
+#25 exporting to image
+#25 exporting layers
+#25 exporting layers 2.4s done
+#25 exporting manifest sha256:bd675a67d8f0259e611e1b8b01f94c36899d609ac0d34a5a8b9a68c29462582c 0.0s done
+#25 exporting config sha256:a2a4f891ee1ac4ec3a547511dfd91ebbd5625f95cada0ff1a9c2cce24db47c85 0.0s done
+#25 exporting attestation manifest sha256:8fe264e58fc15cb71d5fc4e91307c6583157f661797b3f438c1110194966dadc
+#25 exporting attestation manifest sha256:8fe264e58fc15cb71d5fc4e91307c6583157f661797b3f438c1110194966dadc 0.1s done
+#25 exporting manifest list sha256:9a023fafacaac5def145dfaaf449534f75f983038766c61b68766dd2c3ae6e96 0.0s done
+#25 naming to docker.io/library/one-api-custom:latest
+#25 naming to docker.io/library/one-api-custom:latest done
+#25 unpacking to docker.io/library/one-api-custom:latest
+#25 unpacking to docker.io/library/one-api-custom:latest 0.4s done
+#25 DONE 3.1s

@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"regexp"
+	"sort"
 	"strings"
+	"sync"
 
 	"github.com/songquanpeng/one-api/common/helper"
 	"github.com/songquanpeng/one-api/relay/constant/role"
@@ -140,6 +143,16 @@ func postConsumeQuota(ctx context.Context, usage *relaymodel.Usage, meta *meta.M
 	model.UpdateChannelUsedQuota(meta.ChannelId, quota)
 }
 
+// regexMappingCache 缓存编译后的映射正则（F9b：key 为正则表达式的模型映射）
+var regexMappingCache sync.Map // pattern string -> *regexp.Regexp
+
+// isRegexPattern 判断映射 key 是否为正则表达式（含正则元字符即视为 pattern）
+func isRegexPattern(key string) bool {
+	return strings.ContainsAny(key, ".*+?[]()|^$\\")
+}
+
+// getMappedModelName F9b：精确匹配优先（原行为不变）；未命中时按正则 key 匹配，
+// 规则按「长度降序→字典序」稳定排序后首个命中生效（更长/更具体的 pattern 优先）。
 func getMappedModelName(modelName string, mapping map[string]string) (string, bool) {
 	if mapping == nil {
 		return modelName, false
@@ -147,6 +160,41 @@ func getMappedModelName(modelName string, mapping map[string]string) (string, bo
 	mappedModelName := mapping[modelName]
 	if mappedModelName != "" {
 		return mappedModelName, true
+	}
+	patterns := make([]string, 0, len(mapping))
+	for key := range mapping {
+		if key != modelName && isRegexPattern(key) {
+			patterns = append(patterns, key)
+		}
+	}
+	if len(patterns) == 0 {
+		return modelName, false
+	}
+	sort.Slice(patterns, func(i, j int) bool {
+		if len(patterns[i]) != len(patterns[j]) {
+			return len(patterns[i]) > len(patterns[j])
+		}
+		return patterns[i] < patterns[j]
+	})
+	for _, pattern := range patterns {
+		reAny, _ := regexMappingCache.Load(pattern)
+		if reAny == nil {
+			re, err := regexp.Compile(pattern)
+			if err != nil {
+				logger.SysError(fmt.Sprintf("invalid model mapping regex pattern %q: %s", pattern, err.Error()))
+				regexMappingCache.Store(pattern, false) // 负缓存，避免重复编译失败
+				continue
+			}
+			regexMappingCache.Store(pattern, re)
+			reAny = re
+		}
+		re, ok := reAny.(*regexp.Regexp)
+		if !ok {
+			continue // 编译失败的负缓存
+		}
+		if re.MatchString(modelName) {
+			return mapping[pattern], true
+		}
 	}
 	return modelName, false
 }

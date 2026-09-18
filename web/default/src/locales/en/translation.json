@@ -5,6 +5,9 @@
     "token": "Token",
     "redemption": "Redemption",
     "topup": "Top Up",
+    "pricing": "Pricing",
+    "rankings": "Rankings",
+    "marketplace": "Model Plaza",
     "user": "User",
     "dashboard": "Dashboard",
     "log": "Log",
@@ -15,8 +18,35 @@
     "logout": "Logout",
     "register": "Register"
   },
+  "sidenav": {
+    "group": {
+      "general": "General",
+      "resource": "Resources",
+      "account": "Account",
+      "admin": "Administration"
+    },
+    "collapse": "Collapse",
+    "expand": "Expand"
+  },
   "topup": {
     "title": "Top Up Center",
+    "balance": {
+      "label": "Available Quota",
+      "recharge": "Top Up Online",
+      "tip": "Quota is credited in real time after payment"
+    },
+    "packages": {
+      "title": "Top Up Packages",
+      "subtitle": "Choose a package to continue to the payment page; quota is credited automatically after payment.",
+      "soon": "Online payment is coming soon",
+      "recommend": "Popular",
+      "buy": "Buy Now",
+      "tiers": {
+        "t1": "Starter",
+        "t2": "Most Popular",
+        "t3": "Professional"
+      }
+    },
     "get_code": {
       "title": "Get Redemption Code",
       "current_quota": "Current Available Quota",
@@ -33,10 +63,267 @@
       "success": "Top up successful!",
       "request_failed": "Request failed",
       "no_link": "Admin has not set up the top-up link!"
+    },
+    "pay": {
+      "title": "Online Payment",
+      "subtitle": "Choose an amount and payment method, quota will be credited instantly after payment",
+      "custom_placeholder": "Custom amount",
+      "method_alipay": "Alipay",
+      "method_wxpay": "WeChat Pay",
+      "quota_preview": "Approx. {{quota}} credited",
+      "submit": "Pay Now",
+      "waiting": "Redirected to the payment page, waiting for payment result… The balance will refresh automatically once paid",
+      "poll_timeout": "Timed out waiting for payment. If you have paid, refresh the page later to check the balance",
+      "empty_amount": "Please enter the amount",
+      "create_failed": "Failed to create order, please try again later",
+      "success": "Payment successful, quota credited!"
+    },
+    "orders": {
+      "title": "Recharge History",
+      "time": "Time",
+      "amount": "Amount",
+      "quota": "Quota Credited",
+      "method": "Method",
+      "status": "Status",
+      "empty": "No recharge records",
+      "status_pending": "Pending",
+      "status_paid": "Paid",
+      "status_expired": "Expired"
+    },
+    "checkin": {
+      "title": "Daily Check-in",
+      "tip": "Check in daily to earn random quota rewards",
+      "reward_range": "Reward range: {{min}} ~ {{max}}",
+      "button": "Check in now",
+      "checked": "Checked in today",
+      "success": "Check-in successful, earned {{quota}} quota",
+      "already": "Already checked in today",
+      "disabled": "Check-in is not enabled"
+    },
+    "aff": {
+      "title": "Referral Program",
+      "subtitle": "Invite friends to register and both of you earn quota rewards",
+      "invite_count": "Invites",
+      "total_reward": "Total Reward",
+      "copy": "Copy invite link",
+      "copied": "Invite link copied",
+      "link_tip": "Share this link with friends; both of you earn rewards when they register via this link"
+    }
+  },
+  "pricing": {
+    "title": "Model Pricing",
+    "subtitle": "Input/output prices for all available models (per 1K tokens)",
+    "search_placeholder": "Search models...",
+    "columns": {
+      "model": "Model",
+      "groups": "Available Groups",
+      "input": "Input Price",
+      "output": "Output Price"
+    },
+    "unit": "RMB / 1K tokens",
+    "empty": "No models available"
+  },
+  "rankings": {
+    "title": "Usage Rankings",
+    "subtitle": "Most popular models and providers based on real call logs",
+    "range": {
+      "today": "Today",
+      "week": "This Week",
+      "month": "This Month",
+      "year": "This Year"
+    },
+    "dim": {
+      "model": "By Model",
+      "provider": "By Provider"
+    },
+    "columns": {
+      "rank": "Rank",
+      "name": "Name",
+      "requests": "Requests",
+      "tokens": "Tokens",
+      "quota": "Quota",
+      "share": "Share"
+    },
+    "empty": "No data",
+    "disabled": "Rankings feature is not enabled by admin"
+  },
+  "marketplace": {
+    "title": "Model Plaza",
+    "subtitle": "Leading models across text, image, video and audio — filter by domestic or overseas",
+    "search_placeholder": "Search model name / description …",
+    "disabled": "Model plaza is not enabled by admin",
+    "load_failed": "Failed to load models, please try again later",
+    "retry": "Retry",
+    "empty": "No models match the filters, try adjusting them",
+    "tabs": {
+      "all": "All",
+      "domestic": "Domestic",
+      "overseas": "Overseas"
+    },
+    "region": {
+      "domestic_short": "Domestic",
+      "overseas_short": "Overseas"
+    },
+    "filters": {
+      "toggle": "Filters",
+      "issuer": "Vendor",
+      "issuer_all": "All vendors",
+      "modality": "Modality",
+      "feature": "Capability",
+      "sort": "Sort",
+      "all": "All"
+    },
+    "modality": {
+      "text": "Text",
+      "image": "Image",
+      "video": "Video",
+      "audio": "Audio",
+      "file": "File"
+    },
+    "sort": {
+      "rank": "Official",
+      "price_asc": "Price: low to high",
+      "context_desc": "Context: large to small"
+    },
+    "hot_tags": {
+      "free_timed": "Limited free",
+      "free": "Free",
+      "hot": "Hot",
+      "new": "New"
+    },
+    "features": {
+      "tool_call": "Tool calling",
+      "image_understanding": "Image understanding",
+      "video_understanding": "Video understanding",
+      "reasoning": "Deep reasoning",
+      "ai_coding": "AI coding",
+      "video_generation": "Video generation",
+      "schema_output": "Structured output",
+      "web_search": "Web search",
+      "long_context": "Long context",
+      "image_generation": "Image generation",
+      "high_tps": "High TPS",
+      "visual_grounding": "Visual grounding"
+    },
+    "card": {
+      "context": "Context",
+      "input": "Input",
+      "output": "Output",
+      "per_million": "/1M tokens",
+      "per_image": "/image",
+      "per_second": "/second",
+      "free": "Free",
+      "price_pending": "Pricing TBD",
+      "retiring": "Retiring soon",
+      "integrated": "Available here",
+      "no_description": "No description available"
+    },
+    "footer": {
+      "tip": "Synced automatically every day · ",
+      "updated": "Last updated: {{time}}",
+      "never": "First sync has not completed yet"
+    },
+    "detail": {
+      "not_found": "Model not found or retired",
+      "description": "Description",
+      "capabilities": "Capabilities",
+      "price": "Pricing",
+      "rate_limit": "Rate limits",
+      "other": "Other",
+      "input_modality": "Input modalities",
+      "output_modality": "Output modalities",
+      "function_calling": "Function calling",
+      "reasoning": "Reasoning",
+      "schema_output": "Structured output",
+      "content_cache": "Context caching",
+      "context_length": "Context length",
+      "max_output": "Max output tokens",
+      "protocols": "API protocols",
+      "input": "Input",
+      "output": "Output",
+      "tier_range": "Tier range (tokens)",
+      "range_any": "Unlimited",
+      "range_above": "and above",
+      "per_million": "/1M tokens",
+      "per_image": "/image",
+      "per_second": "/second",
+      "rate": {
+        "rpm": "RPM (requests)",
+        "tpm": "TPM (tokens)",
+        "qpm": "QPM (questions)",
+        "ipm": "IPM (images)",
+        "minute": "min"
+      },
+      "release_at": "Released at",
+      "retirement_at": "Retires at",
+      "filing": "Filing number",
+      "alias": "Aliases",
+      "suggested": "Suggested replacement",
+      "official_pricing": "Official pricing",
+      "use_now": "Use now",
+      "go_chat": "Start chat",
+      "price_key": {
+        "input": "Input",
+        "output": "Output",
+        "ncache": "Non-cached input",
+        "cache": "Cached input",
+        "c_cache": "Cached input (within 1h)",
+        "ex_cache": "Extended-context cached input",
+        "bi_input": "Batch input",
+        "bi_output": "Batch output",
+        "th_input": "Thinking input",
+        "th_output": "Thinking output",
+        "nth_input": "Non-thinking input",
+        "nth_output": "Non-thinking output",
+        "t_input": "Text input",
+        "t_output": "Text output",
+        "i_input": "Image input",
+        "i_output": "Image output",
+        "a_input": "Audio input",
+        "web_search_req": "Web search",
+        "ti_quantity": "Text-to-image",
+        "ii_quantity": "Image-to-image",
+        "mi2i_quantity": "Multi-image-to-image",
+        "v_duration": "Video generation",
+        "av_duration": "Video generation with audio"
+      }
+    }
+  },
+  "clients": {
+    "title": "Connect Third-party Client",
+    "subtitle": "Select a token and client to copy or open",
+    "token_label": "Token",
+    "base_url_label": "API URL",
+    "key_label": "API Key",
+    "copy_base_url": "Copy URL",
+    "copy_key": "Copy Key",
+    "copied": "Copied to clipboard",
+    "open": "Open",
+    "download": "Download",
+    "download_tip": "Not installed? Download here",
+    "empty": "No token available, please create an enabled token first",
+    "action": "Connect Client",
+    "action_short": "Connect",
+    "list": {
+      "cherry_studio": "Cherry Studio",
+      "lobechat": "LobeChat",
+      "opencat": "OpenCat",
+      "nextchat": "NextChat",
+      "chatbox": "Chatbox",
+      "cline": "Cline"
+    },
+    "type": {
+      "link": "Web Open",
+      "copy": "Manual Config",
+      "deeplink": "Local Launch"
     }
   },
   "channel": {
     "title": "Channel Management",
+    "empty": {
+      "title": "No channels yet",
+      "desc": "Add your first channel to start connecting model providers"
+    },
     "search": "Search channels by ID, name and key...",
     "balance_notice": "OpenAI channels no longer support getting balance via key, so balance shows as 0. For supported channel types, click balance to refresh.",
     "test_notice": "Channel testing only supports chat models, preferring gpt-3.5-turbo. If unavailable, uses the first model in your configured list.",
@@ -48,8 +335,16 @@
       "type": "Type",
       "status": "Status",
       "response_time": "Response Time",
+      "success_rate": "Availability",
+      "success_rate_tip": "Recent window: {{total}} calls, {{success}} succeeded / {{fail}} failed",
+      "success_rate_no_data": "no data",
+      "routing_latency": "Avg latency {{latency}}ms (last {{count}} calls)",
+      "routing_fails": "Consecutive failures: {{fails}}",
+      "routing_excluded": "Excluded from routing temporarily",
       "balance": "Balance",
       "priority": "Priority",
+      "tag": "Tag",
+      "weight": "Weight",
       "test_model": "Test Model",
       "actions": "Actions",
       "no_name": "None",
@@ -61,6 +356,8 @@
       "status_unknown": "Unknown Status",
       "not_tested": "Not Tested",
       "priority_tip": "Channel selection priority, higher is preferred",
+      "weight_tip": "Load balancing weight; within the same priority, higher weight is more likely to be selected (0 = default)",
+      "selected_count": "{{count}} selected",
       "select_test_model": "Please select test model",
       "click_to_update": "Click to update",
       "balance_not_supported": "-"
@@ -77,6 +374,11 @@
       "test_disabled": "Test Disabled Channels",
       "delete_disabled": "Delete Disabled Channels",
       "confirm_delete_disabled": "Confirm Delete",
+      "batch_enable": "Enable Selected",
+      "batch_disable": "Disable Selected",
+      "batch_test": "Test Selected",
+      "batch_delete": "Delete Selected",
+      "confirm_batch_delete": "Delete the {{count}} selected channels?",
       "refresh": "Refresh",
       "show_detail": "Details",
       "hide_detail": "Hide Details"
@@ -87,11 +389,14 @@
       "delete_disabled_success": "Deleted all disabled channels, total: {{count}}",
       "balance_update_success": "Channel {{name}} balance updated successfully!",
       "all_balance_updated": "All enabled channel balances have been updated!",
+      "batch_success": "Batch operation completed, processed {{count}} channels",
       "operation_success": "Operation completed successfully!"
     },
     "edit": {
       "title_edit": "Update Channel Information",
       "title_create": "Create New Channel",
+      "tag": "Tag",
+      "tag_placeholder": "Optional, used to group channels, e.g. primary/backup",
       "type": "Type",
       "name": "Name",
       "name_placeholder": "Please enter name",
@@ -101,7 +406,7 @@
       "models": "Models",
       "models_placeholder": "Please select models supported by this channel",
       "model_mapping": "Model Mapping",
-      "model_mapping_placeholder": "Optional, used to modify model names in request body. A JSON string where keys are request model names and values are target model names",
+      "model_mapping_placeholder": "Optional, used to modify model names in request body. A JSON string where keys are request model names and values are target model names. Keys support regex patterns (e.g. \"gpt-4-.*\": \"gpt-4o-mini\"), exact match takes precedence",
       "system_prompt": "System Prompt",
       "system_prompt_placeholder": "Optional, used to force set system prompt. Use with custom model & model mapping. First create a unique custom model name above, then map it to a natively supported model",
       "proxy_url": "Proxy",
@@ -154,11 +459,31 @@
         "spark": "Enter in format: APPID|APISecret|APIKey",
         "fastgpt": "Enter in format: APIKey-AppId, e.g.: fastgpt-0sp2gtvfdgyi4k30jwlgwf1i-64f335d84283f05518e9e041",
         "tencent": "Enter in format: AppId|SecretId|SecretKey"
+      },
+      "library": {
+        "notice_qiniu": "Qiniu Model Library: fill in API Secret (Qiniu API Key) and click \"Refresh Model List\" to sync models from Qiniu. Credentials are AES-encrypted; relay uses the OpenAI-compatible protocol.",
+        "notice_other": "Other model library: reserved framework, provider integration pending.",
+        "last_sync": "Last sync: {{time}}",
+        "base_url_label": "API Base URL (optional, defaults to Qiniu official endpoint)",
+        "base_url_placeholder": "e.g.: https://openai.qiniu.com",
+        "api_key_label": "API Key (optional, compatibility field)",
+        "api_key_placeholder": "Qiniu Bearer Token (same as API Secret, can be left empty)",
+        "api_secret_label": "API Secret (Qiniu API Key, required)",
+        "api_secret_placeholder": "Qiniu model library API Key, used as Bearer Token",
+        "refresh": "Refresh Model List",
+        "model_count": "{{count}} models available",
+        "not_synced": "Not synced yet, please click refresh",
+        "secret_required": "Please fill in API Secret first",
+        "sync_success": "Sync succeeded, {{count}} models stored"
       }
     }
   },
   "token": {
     "title": "Token Management",
+    "empty": {
+      "title": "No tokens yet",
+      "desc": "Create your first API token to start calling models"
+    },
     "search": "Search tokens by name ...",
     "table": {
       "name": "Name",
@@ -167,6 +492,9 @@
       "remain_quota": "Remaining Quota",
       "created_time": "Created Time",
       "expired_time": "Expiry Time",
+      "limitations": "Limits",
+      "no_limit": "No limit",
+      "model_limit": "{count} models",
       "actions": "Actions",
       "no_name": "None",
       "never_expire": "never",
@@ -193,6 +521,12 @@
       "title_create": "Create New Token",
       "name": "Name",
       "name_placeholder": "Please enter name",
+      "batch_count": "Batch Create Count",
+      "batch_count_placeholder": "Create multiple tokens at once (1-100); a random suffix is appended when > 1",
+      "batch_result_title": "Batch Creation Succeeded",
+      "batch_result_notice": "Copy and save the following token keys now:",
+      "copy_all": "Copy All",
+      "batch_done": "Done",
       "models": "Model Scope",
       "models_placeholder": "Please select allowed models, leave empty for no restrictions",
       "ip_limit": "IP Restriction",
@@ -238,6 +572,30 @@
       "by_used": "Sort by Used Quota"
     }
   },
+  "playground": {
+    "title": "Playground",
+    "token_placeholder": "Select token",
+    "model_placeholder": "Select model",
+    "system_placeholder": "System prompt (optional)",
+    "input_placeholder": "Type a message ...",
+    "send": "Send",
+    "stop": "Stop",
+    "clear": "Clear conversation",
+    "hint": {
+      "enter": "Enter to send / Shift+Enter for newline"
+    },
+    "empty": {
+      "title": "Start a conversation",
+      "desc": "Select a token and model, then type a message to start"
+    },
+    "error": {
+      "no_token": "No available token, please create an enabled token first",
+      "no_model": "No available model"
+    },
+    "info": {
+      "stopped": "Generation stopped"
+    }
+  },
   "common": {
     "quota": {
       "display": "Equivalent: ${{amount}}",
@@ -247,6 +605,10 @@
   },
   "redemption": {
     "title": "Redemption Management",
+    "empty": {
+      "title": "No redemption codes yet",
+      "desc": "Generate codes so users can redeem quota on their own"
+    },
     "search": "Search redemption codes by ID and name ...",
     "table": {
       "id": "ID",
@@ -296,6 +658,10 @@
   },
   "log": {
     "title": "Operation Log",
+    "empty": {
+      "title": "No logs yet",
+      "desc": "Request and quota usage records will appear here after you call the API"
+    },
     "search": "Search logs...",
     "usage_details": "Usage Details",
     "total_quota": "Total Quota Used",
@@ -337,6 +703,10 @@
   },
   "user": {
     "title": "User Management",
+    "empty": {
+      "title": "No users yet",
+      "desc": "Newly registered users will appear here"
+    },
     "edit": {
       "title": "Update User Information",
       "username": "Username",
@@ -412,6 +782,24 @@
     }
   },
   "dashboard": {
+    "stat": {
+      "requests": "Today's Requests",
+      "quota": "Today's Spend",
+      "tokens": "Today's Tokens",
+      "rpm": "RPM (Requests/Min)",
+      "tpm": "TPM (Tokens/Min)"
+    },
+    "metrics": {
+      "title": "Model Usage Analysis",
+      "subtitle": "Top 10 Models in the Last 7 Days",
+      "by_requests": "By Requests",
+      "by_quota": "By Spend",
+      "tooltip": {
+        "requests": "Request Count",
+        "quota": "Spend ($)",
+        "tokens": "Token Count"
+      }
+    },
     "charts": {
       "requests": {
         "title": "Model Request Trend",
@@ -432,6 +820,11 @@
         "date": "Date",
         "value": "Value"
       }
+    },
+    "empty": {
+      "trend": "No data in the past 7 days",
+      "stats_title": "No statistics yet",
+      "stats_desc": "Once you start making model calls, the 7-day per-model token usage will appear here"
     }
   },
   "setting": {
@@ -476,6 +869,61 @@
           "bind": "Confirm Binding",
           "cancel": "Cancel"
         }
+      },
+      "notify": {
+        "title": "Notifications",
+        "type": "Method",
+        "type_close": "Off",
+        "type_email": "Email",
+        "email_tip": "Notifications will be sent to your bound email address. Bind your email above first and make sure the administrator has configured SMTP.",
+        "bark_server": "Bark Server URL (optional)",
+        "bark_device_key": "Bark DeviceKey",
+        "gotify_server": "Gotify Server URL",
+        "gotify_app_token": "Gotify AppToken",
+        "webhook_url": "Webhook URL",
+        "webhook_secret": "Webhook Secret (optional)",
+        "threshold": "Quota Warning Threshold (USD)",
+        "threshold_tip": "Notifications are off. Choose a method and set a quota warning threshold to get alerted when your balance falls below it (at most once every 24 hours).",
+        "invalid_threshold": "Quota warning threshold must be a number >= 0",
+        "missing_params": "Please fill in the required parameters for the selected method",
+        "save": "Save",
+        "saved": "Notification settings saved",
+        "test": "Send Test Notification",
+        "test_ok": "Test notification sent"
+      },
+      "sessions": {
+        "title": "Login Sessions",
+        "ip": "IP Address",
+        "device": "Device",
+        "created_at": "Signed In",
+        "last_active": "Last Active",
+        "current": "Current",
+        "empty": "No session records",
+        "logout_others": "Log Out Other Sessions",
+        "logout_confirm_title": "Log Out Other Sessions",
+        "logout_confirm_content": "All sessions except the current device will be signed out and must sign in again. Continue?",
+        "confirm": "Log Out",
+        "cancel": "Cancel",
+        "logout_done": "All other sessions have been signed out"
+      },
+      "twofa": {
+        "title": "Two-Factor Authentication (TOTP)",
+        "enabled": "Enabled",
+        "enable": "Enable Two-Factor Auth",
+        "disable": "Disable Two-Factor Auth",
+        "setup_title": "Enable Two-Factor Authentication",
+        "setup_tip": "Scan the QR code with an authenticator app such as Google Authenticator or Microsoft Authenticator, or enter the secret key manually. Then enter the 6-digit code generated by the app to finish setup.",
+        "secret": "Secret key (manual entry)",
+        "code_label": "Verification code",
+        "code_placeholder": "Enter 6-digit code",
+        "code_hint": "Please enter a 6-digit numeric code",
+        "confirm_enable": "Confirm Enable",
+        "confirm_disable": "Confirm Disable",
+        "disable_title": "Disable Two-Factor Authentication",
+        "disable_tip": "After disabling, login will no longer require a dynamic code. Enter the 6-digit code from your authenticator app to confirm.",
+        "cancel": "Cancel",
+        "enable_done": "Two-factor authentication enabled",
+        "disable_done": "Two-factor authentication disabled"
       },
       "delete_account": {
         "title": "Dangerous Operation",
@@ -618,6 +1066,36 @@
           "save": "Save Quota Settings"
         }
       },
+      "checkin": {
+        "title": "Daily Check-in",
+        "enabled": "Enable daily check-in",
+        "min": "Minimum reward quota",
+        "max": "Maximum reward quota",
+        "buttons": {
+          "save": "Save Check-in Settings"
+        }
+      },
+      "ranking": {
+        "title": "Rankings",
+        "enabled": "Enable public rankings (aggregated from real call logs, publicly accessible)",
+        "buttons": {
+          "save": "Save Rankings Settings"
+        }
+      },
+      "marketplace": {
+        "title": "Model Plaza",
+        "enabled": "Enable model plaza (synced daily from Qiniu model catalog, publicly accessible)",
+        "secret": "Qiniu API Key (QiniuApiSecret)",
+        "secret_placeholder": "Leave blank to keep unchanged; the key is held server-side only and never shown",
+        "last_sync": "Last successful sync",
+        "last_sync_never": "Never synced",
+        "sync_now": "Sync now",
+        "syncing": "Syncing…",
+        "sync_success": "Sync succeeded, {{count}} models in total",
+        "buttons": {
+          "save": "Save Model Plaza Settings"
+        }
+      },
       "ratio": {
         "title": "Ratio Settings",
         "model": {
@@ -626,7 +1104,7 @@
         },
         "completion": {
           "title": "Completion Ratio",
-          "placeholder": "A JSON text where keys are model names and values are ratios. These ratios are the proportion of completion to prompt ratio, which can override One API's internal ratios"
+          "placeholder": "A JSON text where keys are model names and values are ratios. These ratios are the proportion of completion to prompt ratio, which can override FluxAI's internal ratios"
         },
         "group": {
           "title": "Group Ratio",
@@ -635,6 +1113,64 @@
         "buttons": {
           "save": "Save Ratio Settings"
         }
+      },
+      "ratio_auto": {
+        "title": "Automatic Ratio Calculation",
+        "desc": "Ratios are calculated from Qiniu official prices (CNY per 1M tokens) synced to the marketplace: model ratio = input price / 14, completion ratio = output price / input price. Free models and locked models are skipped. It also runs in the background after channel saves and daily price syncs.",
+        "preview_btn": "Preview Recompute Changes",
+        "refresh_locks": "Refresh Locks",
+        "locks_title": "Manually Locked Models",
+        "add_lock": "Add Lock",
+        "no_locks": "No locked models. Recompute will cover all priced models.",
+        "col_model_id": "Model ID",
+        "col_model_ratio": "Model Ratio",
+        "col_completion_ratio": "Completion Ratio",
+        "col_price_input": "Input (¥/1M)",
+        "col_price_output": "Output (¥/1M)",
+        "col_locked_at": "Locked At",
+        "col_note": "Note",
+        "col_actions": "Actions",
+        "btn_edit": "Edit",
+        "btn_unlock": "Unlock",
+        "btn_cancel": "Cancel",
+        "btn_apply": "Apply Recompute",
+        "unlock_confirm": "Unlock model \"{{modelId}}\"? Its ratios will be overwritten by official prices on the next recompute.",
+        "unlock_success": "Unlocked. It takes effect on the next recompute.",
+        "preview_title": "Recompute Preview (dry-run, nothing saved)",
+        "preview_summary": "{{count}} model(s) will change:",
+        "preview_truncated": "(showing first {{limit}} rows; all changes will be applied)",
+        "no_change": "All unlocked models already match official prices. No changes.",
+        "applied": "Recompute finished. {{count}} model(s) updated.",
+        "lock_form": {
+          "title": "Lock Model Ratios",
+          "model_id": "Model ID",
+          "model_id_required": "Model ID is required",
+          "model_ratio": "Model ratio (blank = keep current)",
+          "completion_ratio": "Completion ratio (blank = keep current)",
+          "note": "Note",
+          "keep_current": "Leave blank to keep the current value and only lock",
+          "ratio_invalid": "Ratio must be a number >= 0",
+          "btn_save": "Save Lock",
+          "save_success": "Lock saved. This model will be skipped by auto recompute."
+        }
+      },
+      "group_ratio": {
+        "title": "Group Ratio Management",
+        "desc": "Replaces the whole group ratio map. The default group is the fallback, must be >= 0.1 and cannot be deleted; groups like vip/svip can be added or removed freely.",
+        "col_name": "Group Name",
+        "col_ratio": "Ratio",
+        "col_actions": "Actions",
+        "btn_delete": "Delete",
+        "btn_add": "Add Group",
+        "btn_save": "Save Group Ratios",
+        "default_no_delete": "The default group cannot be deleted",
+        "delete_confirm": "Delete group \"{{name}}\"? Takes effect after saving.",
+        "name_required": "Group name must not be empty",
+        "name_duplicate": "Duplicate group name: {{name}}",
+        "ratio_invalid": "Ratio of group \"{{name}}\" must be a number >= 0",
+        "default_required": "The default group is required",
+        "default_min": "The default group ratio must be >= 0.1",
+        "saved": "Group ratios saved and hot-reloaded"
       },
       "log": {
         "title": "Log Settings",
@@ -652,6 +1188,11 @@
         "quota_reminder_placeholder": "Users will receive email reminders when quota falls below this value",
         "auto_disable": "Automatically Disable Channel on Failure",
         "auto_enable": "Automatically Enable Channel on Success",
+        "channel_metric": "Enable channel availability metrics",
+        "channel_alert": "Enable channel failure webhook alerts",
+        "alert_webhook": "Alert Webhook URL",
+        "alert_webhook_placeholder": "https://example.com/hook — events pushed on auto disable/recovery",
+        "alert_cooldown": "Alert cooldown (minutes)",
         "buttons": {
           "save": "Save Monitor Settings"
         }
@@ -668,9 +1209,29 @@
         "retry_times_placeholder": "Number of retry attempts on failure",
         "display_in_currency": "Display Quota in Currency Format",
         "display_token_stat": "Show Token Quota Instead of User Quota in Billing APIs",
+        "playground_enabled": "Enable embedded Playground (chat entry points to built-in chat page)",
         "approximate_token": "Use Approximate Method to Estimate Token Count",
         "buttons": {
           "save": "Save General Settings"
+        }
+      },
+      "pay": {
+        "title": "Online Payment Settings (Epay)",
+        "enable": "Enable online payment (fallback to top-up link mode when disabled)",
+        "address": "Payment Gateway Address",
+        "address_placeholder": "e.g. https://pay.example.com",
+        "pid": "Merchant PID",
+        "pid_placeholder": "Epay merchant ID",
+        "secret": "Merchant Secret",
+        "secret_placeholder": "Enter the Epay merchant secret, leave empty to keep unchanged",
+        "price": "Price (CNY per 1 USD quota)",
+        "price_placeholder": "e.g. 7.3, i.e. 7.3 CNY for 1 USD quota",
+        "min_topup": "Minimum Amount (CNY)",
+        "max_topup": "Maximum Amount (CNY)",
+        "amount_options": "Preset Amounts (JSON array)",
+        "amount_options_placeholder": "[10,30,50,100,200,500]",
+        "buttons": {
+          "save": "Save Payment Settings"
         }
       }
     },
@@ -735,8 +1296,8 @@
   },
   "home": {
     "welcome": {
-      "title": "Welcome to One API",
-      "description": "One API is a LLM API management and distribution system that helps you better manage and use LLM APIs from various providers.",
+      "title": "Welcome to FluxAI",
+      "description": "FluxAI is a LLM API aggregation and AI compute distribution platform that helps you better manage and use LLM APIs from various providers.",
       "login_notice": "To use the service, please login or register first."
     },
     "system_status": {
@@ -760,6 +1321,15 @@
       }
     },
     "loading_failed": "Failed to load homepage content..."
+  },
+  "login": {
+    "twofa": {
+      "required": "Enter the 6-digit code from your authenticator app",
+      "code_placeholder": "6-digit code",
+      "code_hint": "Please enter a 6-digit numeric code",
+      "verify": "Verify & Sign In",
+      "back": "Back"
+    }
   },
   "auth": {
     "login": {
@@ -802,11 +1372,28 @@
         "button_disabled": "Password reset completed",
         "notice": "New password has been generated, please click the password field or button above to copy. Please login and change your password as soon as possible!"
       }
+    },
+    "back_home": "Back to home"
+  },
+  "notfound": {
+    "code": "404",
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist or has been moved. Please check the URL.",
+    "back_home": "Back to home",
+    "back_console": "Go to console"
+  },
+  "chat": {
+    "title": "Web Chat",
+    "open_new": "Open in new window",
+    "empty": {
+      "title": "Chat is not enabled",
+      "description": "The administrator has not configured a chat link yet. Please contact the administrator to enable web chat.",
+      "back_home": "Back to home"
     }
   },
   "about": {
     "title": "About",
-    "description": "One API is an open-source API management and proxy platform.",
+    "description": "FluxAI is a LLM API aggregation and AI compute distribution platform for developers and enterprises.",
     "repository": "Repository: ",
     "loading_failed": "Loading failed"
   },

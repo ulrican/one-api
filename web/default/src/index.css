@@ -92,26 +92,12 @@ code {
   }
 }
 
-/* 优化 Dashboard 网格布局 */
+/* 中等屏幕标题字号（旧版网格残留规则已随 Task04 移除：
+   .charts-grid/.chart-card/.stat-value 为旧 SUI Grid 版 Dashboard 类名，
+   其中 .charts-grid{margin:0 -0.5em !important} 会破坏新版 CSS grid 布局：
+   既造成第二行卡片比其余行宽 14px，又把 margin-bottom 重置为 0 导致行间无间距） */
 @media screen and (max-width: 1366px) {
-  .charts-grid {
-    margin: 0 -0.5em !important;
-  }
-
-  .charts-grid .column {
-    padding: 0.5em !important;
-  }
-
-  .chart-card {
-    margin: 0 !important;
-  }
-
-  /* 调整字体大小 */
   .ui.header {
     font-size: 1.1em !important;
-  }
-
-  .stat-value {
-    font-size: 0.9em !important;
   }
 }

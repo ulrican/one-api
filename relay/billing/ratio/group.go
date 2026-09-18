@@ -38,3 +38,14 @@ func GetGroupRatio(name string) float64 {
 	}
 	return ratio
 }
+
+// SnapshotGroupRatio 返回分组倍率 map 的副本（Task4-3 管理端分组倍率维护接口用）
+func SnapshotGroupRatio() map[string]float64 {
+	groupRatioLock.RLock()
+	defer groupRatioLock.RUnlock()
+	result := make(map[string]float64, len(GroupRatio))
+	for k, v := range GroupRatio {
+		result[k] = v
+	}
+	return result
+}

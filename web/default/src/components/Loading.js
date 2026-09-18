@@ -1,13 +1,15 @@
 import React from 'react';
-import { Segment, Dimmer, Loader } from 'semantic-ui-react';
 
-const Loading = ({ prompt: name = 'page' }) => {
+const Loading = ({ prompt: name = 'page', text }) => {
   return (
-    <Segment style={{ height: 100 }}>
-      <Dimmer active inverted>
-        <Loader indeterminate>加载{name}中...</Loader>
-      </Dimmer>
-    </Segment>
+    <div className='app-loading'>
+      <span className='app-loading-dots'>
+        <span />
+        <span />
+        <span />
+      </span>
+      <span>{text || `加载${name}中...`}</span>
+    </div>
   );
 };
 

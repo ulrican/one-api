@@ -75,7 +75,36 @@ func RedisDel(key string) error {
 	return RDB.Del(ctx, key).Err()
 }
 
+// RedisSetNX 当 key 不存在时设置 value 并返回 true；已存在返回 false。用于签到等幂等防重。
+func RedisSetNX(key string, value string, expiration time.Duration) (bool, error) {
+	ctx := context.Background()
+	return RDB.SetNX(ctx, key, value, expiration).Result()
+}
+
 func RedisDecrease(key string, value int64) error {
 	ctx := context.Background()
 	return RDB.DecrBy(ctx, key, value).Err()
+}
+
+// RedisDelByPrefix SCAN 批量删除指定前缀的 key（同步成功后清理列表缓存用）。
+// 调用方必须先判 RedisEnabled。
+func RedisDelByPrefix(prefix string) error {
+	ctx := context.Background()
+	var cursor uint64
+	for {
+		keys, next, err := RDB.Scan(ctx, cursor, prefix+"*", 200).Result()
+		if err != nil {
+			return err
+		}
+		if len(keys) > 0 {
+			if err := RDB.Del(ctx, keys...).Err(); err != nil {
+				return err
+			}
+		}
+		if next == 0 {
+			break
+		}
+		cursor = next
+	}
+	return nil
 }

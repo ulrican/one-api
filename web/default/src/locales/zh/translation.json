@@ -5,6 +5,9 @@
     "token": "令牌",
     "redemption": "兑换",
     "topup": "充值",
+    "pricing": "价格",
+    "rankings": "排行榜",
+    "marketplace": "模型广场",
     "user": "用户",
     "dashboard": "总览",
     "log": "日志",
@@ -15,8 +18,35 @@
     "logout": "注销",
     "register": "注册"
   },
+  "sidenav": {
+    "group": {
+      "general": "常规",
+      "resource": "资源",
+      "account": "账户",
+      "admin": "管理"
+    },
+    "collapse": "收起菜单",
+    "expand": "展开菜单"
+  },
   "topup": {
     "title": "充值中心",
+    "balance": {
+      "label": "账户可用额度",
+      "recharge": "在线充值",
+      "tip": "充值成功后额度实时到账"
+    },
+    "packages": {
+      "title": "充值套餐",
+      "subtitle": "选择套餐后跳转支付页面，支付完成后额度自动到账",
+      "soon": "在线支付即将上线，敬请期待",
+      "recommend": "推荐",
+      "buy": "立即充值",
+      "tiers": {
+        "t1": "小额体验",
+        "t2": "热门推荐",
+        "t3": "专业之选"
+      }
+    },
     "get_code": {
       "title": "获取兑换码",
       "current_quota": "当前可用额度",
@@ -33,10 +63,267 @@
       "success": "充值成功！",
       "request_failed": "请求失败",
       "no_link": "超级管理员未设置充值链接！"
+    },
+    "pay": {
+      "title": "在线充值",
+      "subtitle": "选择充值金额与支付方式，支付成功后额度实时到账",
+      "custom_placeholder": "自定义金额",
+      "method_alipay": "支付宝",
+      "method_wxpay": "微信支付",
+      "quota_preview": "到账约 {{quota}}",
+      "submit": "立即支付",
+      "waiting": "已跳转支付页面，等待支付结果…支付完成后本页面会自动刷新余额",
+      "poll_timeout": "等待支付超时，若已完成支付请稍后刷新页面查看余额",
+      "empty_amount": "请输入充值金额",
+      "create_failed": "订单创建失败，请稍后重试",
+      "success": "支付成功，额度已到账！"
+    },
+    "orders": {
+      "title": "充值记录",
+      "time": "时间",
+      "amount": "金额",
+      "quota": "到账额度",
+      "method": "支付方式",
+      "status": "状态",
+      "empty": "暂无充值记录",
+      "status_pending": "待支付",
+      "status_paid": "已到账",
+      "status_expired": "已超时"
+    },
+    "checkin": {
+      "title": "每日签到",
+      "tip": "每日签到可随机获得额度奖励",
+      "reward_range": "奖励区间：{{min}} ~ {{max}}",
+      "button": "立即签到",
+      "checked": "今日已签到",
+      "success": "签到成功，获得 {{quota}} 额度",
+      "already": "今日已签到，请勿重复签到",
+      "disabled": "签到功能暂未开启"
+    },
+    "aff": {
+      "title": "推荐计划",
+      "subtitle": "邀请好友注册，双方均可获得额度奖励",
+      "invite_count": "邀请人数",
+      "total_reward": "累计奖励",
+      "copy": "复制邀请链接",
+      "copied": "邀请链接已复制",
+      "link_tip": "将此链接分享给好友，好友通过该链接注册后双方均可获得奖励"
+    }
+  },
+  "pricing": {
+    "title": "模型价格",
+    "subtitle": "所有可用模型的输入/输出价格一览（按 1K tokens 计费）",
+    "search_placeholder": "搜索模型名称...",
+    "columns": {
+      "model": "模型",
+      "groups": "可用分组",
+      "input": "输入价格",
+      "output": "输出价格"
+    },
+    "unit": "元 / 1K tokens",
+    "empty": "暂无可用模型"
+  },
+  "rankings": {
+    "title": "调用排行榜",
+    "subtitle": "基于真实调用日志聚合的最热门模型与厂商",
+    "range": {
+      "today": "今天",
+      "week": "本周",
+      "month": "本月",
+      "year": "今年"
+    },
+    "dim": {
+      "model": "模型排行",
+      "provider": "厂商排行"
+    },
+    "columns": {
+      "rank": "排名",
+      "name": "名称",
+      "requests": "请求数",
+      "tokens": "Token 数",
+      "quota": "消费额度",
+      "share": "占比"
+    },
+    "empty": "暂无数据",
+    "disabled": "管理员未开启排行榜功能"
+  },
+  "marketplace": {
+    "title": "模型广场",
+    "subtitle": "汇聚全球主流大模型，覆盖文本、图像、视频、语音，国内/海外分区可选",
+    "search_placeholder": "搜索模型名称 / 描述 …",
+    "disabled": "管理员未开启模型广场功能",
+    "load_failed": "模型列表加载失败，请稍后重试",
+    "retry": "重试",
+    "empty": "没有符合条件的模型，试试调整筛选条件",
+    "tabs": {
+      "all": "全部",
+      "domestic": "国内模型",
+      "overseas": "海外模型"
+    },
+    "region": {
+      "domestic_short": "国内",
+      "overseas_short": "海外"
+    },
+    "filters": {
+      "toggle": "筛选",
+      "issuer": "厂商",
+      "issuer_all": "全部厂商",
+      "modality": "模态",
+      "feature": "能力",
+      "sort": "排序",
+      "all": "全部"
+    },
+    "modality": {
+      "text": "文本",
+      "image": "图像",
+      "video": "视频",
+      "audio": "语音",
+      "file": "文件"
+    },
+    "sort": {
+      "rank": "官方推荐",
+      "price_asc": "价格从低到高",
+      "context_desc": "上下文从大到小"
+    },
+    "hot_tags": {
+      "free_timed": "限时免费",
+      "free": "免费",
+      "hot": "热门",
+      "new": "上新"
+    },
+    "features": {
+      "tool_call": "工具调用",
+      "image_understanding": "图像理解",
+      "video_understanding": "视频理解",
+      "reasoning": "深度思考",
+      "ai_coding": "AI 编程",
+      "video_generation": "视频生成",
+      "schema_output": "结构化输出",
+      "web_search": "联网搜索",
+      "long_context": "长上下文",
+      "image_generation": "生图",
+      "high_tps": "高 TPS",
+      "visual_grounding": "视觉定位"
+    },
+    "card": {
+      "context": "上下文",
+      "input": "输入",
+      "output": "输出",
+      "per_million": "/百万token",
+      "per_image": "/张",
+      "per_second": "/秒",
+      "free": "免费",
+      "price_pending": "价格待公布",
+      "retiring": "即将下线",
+      "integrated": "本站已接入",
+      "no_description": "暂无模型介绍"
+    },
+    "footer": {
+      "tip": "数据每日自动同步 · ",
+      "updated": "最后更新：{{time}}",
+      "never": "尚未完成首次同步"
+    },
+    "detail": {
+      "not_found": "模型不存在或已下架",
+      "description": "模型介绍",
+      "capabilities": "能力支持",
+      "price": "价格",
+      "rate_limit": "限流",
+      "other": "其他信息",
+      "input_modality": "输入模态",
+      "output_modality": "输出模态",
+      "function_calling": "函数调用",
+      "reasoning": "深度推理",
+      "schema_output": "结构化输出",
+      "content_cache": "上下文缓存",
+      "context_length": "上下文长度",
+      "max_output": "最大输出",
+      "protocols": "API 协议",
+      "input": "输入",
+      "output": "输出",
+      "tier_range": "档位区间 (tokens)",
+      "range_any": "不限制",
+      "range_above": "及以上",
+      "per_million": "/百万 token",
+      "per_image": "/张",
+      "per_second": "/秒",
+      "rate": {
+        "rpm": "RPM 请求",
+        "tpm": "TPM Token",
+        "qpm": "QPM 提问",
+        "ipm": "IPM 图片",
+        "minute": "分钟"
+      },
+      "release_at": "发布时间",
+      "retirement_at": "下线时间",
+      "filing": "备案号",
+      "alias": "别名",
+      "suggested": "推荐替代模型",
+      "official_pricing": "官方定价页",
+      "use_now": "立即使用",
+      "go_chat": "去对话",
+      "price_key": {
+        "input": "输入",
+        "output": "输出",
+        "ncache": "非缓存输入",
+        "cache": "缓存输入",
+        "c_cache": "缓存输入（1h 内）",
+        "ex_cache": "超长上下文缓存输入",
+        "bi_input": "批量输入",
+        "bi_output": "批量输出",
+        "th_input": "思考输入",
+        "th_output": "思考输出",
+        "nth_input": "非思考输入",
+        "nth_output": "非思考输出",
+        "t_input": "文本输入",
+        "t_output": "文本输出",
+        "i_input": "图片输入",
+        "i_output": "图片输出",
+        "a_input": "音频输入",
+        "web_search_req": "联网搜索",
+        "ti_quantity": "文生图",
+        "ii_quantity": "图生图",
+        "mi2i_quantity": "多图生图",
+        "v_duration": "视频生成",
+        "av_duration": "带音频视频生成"
+      }
+    }
+  },
+  "clients": {
+    "title": "接入第三方客户端",
+    "subtitle": "选择令牌与客户端，一键复制或跳转",
+    "token_label": "使用令牌",
+    "base_url_label": "API 地址",
+    "key_label": "API Key",
+    "copy_base_url": "复制地址",
+    "copy_key": "复制 Key",
+    "copied": "已复制到剪贴板",
+    "open": "打开",
+    "download": "下载",
+    "download_tip": "未安装？点击下载",
+    "empty": "暂无可选令牌，请先创建一个启用的令牌",
+    "action": "接入客户端",
+    "action_short": "接入",
+    "list": {
+      "cherry_studio": "Cherry Studio",
+      "lobechat": "LobeChat",
+      "opencat": "OpenCat",
+      "nextchat": "NextChat",
+      "chatbox": "Chatbox",
+      "cline": "Cline"
+    },
+    "type": {
+      "link": "网页打开",
+      "copy": "手动配置",
+      "deeplink": "本地唤起"
     }
   },
   "channel": {
     "title": "管理渠道",
+    "empty": {
+      "title": "暂无渠道",
+      "desc": "添加第一个渠道，开始接入模型服务"
+    },
     "search": "搜索渠道的 ID，名称和密钥 ...",
     "balance_notice": "OpenAI 渠道已经不再支持通过 key 获取余额，因此余额显示为 0。对于支持的渠道类型，请点击余额进行刷新。",
     "test_notice": "渠道测试仅支持 chat 模型，优先使用 gpt-3.5-turbo，如果该模型不可用则使用你所配置的模型列表中的第一个模型。",
@@ -48,8 +335,16 @@
       "type": "类型",
       "status": "状态",
       "response_time": "响应时间",
+      "success_rate": "可用率",
+      "success_rate_tip": "近期窗口调用 {{total}} 次：成功 {{success}} / 失败 {{fail}}",
+      "success_rate_no_data": "无样本",
+      "routing_latency": "平均延迟 {{latency}}ms（最近 {{count}} 次）",
+      "routing_fails": "连续失败 {{fails}} 次",
+      "routing_excluded": "已被动态剔除，暂时不参与选路",
       "balance": "余额",
       "priority": "优先级",
+      "tag": "标签",
+      "weight": "权重",
       "test_model": "测试模型",
       "actions": "操作",
       "no_name": "无",
@@ -61,6 +356,8 @@
       "status_unknown": "未知状态",
       "not_tested": "未测试",
       "priority_tip": "渠道选择优先级，越高越优先",
+      "weight_tip": "负载均衡权重，同优先级下权重越高被选中概率越大（0 为默认）",
+      "selected_count": "已选 {{count}} 个",
       "select_test_model": "请选择测试模型",
       "click_to_update": "点击更新",
       "balance_not_supported": "-"
@@ -77,6 +374,11 @@
       "test_disabled": "测试禁用渠道",
       "delete_disabled": "删除禁用渠道",
       "confirm_delete_disabled": "确认删除",
+      "batch_enable": "批量启用",
+      "batch_disable": "批量禁用",
+      "batch_test": "批量测试",
+      "batch_delete": "批量删除",
+      "confirm_batch_delete": "确认删除选中的 {{count}} 个渠道？",
       "refresh": "刷新",
       "show_detail": "详情",
       "hide_detail": "隐藏详情"
@@ -87,11 +389,14 @@
       "delete_disabled_success": "已删除所有禁用渠道，共计 {{count}} 个",
       "balance_update_success": "渠道 {{name}} 余额更新成功！",
       "all_balance_updated": "已更新完毕所有已启用渠道余额！",
+      "batch_success": "批量操作完成，共处理 {{count}} 个渠道",
       "operation_success": "操作成功完成！"
     },
     "edit": {
       "title_edit": "更新渠道信息",
       "title_create": "创建新的渠道",
+      "tag": "标签",
+      "tag_placeholder": "可选，用于渠道分组标记，如：国内/备用/高优先级",
       "type": "类型",
       "name": "名称",
       "name_placeholder": "请输入名称",
@@ -101,7 +406,7 @@
       "models": "模型",
       "models_placeholder": "请选择该渠道所支持的模型",
       "model_mapping": "模型重定向",
-      "model_mapping_placeholder": "此项可选，用于修改请求体中的模型名称，为一个 JSON 字符串，键为请求中模型名称，值为要替换的模型名称",
+      "model_mapping_placeholder": "此项可选，用于修改请求体中的模型名称，为一个 JSON 字符串，键为请求中模型名称，值为要替换的模型名称；键支持正则表达式（如 \"gpt-4-.*\": \"gpt-4o-mini\"），精确匹配优先",
       "system_prompt": "系统提示词",
       "system_prompt_placeholder": "此项可选，用于强制设置给定的系统提示词，请配合自定义模型 & 模型重定向使用，首先创建一个唯一的自定义模型名称并在上面填入，之后将该自定义模型重定向映射到该渠道一个原生支持的模型",
       "proxy_url": "代理",
@@ -154,11 +459,31 @@
         "spark": "按照如下格式输入：APPID|APISecret|APIKey",
         "fastgpt": "按照如下格式输入：APIKey-AppId，例如：fastgpt-0sp2gtvfdgyi4k30jwlgwf1i-64f335d84283f05518e9e041",
         "tencent": "按照如下格式输入：AppId|SecretId|SecretKey"
+      },
+      "library": {
+        "notice_qiniu": "七牛模型库：填写 API Secret（七牛 API Key）后点击「刷新模型列表」从七牛平台同步模型。凭证 AES 加密存储，转发走 OpenAI 兼容协议。",
+        "notice_other": "其他模型库：预留框架，待接入具体供应商。",
+        "last_sync": "最后同步：{{time}}",
+        "base_url_label": "API Base URL（可选，留空走七牛官方）",
+        "base_url_placeholder": "例如：https://openai.qiniu.com",
+        "api_key_label": "API Key（可选，兼容字段）",
+        "api_key_placeholder": "七牛 Bearer Token（与 API Secret 一致，可留空）",
+        "api_secret_label": "API Secret（七牛 API Key，必填）",
+        "api_secret_placeholder": "七牛模型库 API Key，作为 Bearer Token 使用",
+        "refresh": "刷新模型列表",
+        "model_count": "当前 {{count}} 个可选模型",
+        "not_synced": "尚未同步，请点击刷新",
+        "secret_required": "请先填写 API Secret",
+        "sync_success": "同步成功，共 {{count}} 个模型入库"
       }
     }
   },
   "token": {
     "title": "令牌管理",
+    "empty": {
+      "title": "暂无令牌",
+      "desc": "创建第一个 API 令牌，开始接入并调用模型"
+    },
     "search": "搜索令牌的名称 ...",
     "table": {
       "name": "名称",
@@ -167,6 +492,9 @@
       "remain_quota": "剩余额度",
       "created_time": "创建时间",
       "expired_time": "过期时间",
+      "limitations": "限制",
+      "no_limit": "无限制",
+      "model_limit": "{count} 个模型",
       "actions": "操作",
       "no_name": "无",
       "never_expire": "永不过期",
@@ -193,6 +521,12 @@
       "title_create": "创建新的令牌",
       "name": "名称",
       "name_placeholder": "请输入名称",
+      "batch_count": "批量创建数量",
+      "batch_count_placeholder": "一次创建多个令牌（1-100），大于 1 时名称自动加随机后缀",
+      "batch_result_title": "批量创建成功",
+      "batch_result_notice": "以下为本次批量生成的令牌密钥，请立即复制保存：",
+      "copy_all": "复制全部",
+      "batch_done": "完成",
       "models": "模型范围",
       "models_placeholder": "请选择允许使用的模型，留空则不进行限制",
       "ip_limit": "IP 限制",
@@ -238,6 +572,30 @@
       "by_used": "按已用额度排序"
     }
   },
+  "playground": {
+    "title": "Playground",
+    "token_placeholder": "选择令牌",
+    "model_placeholder": "选择模型",
+    "system_placeholder": "系统提示词（可选）",
+    "input_placeholder": "输入消息 ...",
+    "send": "发送",
+    "stop": "停止",
+    "clear": "清空对话",
+    "hint": {
+      "enter": "Enter 发送 / Shift+Enter 换行"
+    },
+    "empty": {
+      "title": "开始对话",
+      "desc": "选择令牌与模型后，输入消息开始体验内嵌对话"
+    },
+    "error": {
+      "no_token": "没有可用的令牌，请先创建一个启用的令牌",
+      "no_model": "没有可用的模型"
+    },
+    "info": {
+      "stopped": "已停止生成"
+    }
+  },
   "common": {
     "quota": {
       "display": "等价金额：${{amount}}",
@@ -247,6 +605,10 @@
   },
   "redemption": {
     "title": "兑换管理",
+    "empty": {
+      "title": "暂无兑换码",
+      "desc": "生成兑换码后，用户可凭码自助兑换额度"
+    },
     "search": "搜索兑换码的 ID 和名称 ...",
     "table": {
       "id": "ID",
@@ -296,6 +658,10 @@
   },
   "log": {
     "title": "操作日志",
+    "empty": {
+      "title": "暂无日志",
+      "desc": "调用 API 后，请求与消耗记录将显示在这里"
+    },
     "search": "搜索日志...",
     "usage_details": "使用明细",
     "total_quota": "总消耗额度",
@@ -337,6 +703,10 @@
   },
   "user": {
     "title": "用户管理",
+    "empty": {
+      "title": "暂无用户",
+      "desc": "新注册的用户将显示在这里"
+    },
     "edit": {
       "title": "更新用户信息",
       "username": "用户名",
@@ -412,6 +782,24 @@
     }
   },
   "dashboard": {
+    "stat": {
+      "requests": "今日请求",
+      "quota": "今日消费",
+      "tokens": "今日 Tokens",
+      "rpm": "RPM（每分钟请求）",
+      "tpm": "TPM（每分钟 Tokens）"
+    },
+    "metrics": {
+      "title": "模型维度调用分析",
+      "subtitle": "近 7 天 Top 10 模型",
+      "by_requests": "按请求量",
+      "by_quota": "按消费额",
+      "tooltip": {
+        "requests": "请求次数",
+        "quota": "消费额（$）",
+        "tokens": "Token 数量"
+      }
+    },
     "charts": {
       "requests": {
         "title": "模型请求趋势",
@@ -432,6 +820,11 @@
         "date": "日期",
         "value": "数值"
       }
+    },
+    "empty": {
+      "trend": "近 7 天暂无数据",
+      "stats_title": "暂无统计数据",
+      "stats_desc": "发起模型调用后，此处将展示近 7 天各模型的 Token 用量分布"
     }
   },
   "setting": {
@@ -476,6 +869,61 @@
           "bind": "确认绑定",
           "cancel": "取消"
         }
+      },
+      "notify": {
+        "title": "通知设置",
+        "type": "通知方式",
+        "type_close": "关闭",
+        "type_email": "邮箱",
+        "email_tip": "通知将发送到您绑定的邮箱地址；如未绑定请先在上方绑定邮箱，并确认管理员已配置 SMTP。",
+        "bark_server": "Bark 服务器地址（可留空）",
+        "bark_device_key": "Bark DeviceKey",
+        "gotify_server": "Gotify 服务器地址",
+        "gotify_app_token": "Gotify AppToken",
+        "webhook_url": "Webhook URL",
+        "webhook_secret": "Webhook Secret（可选）",
+        "threshold": "配额警告阈值（美元）",
+        "threshold_tip": "未开启通知。选择通知方式并设置配额警告阈值后，余额低于阈值时会自动提醒（24 小时内最多提醒一次）。",
+        "invalid_threshold": "配额警告阈值必须是不小于 0 的数字",
+        "missing_params": "请填写当前通知方式的必填参数",
+        "save": "保存设置",
+        "saved": "通知设置已保存",
+        "test": "发送测试通知",
+        "test_ok": "测试通知已发送"
+      },
+      "sessions": {
+        "title": "登录会话",
+        "ip": "IP 地址",
+        "device": "设备",
+        "created_at": "登录时间",
+        "last_active": "最近活跃",
+        "current": "当前会话",
+        "empty": "暂无会话记录",
+        "logout_others": "注销其他会话",
+        "logout_confirm_title": "注销其他会话",
+        "logout_confirm_content": "将注销除当前设备外的所有登录会话，其他设备需要重新登录。确定继续吗？",
+        "confirm": "确认注销",
+        "cancel": "取消",
+        "logout_done": "其他会话已全部注销"
+      },
+      "twofa": {
+        "title": "两步验证（TOTP）",
+        "enabled": "已启用",
+        "enable": "启用两步验证",
+        "disable": "停用两步验证",
+        "setup_title": "启用两步验证",
+        "setup_tip": "使用 Google Authenticator、Microsoft Authenticator 等验证器 App 扫描二维码，或手动输入密钥，然后输入 App 生成的 6 位验证码完成启用。",
+        "secret": "密钥（无法扫码时手动录入）",
+        "code_label": "动态验证码",
+        "code_placeholder": "输入 6 位验证码",
+        "code_hint": "请输入 6 位数字验证码",
+        "confirm_enable": "确认启用",
+        "confirm_disable": "确认停用",
+        "disable_title": "停用两步验证",
+        "disable_tip": "停用后登录将不再要求动态验证码。请输入验证器 App 生成的 6 位验证码以确认停用。",
+        "cancel": "取消",
+        "enable_done": "两步验证已启用",
+        "disable_done": "两步验证已停用"
       },
       "delete_account": {
         "title": "危险操作",
@@ -616,6 +1064,36 @@
           "save": "保存额度设置"
         }
       },
+      "checkin": {
+        "title": "每日签到",
+        "enabled": "启用每日签到",
+        "min": "最小奖励额度",
+        "max": "最大奖励额度",
+        "buttons": {
+          "save": "保存签到设置"
+        }
+      },
+      "ranking": {
+        "title": "排行榜",
+        "enabled": "启用公开排行榜（基于真实调用日志聚合，公开访问）",
+        "buttons": {
+          "save": "保存排行榜设置"
+        }
+      },
+      "marketplace": {
+        "title": "模型广场",
+        "enabled": "启用模型广场（七牛模型库每日同步，公开访问）",
+        "secret": "七牛 API Key（QiniuApiSecret）",
+        "secret_placeholder": "留空表示不修改；Key 仅服务端持有，不会明文回显",
+        "last_sync": "上次成功同步时间",
+        "last_sync_never": "尚未同步",
+        "sync_now": "立即同步",
+        "syncing": "同步中…",
+        "sync_success": "同步成功，共 {{count}} 个模型",
+        "buttons": {
+          "save": "保存模型广场设置"
+        }
+      },
       "ratio": {
         "title": "倍率设置",
         "model": {
@@ -624,7 +1102,7 @@
         },
         "completion": {
           "title": "补全倍率",
-          "placeholder": "为一个 JSON 文本，键为模型名称，值为倍率，此处的倍率设置是模型补全倍率相较于提示倍率的比例，使用该设置可强制覆盖 One API 的内部比例"
+          "placeholder": "为一个 JSON 文本，键为模型名称，值为倍率，此处的倍率设置是模型补全倍率相较于提示倍率的比例，使用该设置可强制覆盖 FluxAI 的内部比例"
         },
         "group": {
           "title": "分组倍率",
@@ -633,6 +1111,64 @@
         "buttons": {
           "save": "保存倍率设置"
         }
+      },
+      "ratio_auto": {
+        "title": "倍率自动计算",
+        "desc": "根据模型广场同步的七牛官方价格（¥/百万 token）自动计算：模型倍率 = 输入价 ÷ 14，补全倍率 = 输出价 ÷ 输入价。免费模型与已锁定模型自动跳过；渠道保存及每日价格同步后也会在后台自动执行。",
+        "preview_btn": "预览重算变更",
+        "refresh_locks": "刷新锁定列表",
+        "locks_title": "手动锁定模型",
+        "add_lock": "新增锁定",
+        "no_locks": "暂无锁定模型，自动重算将覆盖所有有价目的模型",
+        "col_model_id": "模型 ID",
+        "col_model_ratio": "模型倍率",
+        "col_completion_ratio": "补全倍率",
+        "col_price_input": "输入价(¥/1M)",
+        "col_price_output": "输出价(¥/1M)",
+        "col_locked_at": "锁定时间",
+        "col_note": "备注",
+        "col_actions": "操作",
+        "btn_edit": "编辑",
+        "btn_unlock": "解锁",
+        "btn_cancel": "取消",
+        "btn_apply": "确认执行重算",
+        "unlock_confirm": "确定解锁模型「{{modelId}}」？解锁后下次自动重算将按官方价格覆盖其倍率。",
+        "unlock_success": "已解锁，下次自动重算时生效",
+        "preview_title": "重算变更预览（dry-run，尚未落库）",
+        "preview_summary": "本次共 {{count}} 个模型的倍率将发生变化：",
+        "preview_truncated": "（仅展示前 {{limit}} 条，实际将全部执行）",
+        "no_change": "所有未锁定模型的倍率均与官方价格一致，无需变更。",
+        "applied": "重算完成，已更新 {{count}} 个模型的倍率",
+        "lock_form": {
+          "title": "锁定模型倍率",
+          "model_id": "模型 ID",
+          "model_id_required": "模型 ID 不能为空",
+          "model_ratio": "模型倍率（留空 = 保持现值）",
+          "completion_ratio": "补全倍率（留空 = 保持现值）",
+          "note": "备注",
+          "keep_current": "留空则保持当前倍率不变，仅加锁",
+          "ratio_invalid": "倍率必须是不小于 0 的数字",
+          "btn_save": "保存锁定",
+          "save_success": "锁定已保存，自动重算将跳过该模型"
+        }
+      },
+      "group_ratio": {
+        "title": "分组倍率维护",
+        "desc": "整体替换分组倍率。default 为兜底分组且倍率必须 ≥ 0.1，不可删除；vip/svip 等分组可自由增删。",
+        "col_name": "分组名称",
+        "col_ratio": "倍率",
+        "col_actions": "操作",
+        "btn_delete": "删除",
+        "btn_add": "新增分组",
+        "btn_save": "保存分组倍率",
+        "default_no_delete": "default 分组不可删除",
+        "delete_confirm": "确定删除分组「{{name}}」？保存后生效。",
+        "name_required": "分组名称不能为空",
+        "name_duplicate": "分组名称重复：{{name}}",
+        "ratio_invalid": "分组「{{name}}」的倍率必须是不小于 0 的数字",
+        "default_required": "必须保留 default 分组",
+        "default_min": "default 分组倍率必须 ≥ 0.1",
+        "saved": "分组倍率已保存并热生效"
       },
       "log": {
         "title": "日志设置",
@@ -650,6 +1186,11 @@
         "quota_reminder_placeholder": "低于此额度时将发送邮件提醒用户",
         "auto_disable": "失败时自动禁用渠道",
         "auto_enable": "成功时自动启用渠道",
+        "channel_metric": "启用渠道可用率统计",
+        "channel_alert": "启用渠道故障 Webhook 告警",
+        "alert_webhook": "告警 Webhook 地址",
+        "alert_webhook_placeholder": "https://example.com/hook，渠道自动禁用/恢复时推送事件",
+        "alert_cooldown": "告警冷却时间（分钟）",
         "buttons": {
           "save": "保存监控设置"
         }
@@ -666,9 +1207,29 @@
         "retry_times_placeholder": "失败重试次数",
         "display_in_currency": "以货币形式显示额度",
         "display_token_stat": "Billing 相关 API 显示令牌额度而非用户额度",
+        "playground_enabled": "启用 Playground 内嵌对话（对话入口指向内置对话页）",
         "approximate_token": "使用近似的方式估算 token 数以减少计算量",
         "buttons": {
           "save": "保存通用设置"
+        }
+      },
+      "pay": {
+        "title": "在线支付设置（易支付）",
+        "enable": "启用在线支付（关闭时充值页回退为充值链接模式）",
+        "address": "支付网关地址",
+        "address_placeholder": "例如 https://pay.example.com",
+        "pid": "商户 PID",
+        "pid_placeholder": "易支付商户 ID",
+        "secret": "商户密钥",
+        "secret_placeholder": "输入易支付商户密钥，留空表示不修改",
+        "price": "充值价格（元 / 1 美元额度）",
+        "price_placeholder": "例如 7.3，即 7.3 元购买 1 美元额度",
+        "min_topup": "最低充值金额（元）",
+        "max_topup": "最高充值金额（元）",
+        "amount_options": "充值金额预设（JSON 数组）",
+        "amount_options_placeholder": "[10,30,50,100,200,500]",
+        "buttons": {
+          "save": "保存支付设置"
         }
       }
     },
@@ -725,7 +1286,7 @@
   },
   "about": {
     "title": "关于",
-    "description": "One API 是一个开源的接口管理和代理平台。",
+    "description": "FluxAI（流光算力）是一个面向开发者与企业的大模型 API 聚合与算力分发平台。",
     "repository": "项目地址：",
     "loading_failed": "加载失败"
   },
@@ -737,8 +1298,8 @@
   },
   "home": {
     "welcome": {
-      "title": "欢迎使用 One API",
-      "description": "One API 是一个 LLM API 接口管理和分发系统，可以帮助您更好地管理和使用各大厂商的 LLM API。",
+      "title": "欢迎使用 FluxAI",
+      "description": "FluxAI（流光算力）是一个大模型 API 聚合与算力分发平台，可以帮助您更好地管理和使用各大厂商的 LLM API。",
       "login_notice": "如需使用，请先登录或注册。"
     },
     "system_status": {
@@ -762,6 +1323,15 @@
       }
     },
     "loading_failed": "加载首页内容失败..."
+  },
+  "login": {
+    "twofa": {
+      "required": "请输入验证器 App 生成的 6 位动态验证码",
+      "code_placeholder": "6 位动态验证码",
+      "code_hint": "请输入 6 位数字验证码",
+      "verify": "验证并登录",
+      "back": "返回"
+    }
   },
   "auth": {
     "login": {
@@ -804,6 +1374,23 @@
         "button_disabled": "密码重置完成",
         "notice": "新密码已生成，请点击密码框或上方按钮复制。请及时登录并修改密码！"
       }
+    },
+    "back_home": "返回首页"
+  },
+  "notfound": {
+    "code": "404",
+    "title": "页面走丢了",
+    "description": "你访问的页面不存在或已被移动，请检查地址是否正确。",
+    "back_home": "返回首页",
+    "back_console": "进入控制台"
+  },
+  "chat": {
+    "title": "在线对话",
+    "open_new": "新窗口打开",
+    "empty": {
+      "title": "对话功能未开启",
+      "description": "管理员尚未配置对话链接，如需使用网页对话功能，请联系管理员开通。",
+      "back_home": "返回首页"
     }
   },
   "messages": {

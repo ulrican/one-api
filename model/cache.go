@@ -8,8 +8,6 @@ import (
 	"github.com/songquanpeng/one-api/common"
 	"github.com/songquanpeng/one-api/common/config"
 	"github.com/songquanpeng/one-api/common/logger"
-	"github.com/songquanpeng/one-api/common/random"
-	"math/rand"
 	"sort"
 	"strconv"
 	"strings"
@@ -234,8 +232,8 @@ func CacheGetRandomSatisfiedChannel(group string, model string, ignoreFirstPrior
 	if len(channels) == 0 {
 		return nil, errors.New("channel not found")
 	}
-	endIdx := len(channels)
 	// choose by priority
+	endIdx := len(channels)
 	firstChannel := channels[0]
 	if firstChannel.GetPriority() > 0 {
 		for i := range channels {
@@ -245,11 +243,13 @@ func CacheGetRandomSatisfiedChannel(group string, model string, ignoreFirstPrior
 			}
 		}
 	}
-	idx := rand.Intn(endIdx)
 	if ignoreFirstPriority {
 		if endIdx < len(channels) { // which means there are more than one priority
-			idx = random.RandRange(endIdx, len(channels))
+			// F9b: 降档候选段内同样做动态剔除与延迟加权
+			return pickChannelWithRoutingStats(channels[endIdx:]), nil
 		}
+		return pickChannelWithRoutingStats(channels), nil
 	}
-	return channels[idx], nil
+	// F9b: 首优优先级层内动态剔除 + 延迟加权随机
+	return pickChannelWithRoutingStats(channels[:endIdx]), nil
 }

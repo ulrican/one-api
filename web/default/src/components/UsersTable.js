@@ -11,6 +11,7 @@ import {
 import { Link } from 'react-router-dom';
 import { API, showError, showSuccess } from '../helpers';
 import { useTranslation } from 'react-i18next';
+import EmptyState from './EmptyState';
 
 import { ITEMS_PER_PAGE } from '../constants';
 import {
@@ -242,6 +243,17 @@ const UsersTable = () => {
         </Table.Header>
 
         <Table.Body>
+          {!loading && users.length === 0 && (
+            <Table.Row>
+              <Table.Cell colSpan='7' textAlign='center'>
+                <EmptyState
+                  icon='users'
+                  title={t('user.empty.title')}
+                  description={t('user.empty.desc')}
+                />
+              </Table.Cell>
+            </Table.Row>
+          )}
           {users
             .slice(
               (activePage - 1) * ITEMS_PER_PAGE,

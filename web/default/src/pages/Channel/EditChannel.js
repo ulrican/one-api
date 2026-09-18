@@ -40,6 +40,7 @@ const EditChannel = () => {
 
   const originInputs = {
     name: '',
+    tag: '',
     type: 1,
     key: '',
     base_url: '',
@@ -65,15 +66,108 @@ const EditChannel = () => {
     vertex_ai_project_id: '',
     vertex_ai_adc: '',
   });
+  // Task4-2 渠道模型库（type=52 七牛 / type=53 其他）独立凭证 + 模型列表
+  const [libraryConfig, setLibraryConfig] = useState({
+    api_base_url: '',
+    api_key: '',
+    api_secret: '',
+    last_sync_at: 0,
+  });
+  const [libraryModels, setLibraryModels] = useState([]);
+  const [syncing, setSyncing] = useState(false);
   const handleInputChange = (e, { name, value }) => {
     setInputs((inputs) => ({ ...inputs, [name]: value }));
     if (name === 'type') {
-      let localModels = getChannelModels(value);
-      if (inputs.models.length === 0) {
-        setInputs((inputs) => ({ ...inputs, models: localModels }));
+      if (value === 52 || value === 53) {
+        // 模型库类型：不调 getChannelModels 硬编码列表，改为从 library 接口拉取
+        const sourceType = value === 53 ? 'other_library' : 'qiniu_library';
+        fetchLibraryModels(sourceType);
+        setBasicModels([]);
+        // 清空旧的硬编码已选模型，避免此前默认/全量填充的清单残留在渠道 models 里
+        setInputs((inputs) => ({ ...inputs, models: [] }));
+      } else {
+        let localModels = getChannelModels(value);
+        if (inputs.models.length === 0) {
+          setInputs((inputs) => ({ ...inputs, models: localModels }));
+        }
+        setBasicModels(localModels);
       }
-      setBasicModels(localModels);
     }
+  };
+  const handleLibraryConfigChange = (e, { name, value }) => {
+    setLibraryConfig((cfg) => ({ ...cfg, [name]: value }));
+  };
+  const fetchLibraryModels = async (sourceType) => {
+    try {
+      const res = await API.get(
+        `/api/channel/library/models?source_type=${sourceType || 'qiniu_library'}`
+      );
+      if (res.data.success) {
+        const list = res.data.data || [];
+        setLibraryModels(list);
+        // 同时把模型塞进 modelOptions，让下拉框可选
+        setModelOptions(
+          list.map((m) => ({
+            key: m.model_id,
+            text: `${m.name} (${m.model_id})`,
+            value: m.model_id,
+          }))
+        );
+      } else {
+        showError(res.data.message);
+      }
+    } catch (err) {
+      showError(err.message);
+    }
+  };
+  const fetchLibrarySource = async (channelId) => {
+    try {
+      const res = await API.get(
+        `/api/channel/library/source?channel_id=${channelId}`
+      );
+      if (res.data.success && res.data.data) {
+        setLibraryConfig({
+          api_base_url: res.data.data.api_base_url || '',
+          api_key: res.data.data.api_key || '',
+          api_secret: res.data.data.api_secret || '',
+          last_sync_at: res.data.data.last_sync_at || 0,
+        });
+      }
+    } catch (err) {
+      // 静默失败：未保存凭证不阻塞编辑
+    }
+  };
+  const handleLibrarySync = async () => {
+    if (!libraryConfig.api_secret) {
+      showError(t('channel.edit.library.secret_required'));
+      return;
+    }
+    setSyncing(true);
+    try {
+      const res = await API.post('/api/channel/library/sync', {
+        channel_id: channelId ? parseInt(channelId) : 0,
+        source_type: inputs.type === 53 ? 'other_library' : 'qiniu_library',
+        api_base_url: libraryConfig.api_base_url,
+        api_key: libraryConfig.api_key,
+        api_secret: libraryConfig.api_secret,
+      });
+      if (res.data.success) {
+        showSuccess(
+          t('channel.edit.library.sync_success', {
+            count: res.data.data.synced,
+          })
+        );
+        // 重新拉取模型列表
+        await fetchLibraryModels(inputs.type === 53 ? 'other_library' : 'qiniu_library');
+        // 更新 last_sync_at
+        setLibraryConfig((cfg) => ({ ...cfg, last_sync_at: Math.floor(Date.now() / 1000) }));
+      } else {
+        showError(res.data.message);
+      }
+    } catch (err) {
+      showError(err.message);
+    }
+    setSyncing(false);
   };
 
   const handleConfigChange = (e, { name, value }) => {
@@ -143,6 +237,10 @@ const EditChannel = () => {
   };
 
   useEffect(() => {
+    if (inputs.type === 52 || inputs.type === 53) {
+      // Task4-2 模型库类型：modelOptions 由 fetchLibraryModels 设置，不在这里覆盖
+      return;
+    }
     let localModelOptions = [...originModelOptions];
     inputs.models.forEach((model) => {
       if (!localModelOptions.find((option) => option.key === model)) {
@@ -167,7 +265,29 @@ const EditChannel = () => {
     fetchGroups().then();
   }, []);
 
+  // Task4-2 编辑模型库渠道（type=52/53）时：加载已保存的凭证 + 模型列表
+  useEffect(() => {
+    if (!isEdit) return;
+    if (inputs.type !== 52 && inputs.type !== 53) return;
+    fetchLibrarySource(channelId).then();
+    const sourceType = inputs.type === 53 ? 'other_library' : 'qiniu_library';
+    fetchLibraryModels(sourceType).then();
+  }, [inputs.type, channelId, isEdit]);
+
   const submit = async () => {
+    // Task4-2 模型库渠道（type=52/53）：key 从 libraryConfig.api_secret 自动填充；
+    // base_url 取库配置，七牛留空时默认官方网关（实际转发需要）
+    if (inputs.type === 52 || inputs.type === 53) {
+      if (libraryConfig.api_secret) {
+        inputs.key = libraryConfig.api_secret;
+      }
+      const libBase =
+        libraryConfig.api_base_url ||
+        (inputs.type === 52 ? 'https://openai.qiniu.com' : '');
+      if (libBase && !inputs.base_url) {
+        inputs.base_url = libBase;
+      }
+    }
     if (inputs.key === '') {
       if (config.ak !== '' && config.sk !== '' && config.region !== '') {
         inputs.key = `${config.ak}|${config.sk}|${config.region}`;
@@ -200,6 +320,12 @@ const EditChannel = () => {
         0,
         localInputs.base_url.length - 1
       );
+    }
+    if (localInputs.type === 52 || localInputs.type === 53) {
+      // Task4-2 模型库独立凭证 → channel_model_sources 扩展表（后端 AES 加密落库）
+      localInputs.library_api_key = libraryConfig.api_key;
+      localInputs.library_api_secret = libraryConfig.api_secret;
+      localInputs.library_api_base_url = libraryConfig.api_base_url;
     }
     if (localInputs.type === 3 && localInputs.other === '') {
       localInputs.other = '2024-03-01-preview';
@@ -279,6 +405,16 @@ const EditChannel = () => {
               />
             </Form.Field>
             <Form.Field>
+              <Form.Input
+                label={t('channel.edit.tag')}
+                name='tag'
+                placeholder={t('channel.edit.tag_placeholder')}
+                onChange={handleInputChange}
+                value={inputs.tag ?? ''}
+                autoComplete='new-password'
+              />
+            </Form.Field>
+            <Form.Field>
               <Form.Dropdown
                 label={t('channel.edit.group')}
                 placeholder={t('channel.edit.group_placeholder')}
@@ -302,7 +438,7 @@ const EditChannel = () => {
               <>
                 <Message>
                   注意，<strong>模型部署名称必须和模型名称保持一致</strong>
-                  ，因为 One API 会把请求体中的 model
+                  ，因为 FluxAI 会把请求体中的 model
                   参数替换为你的部署名称（模型名称中的点会被剔除），
                   <a
                     target='_blank'
@@ -594,8 +730,82 @@ const EditChannel = () => {
                 autoComplete=''
               />
             )}
+            {/* Task4-2 渠道模型库（七牛/其他）凭证 + 刷新模型列表 */}
+            {(inputs.type === 52 || inputs.type === 53) && (
+              <>
+                <Message info>
+                  {inputs.type === 52
+                    ? t('channel.edit.library.notice_qiniu')
+                    : t('channel.edit.library.notice_other')}
+                  {libraryConfig.last_sync_at > 0 && (
+                    <span style={{ marginLeft: '12px', color: '#888' }}>
+                      {t('channel.edit.library.last_sync', {
+                        time: new Date(
+                          libraryConfig.last_sync_at * 1000
+                        ).toLocaleString(),
+                      })}
+                    </span>
+                  )}
+                </Message>
+                <Form.Field>
+                  <Form.Input
+                    label={t('channel.edit.library.base_url_label')}
+                    name='api_base_url'
+                    placeholder={t(
+                      'channel.edit.library.base_url_placeholder'
+                    )}
+                    onChange={handleLibraryConfigChange}
+                    value={libraryConfig.api_base_url}
+                    autoComplete='new-password'
+                  />
+                </Form.Field>
+                <Form.Field>
+                  <Form.Input
+                    label={t('channel.edit.library.api_key_label')}
+                    name='api_key'
+                    placeholder={t('channel.edit.library.api_key_placeholder')}
+                    onChange={handleLibraryConfigChange}
+                    value={libraryConfig.api_key}
+                    autoComplete='new-password'
+                  />
+                </Form.Field>
+                <Form.Field>
+                  <Form.Input
+                    label={t('channel.edit.library.api_secret_label')}
+                    name='api_secret'
+                    required
+                    placeholder={t(
+                      'channel.edit.library.api_secret_placeholder'
+                    )}
+                    onChange={handleLibraryConfigChange}
+                    value={libraryConfig.api_secret}
+                    autoComplete='new-password'
+                  />
+                </Form.Field>
+                <div style={{ marginBottom: '16px' }}>
+                  <Button
+                    type='button'
+                    loading={syncing}
+                    disabled={syncing || !libraryConfig.api_secret}
+                    onClick={handleLibrarySync}
+                    color='purple'
+                  >
+                    {t('channel.edit.library.refresh')}
+                  </Button>
+                  <span style={{ marginLeft: '12px', color: '#888' }}>
+                    {libraryModels.length > 0
+                      ? t('channel.edit.library.model_count', {
+                          count: libraryModels.length,
+                        })
+                      : t('channel.edit.library.not_synced')}
+                  </span>
+                </div>
+              </>
+            )}
             {inputs.type !== 33 &&
               inputs.type !== 42 &&
+              inputs.type !== 52 &&
+              inputs.type !== 53 &&
               (batch ? (
                 <Form.Field>
                   <Form.TextArea
@@ -652,7 +862,9 @@ const EditChannel = () => {
               inputs.type !== 33 &&
               inputs.type !== 8 &&
                 inputs.type !== 50 &&
-              inputs.type !== 22 && (
+              inputs.type !== 22 &&
+              inputs.type !== 52 &&
+              inputs.type !== 53 && (
                 <Form.Field>
                   <Form.Input
                       label={t('channel.edit.proxy_url')}

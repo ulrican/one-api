@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HYEN.AI Gateway - 全球大模型聚合算力平台</title>
+  <!-- 引入 Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              bg: '#0B0F17',
+              card: '#111827',
+              accent: '#3B82F6',
+              purple: '#8B5CF6',
+              green: '#10B981',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* 自定义科技感网格背景与霓虹微光 */
+    .bg-grid-pattern {
+      background-image: radial-gradient(#1e293b 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    .glow-effect {
+      box-shadow: 0 0 25px rgba(59, 130, 246, 0.35);
+    }
+    .glow-card:hover {
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.25);
+      border-color: rgba(139, 92, 246, 0.5);
+    }
+  </style>
+</head>
+<body class="bg-[#0B0F17] text-gray-100 font-sans selection:bg-blue-500 selection:text-white relative min-h-screen overflow-x-hidden">
+
+  <!-- 动态科技网格脉冲背景 -->
+  <div class="absolute inset-0 bg-grid-pattern [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"></div>
+
+  <!-- 1. 顶部科技导航栏 -->
+  <nav class="sticky top-0 z-50 backdrop-blur-md bg-[#0B0F17]/80 border-b border-gray-800/80 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-blue-600 via-purple-600 to-emerald-400 p-[1px] shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+        <div class="w-full h-full bg-[#0B0F17] rounded-lg flex items-center justify-center font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
+          ⚡
+        </div>
+      </div>
+      <span class="text-xl font-extrabold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400">
+        HYEN<span class="text-blue-500">.AI</span>
+      </span>
+    </div>
+
+    <div class="hidden md:flex items-center space-x-8 text-sm text-gray-400 font-medium">
+      <a href="#hero" class="hover:text-blue-400 transition-colors">首页</a>
+      <a href="#models" class="hover:text-blue-400 transition-colors">模型矩阵</a>
+      <a href="#sla" class="hover:text-blue-400 transition-colors">高可用 SLA</a>
+      <a href="#pricing" class="hover:text-blue-400 transition-colors">定价套餐</a>
+      <a href="#developer" class="hover:text-blue-400 transition-colors">开发者接入</a>
+    </div>
+
+    <div class="flex items-center space-x-4">
+      <div class="hidden sm:flex items-center space-x-2 text-xs text-emerald-400 bg-emerald-950/40 border border-emerald-800/50 px-3 py-1.5 rounded-full">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>网关 99.99% 运行中</span>
+      </div>
+      <button onclick="alert('即将打开用户控制台')" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-lg glow-effect transition-all">
+        控制台 / 登录
+      </button>
+    </div>
+  </nav>
+
+  <!-- 2. Hero 主视觉区 -->
+  <section id="hero" class="relative pt-20 pb-16 px-6 text-center max-w-5xl mx-auto">
+    <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-950/60 border border-blue-800/50 text-blue-400 text-xs font-semibold mb-8 backdrop-blur-sm">
+      <span>✨ 现已全面接入 DeepSeek-R1 & Claude 3.5 Sonnet</span>
+    </div>
+    <h1 class="text-4xl md:text-7xl font-extrabold tracking-tight text-white mb-6 leading-tight">
+      一键连接全球顶尖大模型 <br />
+      <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400">
+        重塑 AI 算力与接入边界
+      </span>
+    </h1>
+    <p class="text-base md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+      统一 OpenAI 标准协议网关。高并发、毫秒级延时、智能多路线自动熔断，为您的 AI 应用提供坚如磐石的底层支撑。
+    </p>
+    <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+      <button onclick="alert('前往注册并领取试用 Key')" class="w-full sm:w-auto px-8 py-3.5 text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-xl glow-effect transition-all">
+        🚀 免费获取 API Key
+      </button>
+      <button onclick="alert('即将打开在线 WebChat 组件')" class="w-full sm:w-auto px-8 py-3.5 text-base font-semibold text-gray-300 bg-gray-900/80 hover:bg-gray-800 border border-gray-700/80 rounded-xl backdrop-blur-sm transition-all">
+        💬 体验在线 WebChat
+      </button>
+    </div>
+
+    <!-- 实时转发数据看板统计 -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 max-w-4xl mx-auto">
+      <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-4 backdrop-blur-sm">
+        <div class="text-2xl font-bold text-blue-400 font-mono">150ms</div>
+        <div class="text-xs text-gray-500 mt-1">平均转发延时</div>
+      </div>
+      <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-4 backdrop-blur-sm">
+        <div class="text-2xl font-bold text-emerald-400 font-mono">99.99%</div>
+        <div class="text-xs text-gray-500 mt-1">系统高可用 SLA</div>
+      </div>
+      <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-4 backdrop-blur-sm">
+        <div class="text-2xl font-bold text-purple-400 font-mono">10,000+</div>
+        <div class="text-xs text-gray-500 mt-1">峰值并发处理 (QPS)</div>
+      </div>
+      <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-4 backdrop-blur-sm">
+        <div class="text-2xl font-bold text-yellow-400 font-mono">0 秒</div>
+        <div class="text-xs text-gray-500 mt-1">故障无感切线</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 全球模型能力矩阵 -->
+  <section id="models" class="py-16 px-6 max-w-6xl mx-auto">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl font-bold text-white tracking-wide">聚合矩阵 · 按需路由</h2>
+      <p class="text-gray-400 text-sm mt-2">支持上百种主流大模型，透明汇率按量扣费</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- 卡片 1 -->
+      <div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 glow-card transition-all">
+        <div class="flex justify-between items-start mb-4">
+          <span class="px-2.5 py-1 text-xs font-semibold text-purple-400 bg-purple-950/60 border border-purple-800/50 rounded-md">深度推理</span>
+          <span class="text-xs text-emerald-400 font-mono">● 延迟 120ms</span>
+        </div>
+        <h3 class="text-xl font-bold text-white mb-2">DeepSeek-R1 / V3</h3>
+        <p class="text-gray-400 text-xs mb-6 leading-relaxed">提供最强理科逻辑推理与数学解题能力，超高性价比的首选模型。</p>
+        <div class="flex justify-between items-center text-xs text-gray-500 border-t border-gray-800/80 pt-4">
+          <span>倍率：1.0x (基准)</span>
+          <span class="text-blue-400 cursor-pointer">调用文档 &rarr;</span>
+        </div>
+      </div>
+
+      <!-- 卡片 2 -->
+      <div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 glow-card transition-all">
+        <div class="flex justify-between items-start mb-4">
+          <span class="px-2.5 py-1 text-xs font-semibold text-blue-400 bg-blue-950/60 border border-blue-800/50 rounded-md">全能代码</span>
+          <span class="text-xs text-emerald-400 font-mono">● 延迟 180ms</span>
+        </div>
+        <h3 class="text-xl font-bold text-white mb-2">Claude 3.5 Sonnet</h3>
+        <p class="text-gray-400 text-xs mb-6 leading-relaxed">AI 编程辅助与长文本分析领域的行业标杆，前端与架构代码生成极优。</p>
+        <div class="flex justify-between items-center text-xs text-gray-500 border-t border-gray-800/80 pt-4">
+          <span>倍率：1.5x</span>
+          <span class="text-blue-400 cursor-pointer">调用文档 &rarr;</span>
+        </div>
+      </div>
+
+      <!-- 卡片 3 -->
+      <div class="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 glow-card transition-all">
+        <div class="flex justify-between items-start mb-4">
+          <span class="px-2.5 py-1 text-xs font-semibold text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 rounded-md">多模态旗舰</span>
+          <span class="text-xs text-emerald-400 font-mono">● 延迟 160ms</span>
+        </div>
+        <h3 class="text-xl font-bold text-white mb-2">OpenAI GPT-4o / o3-mini</h3>
+        <p class="text-gray-400 text-xs mb-6 leading-relaxed">OpenAI 旗舰通用多模态模型，兼顾语音、视觉与快速响应。</p>
+        <div class="flex justify-between items-center text-xs text-gray-500 border-t border-gray-800/80 pt-4">
+          <span>倍率：1.2x</span>
+          <span class="text-blue-400 cursor-pointer">调用文档 &rarr;</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 开发者极速接入终端 -->
+  <section id="developer" class="py-16 px-6 max-w-6xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-gray-900/40 border border-gray-800/80 rounded-2xl p-6 lg:p-8 backdrop-blur-md shadow-2xl">
+      <div class="lg:col-span-5 space-y-6">
+        <h2 class="text-3xl font-bold text-white tracking-wide">极简接入，30 秒上线</h2>
+        <p class="text-gray-400 leading-relaxed text-sm">
+          完全兼容 OpenAI SDK 与 API 规范。只需修改两行代码（更改 Base URL 与 API Key），即可在任意客户端或框架中无缝切换全球模型。
+        </p>
+        <div class="space-y-4">
+          <div class="flex items-start space-x-3">
+            <div class="w-6 h-6 rounded-full bg-blue-900/60 text-blue-400 flex items-center justify-center text-xs font-bold mt-0.5">1</div>
+            <div>
+              <h4 class="text-white text-sm font-semibold">获取专属 API Key</h4>
+              <p class="text-gray-500 text-xs">注册并即可在控制台生成 <code class="text-blue-400">sk-xxxx</code></p>
+            </div>
+          </div>
+          <div class="flex items-start space-x-3">
+            <div class="w-6 h-6 rounded-full bg-purple-900/60 text-purple-400 flex items-center justify-center text-xs font-bold mt-0.5">2</div>
+            <div>
+              <h4 class="text-white text-sm font-semibold">替换 Endpoint 地址</h4>
+              <p class="text-gray-500 text-xs">统一指向 <code class="text-purple-400">https://api.hyen.ai/v1</code></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 客户端终端展示区 -->
+      <div class="lg:col-span-7 bg-[#05070B] border border-gray-800 rounded-xl overflow-hidden shadow-inner">
+        <div class="flex items-center justify-between px-4 py-3 bg-gray-950 border-b border-gray-800">
+          <div class="flex space-x-2">
+            <span class="w-3 h-3 rounded-full bg-red-500/80 inline-block"></span>
+            <span class="w-3 h-3 rounded-full bg-yellow-500/80 inline-block"></span>
+            <span class="w-3 h-3 rounded-full bg-green-500/80 inline-block"></span>
+          </div>
+          <div class="flex space-x-4 text-xs font-mono">
+            <button id="tab-curl" onclick="switchTab('curl')" class="px-2.5 py-1 rounded bg-gray-800 text-blue-400">cURL</button>
+            <button id="tab-python" onclick="switchTab('python')" class="px-2.5 py-1 rounded text-gray-500 hover:text-gray-300">Python</button>
+          </div>
+        </div>
+        <pre class="p-4 text-xs font-mono text-gray-300 overflow-x-auto leading-relaxed"><code id="code-content">curl https://api.hyen.ai/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-hyen-88888888" \
+  -d '{
+    "model": "deepseek-r1",
+    "messages": [{"role": "user", "content": "Hello HYEN AI!"}],
+    "stream": true
+  }'</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- 底部 Footer -->
+  <footer class="border-t border-gray-800/80 py-8 text-center text-xs text-gray-500">
+    <p>© 2026 HYEN.AI Gateway. Powered by One-API Core.</p>
+  </footer>
+
+  <!-- 极简切换代码脚本 -->
+  <script>
+    const codeSnippets = {
+      curl: `curl https://api.hyen.ai/v1/chat/completions \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer sk-hyen-88888888" \\
+  -d '{
+    "model": "deepseek-r1",
+    "messages": [{"role": "user", "content": "Hello HYEN AI!"}],
+    "stream": true
+  }'`,
+      python: `from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-hyen-88888888",
+    base_url="https://api.hyen.ai/v1"
+)
+
+response = client.chat.completions.create(
+    model="deepseek-r1",
+    messages=[{"role": "user", "content": "Hello HYEN AI!"}],
+    stream=True
+)`
+    };
+
+    function switchTab(type) {
+      document.getElementById('code-content').innerText = codeSnippets[type];
+      const curlBtn = document.getElementById('tab-curl');
+      const pyBtn = document.getElementById('tab-python');
+      if (type === 'curl') {
+        curlBtn.className = "px-2.5 py-1 rounded bg-gray-800 text-blue-400";
+        pyBtn.className = "px-2.5 py-1 rounded text-gray-500 hover:text-gray-300";
+      } else {
+        pyBtn.className = "px-2.5 py-1 rounded bg-gray-800 text-blue-400";
+        curlBtn.className = "px-2.5 py-1 rounded text-gray-500 hover:text-gray-300";
+      }
+    }
+  </script>
+</body>
+</html>

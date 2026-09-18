@@ -72,6 +72,28 @@ func InitOptionMap() {
 	config.OptionMap["CompletionRatio"] = billingratio.CompletionRatio2JSONString()
 	config.OptionMap["TopUpLink"] = config.TopUpLink
 	config.OptionMap["ChatLink"] = config.ChatLink
+	config.OptionMap["PayEnabled"] = strconv.FormatBool(config.PayEnabled)
+	config.OptionMap["PayAddress"] = config.PayAddress
+	config.OptionMap["EpayId"] = config.EpayId
+	config.OptionMap["EpaySecret"] = config.EpaySecret
+	config.OptionMap["PayPrice"] = strconv.FormatFloat(config.PayPrice, 'f', -1, 64)
+	config.OptionMap["MinTopUp"] = strconv.FormatFloat(config.MinTopUp, 'f', -1, 64)
+	config.OptionMap["MaxTopUp"] = strconv.FormatFloat(config.MaxTopUp, 'f', -1, 64)
+	config.OptionMap["TopupAmountOptions"] = config.TopupAmountOptions
+	config.OptionMap["CheckInEnabled"] = strconv.FormatBool(config.CheckInEnabled)
+	config.OptionMap["CheckInMinReward"] = strconv.FormatInt(config.CheckInMinReward, 10)
+	config.OptionMap["CheckInMaxReward"] = strconv.FormatInt(config.CheckInMaxReward, 10)
+	config.OptionMap["PlaygroundEnabled"] = strconv.FormatBool(config.PlaygroundEnabled)
+	config.OptionMap["RankingEnabled"] = strconv.FormatBool(config.RankingEnabled)
+	// Task4-1 模型广场
+	config.OptionMap["MarketplaceEnabled"] = strconv.FormatBool(config.MarketplaceEnabled)
+	config.OptionMap["QiniuApiSecret"] = config.QiniuApiSecret
+	config.OptionMap["MarketplaceLastSyncTime"] = ""
+	// F11 渠道监控告警
+	config.OptionMap["ChannelAlertEnabled"] = strconv.FormatBool(config.ChannelAlertEnabled)
+	config.OptionMap["ChannelAlertWebhookUrl"] = config.ChannelAlertWebhookUrl
+	config.OptionMap["ChannelAlertCooldownMinutes"] = strconv.Itoa(config.ChannelAlertCooldownMinutes)
+	config.OptionMap["ChannelMetricEnabled"] = strconv.FormatBool(config.ChannelMetricEnabled)
 	config.OptionMap["QuotaPerUnit"] = strconv.FormatFloat(config.QuotaPerUnit, 'f', -1, 64)
 	config.OptionMap["RetryTimes"] = strconv.Itoa(config.RetryTimes)
 	config.OptionMap["Theme"] = config.Theme
@@ -153,6 +175,20 @@ func updateOptionMap(key string, value string) (err error) {
 			config.DisplayInCurrencyEnabled = boolValue
 		case "DisplayTokenStatEnabled":
 			config.DisplayTokenStatEnabled = boolValue
+		case "PayEnabled":
+			config.PayEnabled = boolValue
+		case "CheckInEnabled":
+			config.CheckInEnabled = boolValue
+		case "PlaygroundEnabled":
+			config.PlaygroundEnabled = boolValue
+		case "RankingEnabled":
+			config.RankingEnabled = boolValue
+		case "MarketplaceEnabled":
+			config.MarketplaceEnabled = boolValue
+		case "ChannelAlertEnabled":
+			config.ChannelAlertEnabled = boolValue
+		case "ChannelMetricEnabled":
+			config.ChannelMetricEnabled = boolValue
 		}
 	}
 	switch key {
@@ -233,8 +269,32 @@ func updateOptionMap(key string, value string) (err error) {
 		config.TopUpLink = value
 	case "ChatLink":
 		config.ChatLink = value
+	case "PayAddress":
+		config.PayAddress = value
+	case "EpayId":
+		config.EpayId = value
+	case "EpaySecret":
+		config.EpaySecret = value
+	case "QiniuApiSecret":
+		config.QiniuApiSecret = value
+	case "PayPrice":
+		config.PayPrice, _ = strconv.ParseFloat(value, 64)
+	case "MinTopUp":
+		config.MinTopUp, _ = strconv.ParseFloat(value, 64)
+	case "MaxTopUp":
+		config.MaxTopUp, _ = strconv.ParseFloat(value, 64)
+	case "TopupAmountOptions":
+		config.TopupAmountOptions = value
+	case "CheckInMinReward":
+		config.CheckInMinReward, _ = strconv.ParseInt(value, 10, 64)
+	case "CheckInMaxReward":
+		config.CheckInMaxReward, _ = strconv.ParseInt(value, 10, 64)
 	case "ChannelDisableThreshold":
 		config.ChannelDisableThreshold, _ = strconv.ParseFloat(value, 64)
+	case "ChannelAlertWebhookUrl":
+		config.ChannelAlertWebhookUrl = value
+	case "ChannelAlertCooldownMinutes":
+		config.ChannelAlertCooldownMinutes, _ = strconv.Atoi(value)
 	case "QuotaPerUnit":
 		config.QuotaPerUnit, _ = strconv.ParseFloat(value, 64)
 	case "Theme":

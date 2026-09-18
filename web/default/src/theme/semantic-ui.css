@@ -1,0 +1,1029 @@
+/* ==========================================================================
+   Semantic UI 组件主题覆盖层（双主题）
+   - 所有颜色引用 theme/tokens.css 的变量，零硬编码颜色
+   - 使用 :where(html.theme-dark, html.theme-light) 前缀：仅在双主题生效时覆盖，
+     移除 <html> 上的 theme-* class 即恢复 Semantic UI 原样（整体回退保障）
+   - :where() 零特异性，页面级样式可覆盖本层
+   ========================================================================== */
+
+/*  shorthand: 主题生效时的根容器前缀 */
+:where(html.theme-dark, html.theme-light) {
+  --tz: ; /* 占位，便于阅读 */
+}
+
+/* ===================== 导航 Menu ====================== */
+:where(html.theme-dark, html.theme-light) .ui.menu {
+  background: var(--bg-glass);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: none;
+  border-radius: 0;
+}
+:where(html.theme-dark, html.theme-light) .ui.menu .item {
+  color: var(--text-secondary);
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+:where(html.theme-dark, html.theme-light) .ui.menu .item:hover,
+:where(html.theme-dark, html.theme-light) .ui.menu .item:focus {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+:where(html.theme-dark, html.theme-light) .ui.menu .active.item {
+  color: var(--brand-blue);
+  background: var(--bg-active);
+}
+
+/* ---- Tabular Menu 高特异性变体（SUI .ui.tabular.menu .item 0,3,0 压住通用 0,2,0；
+   .ui.tabular.menu .active.item 0,4,0 压住通用 .ui.menu .active.item 0,3,0；
+   .ui.tabular.menu .item:hover 0,3,1 压住通用 .ui.menu .item:hover 0,2,1 →
+   必须用门控选择器 html.theme-dark/light .ui.tabular.menu .item (0,4,0) 压回） */
+html.theme-dark .ui.tabular.menu,
+html.theme-light .ui.tabular.menu {
+  border-bottom: 1px solid var(--border-color);
+}
+html.theme-dark .ui.tabular.menu .item,
+html.theme-light .ui.tabular.menu .item {
+  color: var(--text-secondary);
+  background: transparent;
+  border-top-color: transparent;
+  border-left-color: transparent;
+  border-right-color: transparent;
+  border-bottom: none;
+  font-weight: normal;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+html.theme-dark .ui.tabular.menu .item:hover,
+html.theme-light .ui.tabular.menu .item:hover,
+html.theme-dark .ui.tabular.menu .item:focus,
+html.theme-light .ui.tabular.menu .item:focus {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+html.theme-dark .ui.tabular.menu .active.item,
+html.theme-light .ui.tabular.menu .active.item {
+  color: var(--brand-blue);
+  background: var(--bg-surface);
+  font-weight: 600;
+  border-top: 2px solid var(--brand-blue);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+/* Bottom tabular 镜像覆盖 */
+html.theme-dark .ui.bottom.tabular.menu .item,
+html.theme-light .ui.bottom.tabular.menu .item {
+  color: var(--text-secondary);
+}
+html.theme-dark .ui.bottom.tabular.menu .active.item,
+html.theme-light .ui.bottom.tabular.menu .active.item {
+  color: var(--brand-blue);
+  background: var(--bg-surface);
+  font-weight: 600;
+  border-bottom: 2px solid var(--brand-blue);
+}
+/* Vertical tabular 镜像覆盖 */
+html.theme-dark .ui.vertical.tabular.menu .item,
+html.theme-light .ui.vertical.tabular.menu .item {
+  color: var(--text-secondary);
+}
+html.theme-dark .ui.vertical.tabular.menu .active.item,
+html.theme-light .ui.vertical.tabular.menu .active.item {
+  color: var(--brand-blue);
+  font-weight: 600;
+  border-left: 3px solid var(--brand-blue);
+}
+
+/* ---- Secondary / Pointing Menu 高特异性变体
+   Setting 页用 .ui.secondary.pointing.menu，SUI active.item 0,5,0 写死 color:rgba(0,0,0,0.95) + border-color:#1B1C1D；
+   hover 是 a.item:hover 0,5,1 写死 color:rgba(0,0,0,0.87)；header.item 还有 !important；
+   必须用门控 html.theme-dark .ui.secondary.pointing.menu .active.item (0,6,0) 压 */
+html.theme-dark .ui.secondary.menu,
+html.theme-light .ui.secondary.menu {
+  background: transparent;
+}
+html.theme-dark .ui.secondary.menu .item,
+html.theme-light .ui.secondary.menu .item {
+  color: var(--text-secondary);
+}
+html.theme-dark .ui.secondary.menu a.item:hover,
+html.theme-light .ui.secondary.menu a.item:hover,
+html.theme-dark .ui.secondary.menu .link.item:hover,
+html.theme-light .ui.secondary.menu .link.item:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+html.theme-dark .ui.secondary.menu .active.item,
+html.theme-light .ui.secondary.menu .active.item {
+  color: var(--brand-blue);
+  background: var(--bg-surface);
+  font-weight: 600;
+}
+/* Secondary + Pointing（active 0,5,0 最高，门控后 0,6,0 压回） */
+html.theme-dark .ui.secondary.pointing.menu,
+html.theme-light .ui.secondary.pointing.menu {
+  border-bottom: 2px solid var(--border-color);
+}
+html.theme-dark .ui.secondary.pointing.menu .item,
+html.theme-light .ui.secondary.pointing.menu .item {
+  color: var(--text-secondary);
+  border-bottom-color: transparent;
+  border-bottom-width: 2px;
+  font-weight: normal;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+html.theme-dark .ui.secondary.pointing.menu .item:hover,
+html.theme-light .ui.secondary.pointing.menu .item:hover,
+html.theme-dark .ui.secondary.pointing.menu a.item:hover,
+html.theme-light .ui.secondary.pointing.menu a.item:hover,
+html.theme-dark .ui.secondary.pointing.menu .link.item:hover,
+html.theme-light .ui.secondary.pointing.menu .link.item:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+  border-bottom-color: transparent;
+}
+html.theme-dark .ui.secondary.pointing.menu .active.item,
+html.theme-light .ui.secondary.pointing.menu .active.item {
+  color: var(--brand-blue);
+  border-bottom: 2px solid var(--brand-blue);
+  font-weight: 600;
+  background: var(--bg-surface);
+  box-shadow: none;
+}
+html.theme-dark .ui.secondary.pointing.menu .active.item:hover,
+html.theme-light .ui.secondary.pointing.menu .active.item:hover {
+  color: var(--brand-blue);
+  border-bottom: 2px solid var(--brand-blue);
+}
+/* 带 !important 的 header.item 也压过去 */
+html.theme-dark .ui.secondary.pointing.menu .header.item,
+html.theme-light .ui.secondary.pointing.menu .header.item {
+  color: var(--text-primary) !important;
+}
+
+:where(html.theme-dark, html.theme-light) .ui.vertical.menu {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+:where(html.theme-dark, html.theme-light) .ui.secondary.menu .active.item {
+  background: var(--bg-active);
+  color: var(--brand-blue);
+  border-radius: var(--radius-sm);
+}
+:where(html.theme-dark, html.theme-light) .ui.pagination.menu {
+  background: transparent;
+  border: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+:where(html.theme-dark, html.theme-light) .ui.pagination.menu .item {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm) !important;
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    color 0.2s ease;
+}
+:where(html.theme-dark, html.theme-light) .ui.pagination.menu .item:hover,
+:where(html.theme-dark, html.theme-light) .ui.pagination.menu .item:focus {
+  background: var(--bg-hover);
+  border-color: var(--brand-blue);
+  color: var(--brand-blue);
+}
+:where(html.theme-dark, html.theme-light) .ui.pagination.menu .active.item {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary);
+}
+:where(html.theme-dark, html.theme-light) .ui.pagination.menu .active.item:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary);
+}
+
+/* ===================== 卡片 / 区块 Segment ====================== */
+:where(html.theme-dark, html.theme-light) .ui.card,
+:where(html.theme-dark, html.theme-light) .ui.cards > .card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  color: var(--text-secondary);
+}
+:where(html.theme-dark, html.theme-light) .ui.card .header,
+:where(html.theme-dark, html.theme-light) .ui.cards > .card .header {
+  color: var(--text-primary);
+}
+:where(html.theme-dark, html.theme-light) .ui.card .meta,
+:where(html.theme-dark, html.theme-light) .ui.cards > .card .meta {
+  color: var(--text-tertiary);
+}
+:where(html.theme-dark, html.theme-light) .ui.card .description,
+:where(html.theme-dark, html.theme-light) .ui.cards > .card .description {
+  color: var(--text-secondary);
+}
+:where(html.theme-dark, html.theme-light) .ui.card .extra,
+:where(html.theme-dark, html.theme-light) .ui.cards > .card .extra {
+  border-top: 1px solid var(--border-color);
+  color: var(--text-tertiary);
+}
+:where(html.theme-dark, html.theme-light) .ui.segment {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+}
+:where(html.theme-dark, html.theme-light) .ui.segment.vertical {
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--border-color);
+  border-radius: 0;
+}
+:where(html.theme-dark, html.theme-light) .ui.placeholder {
+  background: var(--bg-inset);
+  border-color: var(--border-color);
+}
+
+/* ===================== 表格 Table ====================== */
+:where(html.theme-dark, html.theme-light) .ui.table {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+:where(html.theme-dark, html.theme-light) .ui.table thead th,
+:where(html.theme-dark, html.theme-light) .ui.table tfoot th {
+  background: var(--bg-inset);
+  color: var(--text-tertiary);
+  border-color: var(--border-color) !important;
+  font-weight: 600;
+}
+:where(html.theme-dark, html.theme-light) .ui.table td {
+  border-color: var(--border-color) !important;
+  color: var(--text-secondary);
+}
+:where(html.theme-dark, html.theme-light) .ui.table.striped tbody tr:nth-child(2n) {
+  background: var(--bg-hover);
+}
+:where(html.theme-dark, html.theme-light) .ui.table tbody tr:hover,
+:where(html.theme-dark, html.theme-light) .ui.selectable.table tbody tr:hover {
+  background: var(--bg-hover) !important;
+  color: var(--text-primary);
+}
+:where(html.theme-dark, html.theme-light) .ui.basic.table {
+  border: none;
+}
+
+/* ===================== 表单 / 输入框 ====================== */
+/* SUI `.ui.form input[type=text]` 等规则特异性 (0,3,1) 且写死 background:#fff（无 !important），
+   :where() 版规则 (0,2,1) 压不住 → Form 内输入框/文本域白底。
+   与 basic label 同因：表单内输入控件用 html.theme-* 门控选择器提升到 (0,3,2)（移除 class 即回退）。 */
+html.theme-dark .ui.form input,
+html.theme-dark .ui.form textarea,
+html.theme-dark .ui.form select,
+html.theme-light .ui.form input,
+html.theme-light .ui.form textarea,
+html.theme-light .ui.form select,
+:where(html.theme-dark, html.theme-light) .ui.input input,
+:where(html.theme-dark, html.theme-light) .ui.selection.dropdown {
+  background: var(--bg-inset);
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+/* 禁用态：SUI disabled 规则为浅灰底，门控规则 (0,3,2) 会盖住，这里单独给主题化禁用外观 */
+html.theme-dark .ui.form input:disabled,
+html.theme-dark .ui.form textarea:disabled,
+html.theme-light .ui.form input:disabled,
+html.theme-light .ui.form textarea:disabled {
+  background: var(--bg-page);
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+:where(html.theme-dark, html.theme-light) .ui.form input::placeholder,
+:where(html.theme-dark, html.theme-light) .ui.form textarea::placeholder,
+:where(html.theme-dark, html.theme-light) .ui.input input::placeholder {
+  color: var(--text-disabled);
+}
+html.theme-dark .ui.form input:focus,
+html.theme-dark .ui.form textarea:focus,
+html.theme-light .ui.form input:focus,
+html.theme-light .ui.form textarea:focus,
+:where(html.theme-dark, html.theme-light) .ui.input input:focus,
+:where(html.theme-dark, html.theme-light) .ui.selection.dropdown:focus,
+:where(html.theme-dark, html.theme-light) .ui.selection.dropdown.active,
+:where(html.theme-dark, html.theme-light) .ui.selection.dropdown:hover {
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+  background: var(--bg-inset);
+  color: var(--text-primary);
+}
+:where(html.theme-dark, html.theme-light) .ui.form .field > label,
+:where(html.theme-dark, html.theme-light) .ui.form label {
+  color: var(--text-secondary);
+}
+/* ===================== autofill 背景污染修复 ====================== */
+/* 两层元凶：① SUI form.css 自带 `.ui.form .field.field input:-webkit-autofill`
+   以 (0,4,1)+!important 铺 ivory 奶黄底+黄边（登录页白框真凶）；
+   ② Chrome UA 对 :-webkit-autofill 强制绘制浅底黑字。
+   解法：inset 大面积 box-shadow 铺主题底色 + text-fill-color 控字色。
+   选择器三档：裸元素 (0,1,1) 兜底全系统普通输入框 + (0,3,1)/(0,5,1)
+   同路径高特异性压过 SUI !important；双主题经 var(--bg-inset) 自适应。 */
+:where(html.theme-dark, html.theme-light) input:-webkit-autofill,
+:where(html.theme-dark, html.theme-light) input:-webkit-autofill:hover,
+:where(html.theme-dark, html.theme-light) textarea:-webkit-autofill,
+:where(html.theme-dark, html.theme-light) textarea:-webkit-autofill:hover,
+:where(html.theme-dark, html.theme-light) select:-webkit-autofill,
+html.theme-dark .ui.form input:-webkit-autofill,
+html.theme-light .ui.form input:-webkit-autofill,
+html.theme-dark .ui.form .field.field input:-webkit-autofill,
+html.theme-light .ui.form .field.field input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--bg-inset) inset !important;
+  box-shadow: 0 0 0 1000px var(--bg-inset) inset !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+  caret-color: var(--text-primary);
+  transition: background-color 9999s ease-in-out 0s; /* 双保险：拖延 UA 底色绘制 */
+  border-color: var(--border-strong) !important;
+}
+/* 聚焦态：SUI 聚焦版 autofill 规则特异性 (0,6,1)，此处 (0,7,1) 压制，
+   保留主题聚焦光环与 inset 铺底叠加 */
+:where(html.theme-dark, html.theme-light) input:-webkit-autofill:focus,
+:where(html.theme-dark, html.theme-light) textarea:-webkit-autofill:focus,
+html.theme-dark .ui.form .field.field input:-webkit-autofill:focus,
+html.theme-light .ui.form .field.field input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18),
+    0 0 0 1000px var(--bg-inset) inset !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18),
+    0 0 0 1000px var(--bg-inset) inset !important;
+  border-color: var(--brand-blue) !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+}
+:where(html.theme-dark, html.theme-light) .ui.selection.dropdown .text,
+:where(html.theme-dark, html.theme-light) .ui.dropdown .text {
+  color: var(--text-primary);
+}
+:where(html.theme-dark, html.theme-light) .ui.dropdown .divider.default.text,
+:where(html.theme-dark, html.theme-light) .ui.selection.dropdown .default.text {
+  color: var(--text-disabled);
+}
+:where(html.theme-dark, html.theme-light) .ui.dropdown .dropdown.icon,
+:where(html.theme-dark, html.theme-light) .ui.dropdown .search.icon {
+  color: var(--text-tertiary);
+}
+/* 复选框 / 开关 */
+:where(html.theme-dark, html.theme-light) .ui.checkbox label,
+:where(html.theme-dark, html.theme-light) .ui.checkbox + label {
+  color: var(--text-secondary);
+}
+:where(html.theme-dark, html.theme-light) .ui.checkbox input[type='checkbox'] {
+  accent-color: var(--primary);
+}
+:where(html.theme-dark, html.theme-light) .ui.toggle.checkbox .box:before,
+:where(html.theme-dark, html.theme-light) .ui.toggle.checkbox label:before {
+  background: var(--bg-inset) !important;
+}
+:where(html.theme-dark, html.theme-light)
+  .ui.toggle.checkbox
+  input:checked
+  ~ .box:before,
+:where(html.theme-dark, html.theme-light)
+  .ui.toggle.checkbox
+  input:checked
+  ~ label:before {
+  background: var(--primary) !important;
+}
+
+/* ===================== 按钮 ====================== */
+/* 说明：SUI 彩色按钮规则（.ui.green.button / .ui.green.buttons .button）为 (0,3,0) 且无
+   !important；本层同为 (0,3,0)，依靠主题 CSS 在 SUI 之后加载获胜。
+   彩色按钮组 <Button.Group color='x'> 的组内按钮自身不带色 class，必须同时覆盖
+   .ui.{color}.buttons .button 形态。三态：normal / hover·focus / active（按下）。 */
+:where(html.theme-dark, html.theme-light) .ui.button {
+  background: var(--bg-inset);
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease,
+    border-color 0.2s ease, color 0.2s ease;
+}
+:where(html.theme-dark, html.theme-light) .ui.button:hover,
+:where(html.theme-dark, html.theme-light) .ui.button:focus {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--brand-blue);
+}
+:where(html.theme-dark, html.theme-light) .ui.button:active,
+:where(html.theme-dark, html.theme-light) .ui.button.active {
+  background: var(--bg-active);
+  color: var(--text-primary);
+  border-color: var(--primary);
+}
+:where(html.theme-dark, html.theme-light) .ui.button:disabled,
+:where(html.theme-dark, html.theme-light) .ui.button.disabled {
+  opacity: 0.55;
+}
+/* 按钮内图标：SUI 默认 hover 时 opacity:.85 会发灰，主题态下图标随文字保持满色 */
+:where(html.theme-dark, html.theme-light) .ui.button .icon {
+  opacity: 1;
+}
+
+/* 主操作：primary / blue / teal（含按钮组形态） */
+:where(html.theme-dark, html.theme-light) .ui.primary.button,
+:where(html.theme-dark, html.theme-light) .ui.blue.button,
+:where(html.theme-dark, html.theme-light) .ui.teal.button,
+:where(html.theme-dark, html.theme-light) .ui.buttons .primary.button,
+:where(html.theme-dark, html.theme-light) .ui.primary.buttons .button,
+:where(html.theme-dark, html.theme-light) .ui.blue.buttons .button,
+:where(html.theme-dark, html.theme-light) .ui.teal.buttons .button {
+  background: var(--primary);
+  color: var(--on-primary);
+  border-color: var(--primary);
+}
+:where(html.theme-dark, html.theme-light) .ui.primary.button:hover,
+:where(html.theme-dark, html.theme-light) .ui.primary.button:focus,
+:where(html.theme-dark, html.theme-light) .ui.blue.button:hover,
+:where(html.theme-dark, html.theme-light) .ui.teal.button:hover,
+:where(html.theme-dark, html.theme-light) .ui.buttons .primary.button:hover,
+:where(html.theme-dark, html.theme-light) .ui.primary.buttons .button:hover,
+:where(html.theme-dark, html.theme-light) .ui.blue.buttons .button:hover,
+:where(html.theme-dark, html.theme-light) .ui.teal.buttons .button:hover {
+  background: var(--primary-hover);
+  color: var(--on-primary);
+  border-color: var(--primary-hover);
+  box-shadow: var(--glow-primary);
+}
+:where(html.theme-dark, html.theme-light) .ui.primary.button:active,
+:where(html.theme-dark, html.theme-light) .ui.primary.buttons .button:active,
+:where(html.theme-dark, html.theme-light) .ui.blue.buttons .button:active,
+:where(html.theme-dark, html.theme-light) .ui.teal.buttons .button:active {
+  background: var(--primary-active);
+  color: var(--on-primary);
+  border-color: var(--primary-active);
+  box-shadow: none;
+}
+
+/* 成功：positive / green / olive（含按钮组形态，令牌行"对话"等） */
+:where(html.theme-dark, html.theme-light) .ui.positive.button,
+:where(html.theme-dark, html.theme-light) .ui.green.button,
+:where(html.theme-dark, html.theme-light) .ui.olive.button,
+:where(html.theme-dark, html.theme-light) .ui.positive.buttons .button,
+:where(html.theme-dark, html.theme-light) .ui.green.buttons .button,
+:where(html.theme-dark, html.theme-light) .ui.olive.buttons .button {
+  background: var(--success);
+  color: var(--on-primary);
+  border-color: var(--success);
+}
+:where(html.theme-dark, html.theme-light) .ui.positive.button:hover,
+:where(html.theme-dark, html.theme-light) .ui.positive.button:focus,
+:where(html.theme-dark, html.theme-light) .ui.green.button:hover,
+:where(html.theme-dark, html.theme-light) .ui.olive.button:hover,
+:where(html.theme-dark, html.theme-light) .ui.positive.buttons .button:hover,
+:where(html.theme-dark, html.theme-light) .ui.green.buttons .button:hover,
+:where(html.theme-dark, html.theme-light) .ui.olive.buttons .button:hover {
+  background: var(--btn-success-hover);
+  color: var(--on-primary);
+  border-color: var(--btn-success-hover);
+}
+:where(html.theme-dark, html.theme-light) .ui.positive.button:active,
+:where(html.theme-dark, html.theme-light) .ui.green.button:active,
+:where(html.theme-dark, html.theme-light) .ui.positive.buttons .button:active,
+:where(html.theme-dark, html.theme-light) .ui.green.buttons .button:active,
+:where(html.theme-dark, html.theme-light) .ui.olive.buttons .button:active {
+  background: var(--btn-success-active);
+  color: var(--on-primary);
+  border-color: var(--btn-success-active);
+}
+
+/* 危险：negative / red（含按钮组形态，令牌行"充值/删除"等） */
+:where(html.theme-dark, html.theme-light) .ui.negative.button,
+:where(html.theme-dark, html.theme-light) .ui.red.button,
+:where(html.theme-dark, html.theme-light) .ui.negative.buttons .button,
+:where(html.theme-dark, html.theme-light) .ui.red.buttons .button {
+  background: var(--danger);
+  color: var(--on-primary);
+  border-color: var(--danger);
+}
+:where(html.theme-dark, html.theme-light) .ui.negative.button:hover,
+:where(html.theme-dark, html.theme-light) .ui.negative.button:focus,
+:where(html.theme-dark, html.theme-light) .ui.red.button:hover,
+:where(html.theme-dark, html.theme-light) .ui.negative.buttons .button:hover,
+:where(html.theme-dark, html.theme-light) .ui.red.buttons .button:hover {
+  background: var(--btn-danger-hover);
+  color: var(--on-primary);
+  border-color: var(--btn-danger-hover);
+}
+:where(html.theme-dark, html.theme-light) .ui.negative.button:active,
+:where(html.theme-dark, html.theme-light) .ui.red.button:active,
+:where(html.theme-dark, html.theme-light) .ui.negative.buttons .button:active,
+:where(html.theme-dark, html.theme-light) .ui.red.buttons .button:active {
+  background: var(--btn-danger-active);
+  color: var(--on-primary);
+  border-color: var(--btn-danger-active);
+}
+
+/* 警告：yellow / orange（含按钮组形态；暗色琥珀底配深字，亮色橙底白字） */
+:where(html.theme-dark, html.theme-light) .ui.yellow.button,
+:where(html.theme-dark, html.theme-light) .ui.orange.button,
+:where(html.theme-dark, html.theme-light) .ui.yellow.buttons .button,
+:where(html.theme-dark, html.theme-light) .ui.orange.buttons .button {
+  background: var(--btn-warning-bg);
+  color: var(--on-warning);
+  border-color: var(--btn-warning-bg);
+}
+:where(html.theme-dark, html.theme-light) .ui.yellow.button:hover,
+:where(html.theme-dark, html.theme-light) .ui.yellow.button:focus,
+:where(html.theme-dark, html.theme-light) .ui.orange.button:hover,
+:where(html.theme-dark, html.theme-light) .ui.yellow.buttons .button:hover,
+:where(html.theme-dark, html.theme-light) .ui.orange.buttons .button:hover {
+  background: var(--btn-warning-hover);
+  color: var(--on-warning);
+  border-color: var(--btn-warning-hover);
+}
+:where(html.theme-dark, html.theme-light) .ui.yellow.button:active,
+:where(html.theme-dark, html.theme-light) .ui.orange.button:active,
+:where(html.theme-dark, html.theme-light) .ui.yellow.buttons .button:active,
+:where(html.theme-dark, html.theme-light) .ui.orange.buttons .button:active {
+  background: var(--btn-warning-active);
+  color: var(--on-warning);
+  border-color: var(--btn-warning-active);
+}
+
+/* 描边（basic）按钮：SUI `.ui.basic.button` 用 !important 写死 transparent 底 +
+   rgba(0,0,0,.6) 黑字、hover #fff 白底，暗色下黑字不可读、hover 白底穿帮
+   （登录 2FA「返回」按钮实测）。门控 + !important 全面压制。 */
+html.theme-dark .ui.basic.button,
+html.theme-dark .ui.basic.buttons .button,
+html.theme-light .ui.basic.button,
+html.theme-light .ui.basic.buttons .button {
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-strong);
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+html.theme-dark .ui.basic.button:hover,
+html.theme-dark .ui.basic.button:focus,
+html.theme-dark .ui.basic.buttons .button:hover,
+html.theme-light .ui.basic.button:hover,
+html.theme-light .ui.basic.button:focus,
+html.theme-light .ui.basic.buttons .button:hover {
+  background: var(--bg-hover) !important;
+  color: var(--brand-blue) !important;
+  border-color: var(--brand-blue);
+  box-shadow: none !important;
+}
+html.theme-dark .ui.basic.button:active,
+html.theme-dark .ui.basic.buttons .button:active,
+html.theme-light .ui.basic.button:active,
+html.theme-light .ui.basic.buttons .button:active {
+  background: var(--bg-active) !important;
+  color: var(--brand-blue) !important;
+  border-color: var(--primary);
+  box-shadow: none !important;
+}
+/* basic 选中保持态（.active，非 :active）：SUI `.ui.basic.buttons .active.button`
+   (0,4,0)+!important 写死 rgba(0,0,0,.05) 底+近黑字——浅色下与未选中无差别、
+   深色下文字近黑不可读（充值页支付宝/微信选择器踩过）。门控 (0,5,0)+!important 压制，
+   视觉与金额芯片 .pay-chip.active 保持一致。 */
+html.theme-dark .ui.basic.active.button,
+html.theme-dark .ui.basic.buttons .active.button,
+html.theme-light .ui.basic.active.button,
+html.theme-light .ui.basic.buttons .active.button {
+  background: var(--primary-soft-bg) !important;
+  color: var(--brand-blue) !important;
+  border-color: var(--brand-blue);
+  box-shadow: var(--glow-primary) !important;
+}
+html.theme-dark .ui.basic.active.button:hover,
+html.theme-dark .ui.basic.buttons .active.button:hover,
+html.theme-light .ui.basic.active.button:hover,
+html.theme-light .ui.basic.buttons .active.button:hover {
+  background: var(--primary-soft-bg) !important;
+  color: var(--brand-blue) !important;
+  border-color: var(--brand-blue);
+  box-shadow: var(--glow-primary) !important;
+}
+/* basic 禁用态：SUI `.ui.basic.disabled.button` 带 !important 写死 rgba(0,0,0,0.6)
+   （暗色下黑字不可读，充值页 pkg-btn 踩过），门控 + !important 软禁用外观 */
+html.theme-dark .ui.basic.button:disabled,
+html.theme-dark .ui.basic.disabled.button,
+html.theme-dark .ui.basic.buttons .disabled.button,
+html.theme-light .ui.basic.button:disabled,
+html.theme-light .ui.basic.disabled.button,
+html.theme-light .ui.basic.buttons .disabled.button {
+  color: var(--text-disabled) !important;
+  border-color: var(--border-color) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  opacity: 0.7;
+}
+
+/* ===================== 标签 Label / 徽章 ====================== */
+:where(html.theme-dark, html.theme-light) .ui.label {
+  background: var(--bg-inset);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+}
+:where(html.theme-dark, html.theme-light) .ui.labels .label,
+:where(html.theme-dark, html.theme-light) .ui.label {
+  background-color: var(--bg-inset);
+}
+:where(html.theme-dark, html.theme-light) .ui.blue.labels .label,
+:where(html.theme-dark, html.theme-light) .ui.blue.label,
+:where(html.theme-dark, html.theme-light) .ui.teal.label {
+  background: var(--primary-soft-bg);
+  border-color: var(--primary-soft-border);
+  color: var(--primary-soft-text);
+}
+:where(html.theme-dark, html.theme-light) .ui.purple.label,
+:where(html.theme-dark, html.theme-light) .ui.violet.label,
+:where(html.theme-dark, html.theme-light) .ui.pink.label {
+  background: var(--purple-soft-bg);
+  border-color: var(--purple-soft-border);
+  color: var(--purple-text);
+}
+:where(html.theme-dark, html.theme-light) .ui.green.label,
+:where(html.theme-dark, html.theme-light) .ui.olive.label {
+  background: var(--success-soft-bg);
+  border-color: var(--success-soft-border);
+  color: var(--success-text);
+}
+:where(html.theme-dark, html.theme-light) .ui.red.label {
+  background: var(--danger-soft-bg);
+  border-color: var(--danger-soft-border);
+  color: var(--danger-text);
+}
+:where(html.theme-dark, html.theme-light) .ui.yellow.label,
+:where(html.theme-dark, html.theme-light) .ui.orange.label,
+:where(html.theme-dark, html.theme-light) .ui.brown.label {
+  background: var(--warning-soft-bg);
+  border-color: var(--warning-soft-border);
+  color: var(--warning-text);
+}
+:where(html.theme-dark, html.theme-light) .ui.grey.label,
+:where(html.theme-dark, html.theme-light) .ui.black.label {
+  background: var(--bg-hover);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+/* basic 彩色标签（renderColorLabel / 令牌状态使用）
+   注意：SUI 自带 basic 彩色规则为 (0,4,0) 且带 !important（白底+饱和色），
+   :where() 零特异性无法压制，这里用 html.theme-* 门控选择器（(0,5,0)）保证
+   主题生效；移除 theme class 后规则整体不匹配，回退仍完整。 */
+:where(html.theme-dark, html.theme-light) .ui.basic.label {
+  background: transparent !important;
+}
+/* 无色 basic label（<Label basic> 不带 color：用户管理表的额度/已用额度/请求数/状态）：
+   SUI .ui.basic.label (0,3,0) 带 !important 写死白底 + rgba(0,0,0,0.87) 黑字，
+   :where 版只能改背景压不住文字色；门控 (0,4,0)+!important 修复。
+   彩色变体下文 (0,5,0) 门控特异性更高、加载更晚，不受影响。 */
+html.theme-dark .ui.basic.label,
+html.theme-light .ui.basic.label {
+  background: var(--bg-inset) !important;
+  color: var(--text-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+html.theme-dark .ui.basic.blue.label,
+html.theme-dark .ui.basic.teal.label,
+html.theme-light .ui.basic.blue.label,
+html.theme-light .ui.basic.teal.label {
+  background: var(--primary-soft-bg) !important;
+  color: var(--primary-soft-text) !important;
+  border-color: var(--primary-soft-border) !important;
+}
+html.theme-dark .ui.basic.purple.label,
+html.theme-dark .ui.basic.violet.label,
+html.theme-light .ui.basic.purple.label,
+html.theme-light .ui.basic.violet.label {
+  background: var(--purple-soft-bg) !important;
+  color: var(--purple-text) !important;
+  border-color: var(--purple-soft-border) !important;
+}
+html.theme-dark .ui.basic.green.label,
+html.theme-dark .ui.basic.olive.label,
+html.theme-light .ui.basic.green.label,
+html.theme-light .ui.basic.olive.label {
+  background: var(--success-soft-bg) !important;
+  color: var(--success-text) !important;
+  border-color: var(--success-soft-border) !important;
+}
+html.theme-dark .ui.basic.red.label,
+html.theme-light .ui.basic.red.label {
+  background: var(--danger-soft-bg) !important;
+  color: var(--danger-text) !important;
+  border-color: var(--danger-soft-border) !important;
+}
+html.theme-dark .ui.basic.yellow.label,
+html.theme-dark .ui.basic.orange.label,
+html.theme-light .ui.basic.yellow.label,
+html.theme-light .ui.basic.orange.label {
+  background: var(--warning-soft-bg) !important;
+  color: var(--warning-text) !important;
+  border-color: var(--warning-soft-border) !important;
+}
+html.theme-dark .ui.basic.grey.label,
+html.theme-dark .ui.basic.black.label,
+html.theme-light .ui.basic.grey.label,
+html.theme-light .ui.basic.black.label {
+  background: var(--bg-hover) !important;
+  color: var(--text-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+/* basic 彩色标签 hover（SUI 链接态同样带 !important 白底） */
+html.theme-dark a.ui.basic.label:hover,
+html.theme-light a.ui.basic.label:hover {
+  background-color: var(--bg-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ===================== 消息提示 Message ====================== */
+:where(html.theme-dark, html.theme-light) .ui.message {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+}
+:where(html.theme-dark, html.theme-light) .ui.message .header {
+  color: var(--text-primary);
+}
+:where(html.theme-dark, html.theme-light) .ui.positive.message,
+:where(html.theme-dark, html.theme-light) .ui.success.message {
+  background: var(--success-soft-bg);
+  border-color: var(--success-soft-border);
+  color: var(--success-text);
+}
+:where(html.theme-dark, html.theme-light) .ui.error.message,
+:where(html.theme-dark, html.theme-light) .ui.negative.message {
+  background: var(--danger-soft-bg);
+  border-color: var(--danger-soft-border);
+  color: var(--danger-text);
+}
+:where(html.theme-dark, html.theme-light) .ui.warning.message {
+  background: var(--warning-soft-bg);
+  border-color: var(--warning-soft-border);
+  color: var(--warning-text);
+}
+:where(html.theme-dark, html.theme-light) .ui.info.message {
+  background: var(--primary-soft-bg);
+  border-color: var(--primary-soft-border);
+  color: var(--primary-soft-text);
+}
+
+/* ===================== Portal：下拉菜单 / 弹窗 / 气泡 ====================== */
+/* 注意：SUI dropdown menu item 规则 (0,4,0) 与 :where() 版同特异性，主题 CSS 若先于
+   semantic.min.css 加载会被压（实测语言/用户菜单弹层 item 呈 rgba(0,0,0,0.87) 黑字、
+   菜单白底）。统一升级为 html.theme-* 门控（(0,5,0)+）彻底压制。
+   另：顶部导航内的下拉 SUI 还有 .ui.menu .ui.dropdown .menu > .item (0,6,0) 高特异性
+   变体，item/hover/selected 必须同时写 .ui.menu 前缀形态，否则导航弹层 item 仍黑字。 */
+html.theme-dark .ui.dropdown .menu,
+html.theme-dark .ui.menu .ui.dropdown .menu,
+html.theme-dark .ui.selection.dropdown .menu,
+html.theme-light .ui.dropdown .menu,
+html.theme-light .ui.menu .ui.dropdown .menu,
+html.theme-light .ui.selection.dropdown .menu {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-elevated);
+  border-radius: var(--radius-md);
+}
+html.theme-dark .ui.dropdown .menu > .item,
+html.theme-dark .ui.menu .ui.dropdown .menu > .item,
+html.theme-light .ui.dropdown .menu > .item,
+html.theme-light .ui.menu .ui.dropdown .menu > .item {
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+/* SUI 对导航内下拉项写的是 .ui.menu .ui.dropdown .menu>.item{color:#000000de!important;
+   background:transparent!important}（带 !important），必须同名形态 + !important 才能压过 */
+html.theme-dark .ui.menu .ui.dropdown .menu > .item,
+html.theme-light .ui.menu .ui.dropdown .menu > .item {
+  color: var(--text-secondary) !important;
+  background: transparent !important;
+}
+html.theme-dark .ui.dropdown .menu > .item:hover,
+html.theme-dark .ui.menu .ui.dropdown .menu > .item:hover,
+html.theme-light .ui.dropdown .menu > .item:hover,
+html.theme-light .ui.menu .ui.dropdown .menu > .item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+html.theme-dark .ui.menu .ui.dropdown .menu > .item:hover,
+html.theme-light .ui.menu .ui.dropdown .menu > .item:hover {
+  background: var(--bg-hover) !important;
+  color: var(--text-primary) !important;
+}
+html.theme-dark .ui.dropdown .menu > .item.active.selected,
+html.theme-dark .ui.dropdown .menu > .selected.item,
+html.theme-dark .ui.menu .ui.dropdown .menu > .item.active.selected,
+html.theme-dark .ui.menu .ui.dropdown .menu > .selected.item,
+html.theme-light .ui.dropdown .menu > .item.active.selected,
+html.theme-light .ui.dropdown .menu > .selected.item,
+html.theme-light .ui.menu .ui.dropdown .menu > .item.active.selected,
+html.theme-light .ui.menu .ui.dropdown .menu > .selected.item {
+  background: var(--bg-active);
+  color: var(--brand-blue);
+}
+html.theme-dark .ui.menu .ui.dropdown .menu > .item.active.selected,
+html.theme-dark .ui.menu .ui.dropdown .menu > .selected.item,
+html.theme-light .ui.menu .ui.dropdown .menu > .item.active.selected,
+html.theme-light .ui.menu .ui.dropdown .menu > .selected.item {
+  background: var(--bg-active) !important;
+  color: var(--brand-blue) !important;
+}
+html.theme-dark .ui.dropdown .menu .header.item,
+html.theme-dark .ui.dropdown .menu > .header,
+html.theme-dark .ui.menu .ui.dropdown .menu .header.item,
+html.theme-light .ui.dropdown .menu .header.item,
+html.theme-light .ui.dropdown .menu > .header,
+html.theme-light .ui.menu .ui.dropdown .menu .header.item {
+  color: var(--text-tertiary);
+}
+html.theme-dark .ui.dropdown .menu .divider,
+html.theme-dark .ui.menu .ui.dropdown .menu .divider,
+html.theme-light .ui.dropdown .menu .divider,
+html.theme-light .ui.menu .ui.dropdown .menu .divider {
+  border-color: var(--border-color);
+}
+:where(html.theme-dark, html.theme-light) .ui.modal {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevated);
+  color: var(--text-secondary);
+}
+:where(html.theme-dark, html.theme-light) .ui.modal > .header {
+  background: transparent;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 1.1rem 1.5rem;
+}
+:where(html.theme-dark, html.theme-light) .ui.modal > .content {
+  background: transparent;
+  color: var(--text-secondary);
+}
+:where(html.theme-dark, html.theme-light) .ui.modal > .actions {
+  background: transparent;
+  border-top: 1px solid var(--border-color);
+}
+:where(html.theme-dark, html.theme-light) .ui.dimmer.modals,
+:where(html.theme-dark, html.theme-light) .ui.modals.dimmer {
+  background: rgba(0, 0, 0, 0.65);
+}
+:where(html.theme-dark, html.theme-light) .ui.popup {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-elevated);
+  border-radius: var(--radius-sm);
+}
+:where(html.theme-dark, html.theme-light) .ui.popup::before {
+  background: var(--bg-elevated);
+  border-color: var(--border-color);
+}
+
+/* ===================== Toast（react-toastify） ====================== */
+:where(html.theme-dark, html.theme-light) .Toastify__toast {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-elevated);
+}
+:where(html.theme-dark, html.theme-light) .Toastify__toast-body {
+  color: var(--text-primary);
+}
+:where(html.theme-dark, html.theme-light) .Toastify__close-button {
+  color: var(--text-tertiary);
+}
+:where(html.theme-dark, html.theme-light) .Toastify__progress-bar--success {
+  background: var(--success);
+}
+:where(html.theme-dark, html.theme-light) .Toastify__progress-bar--error {
+  background: var(--danger);
+}
+:where(html.theme-dark, html.theme-light) .Toastify__progress-bar--info,
+:where(html.theme-dark, html.theme-light) .Toastify__progress-bar--default {
+  background: var(--primary);
+}
+:where(html.theme-dark, html.theme-light) .Toastify__progress-bar--warning {
+  background: var(--warning);
+}
+
+/* ===================== 标题 / 统计 / 分隔 / Tab ====================== */
+/* SUI .ui.header (0,2,0) 写死 rgba(0,0,0,0.87)；.ui.dividing.header 等修饰变体同继承，
+   通用 :where(...) .ui.header 也是 (0,2,0) 理论后加载赢，但保险起见升级门控 (0,3,0) 彻底压 */
+html.theme-dark .ui.header,
+html.theme-light .ui.header,
+html.theme-dark h1.ui.header,
+html.theme-light h1.ui.header,
+html.theme-dark h2.ui.header,
+html.theme-light h2.ui.header,
+html.theme-dark h3.ui.header,
+html.theme-light h3.ui.header,
+html.theme-dark h4.ui.header,
+html.theme-light h4.ui.header,
+html.theme-dark h5.ui.header,
+html.theme-light h5.ui.header,
+html.theme-dark .ui.dividing.header,
+html.theme-light .ui.dividing.header,
+html.theme-dark .ui.basic.header,
+html.theme-light .ui.basic.header,
+html.theme-dark .ui.attached.header,
+html.theme-light .ui.attached.header,
+html.theme-dark .ui.top.attached.header,
+html.theme-light .ui.top.attached.header,
+html.theme-dark .ui.bottom.attached.header,
+html.theme-light .ui.bottom.attached.header {
+  color: var(--text-primary);
+}
+html.theme-dark .ui.header .sub.header,
+html.theme-light .ui.header .sub.header {
+  color: var(--text-tertiary);
+}
+/* SUI Card 标题：.ui.card > .content > .header (0,4,0) / .ui.cards 版 (0,5,0)
+   写死 rgba(0,0,0,0.85)；<Card.Header className='header'> 渲染的 div.header 不带 .ui，
+   上面 .ui.header 门控盖不住；card 内 <h3 class='ui header'> 也会被 .header class 选择器
+   命中且 (0,4,0) 高于 h3.ui.header 门控 (0,3,1)，必须在此门控 */
+html.theme-dark .ui.card > .content > .header,
+html.theme-dark .ui.cards > .card > .content > .header,
+html.theme-light .ui.card > .content > .header,
+html.theme-light .ui.cards > .card > .content > .header {
+  color: var(--text-primary);
+}
+html.theme-dark .ui.card .meta,
+html.theme-dark .ui.cards .card .meta,
+html.theme-light .ui.card .meta,
+html.theme-light .ui.cards .card .meta {
+  color: var(--text-tertiary);
+}
+:where(html.theme-dark, html.theme-light) .ui.statistic > .value,
+:where(html.theme-dark, html.theme-light) .ui.statistic .value {
+  color: var(--text-primary);
+}
+:where(html.theme-dark, html.theme-light) .ui.statistic > .label,
+:where(html.theme-dark, html.theme-light) .ui.statistic .label {
+  color: var(--text-tertiary);
+}
+:where(html.theme-dark, html.theme-light) .ui.divider {
+  color: var(--text-tertiary);
+  border-color: var(--border-color);
+}
+:where(html.theme-dark, html.theme-light) .ui.tab.menu {
+  border-bottom: 1px solid var(--border-color);
+}
+:where(html.theme-dark, html.theme-light) .ui.menu .item.active.tab,
+:where(html.theme-dark, html.theme-light) .ui.menu .active.item {
+  color: var(--brand-blue);
+}
+:where(html.theme-dark, html.theme-light) .ui.breadcrumb,
+:where(html.theme-dark, html.theme-light) .ui.breadcrumb a {
+  color: var(--text-secondary);
+}
+:where(html.theme-dark, html.theme-light) .ui.breadcrumb .active.section {
+  color: var(--text-primary);
+}
+:where(html.theme-dark, html.theme-light) .ui.list > .item .header,
+:where(html.theme-dark, html.theme-light) .ui.list a.header {
+  color: var(--text-primary);
+}
+
+/* ===================== Loader ====================== */
+:where(html.theme-dark, html.theme-light) .ui.loader {
+  color: var(--text-tertiary);
+}
+:where(html.theme-dark, html.theme-light) .ui.loader:after {
+  border-color: var(--border-strong) transparent transparent;
+}
+
+/* ===================== 主题切换胶囊按钮（Header 用，Landing 自带 tl- 样式） ====================== */
+:where(html.theme-dark, html.theme-light) .app-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-family: var(--font-sans);
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.25s ease;
+}
+:where(html.theme-dark, html.theme-light) .app-theme-toggle:hover {
+  border-color: var(--brand-blue);
+  color: var(--brand-blue);
+  box-shadow: var(--glow-primary);
+}
+:where(html.theme-dark, html.theme-light) .app-theme-toggle .att-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+@media (max-width: 640px) {
+  :where(html.theme-dark, html.theme-light) .app-theme-toggle .att-text {
+    display: none;
+  }
+}

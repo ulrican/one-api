@@ -6,8 +6,10 @@ import {
   Form,
   Header,
   Image,
+  Label,
   Message,
   Modal,
+  Table,
 } from 'semantic-ui-react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -17,8 +19,11 @@ import {
   showInfo,
   showNotice,
   showSuccess,
+  timestamp2string,
 } from '../helpers';
+import { renderQuota } from '../helpers/render';
 import Turnstile from 'react-turnstile';
+import QRCode from 'qrcode';
 import { UserContext } from '../context/User';
 import { onGitHubOAuthClicked, onLarkOAuthClicked } from './utils';
 
@@ -45,6 +50,32 @@ const PersonalSetting = () => {
   const [countdown, setCountdown] = useState(30);
   const [affLink, setAffLink] = useState('');
   const [systemToken, setSystemToken] = useState('');
+  // F10 通知设置 + 登录会话
+  const [notifyType, setNotifyType] = useState('');
+  const [notifyInputs, setNotifyInputs] = useState({
+    bark_server: '',
+    bark_device_key: '',
+    gotify_server: '',
+    gotify_app_token: '',
+    webhook_url: '',
+    webhook_secret: '',
+  });
+  const [quotaThreshold, setQuotaThreshold] = useState('');
+  const [savingSetting, setSavingSetting] = useState(false);
+  const [testingNotify, setTestingNotify] = useState(false);
+  const [sessions, setSessions] = useState([]);
+  const [showLogoutOthersModal, setShowLogoutOthersModal] = useState(false);
+  const [logoutOthersLoading, setLogoutOthersLoading] = useState(false);
+  const [quotaPerUnit, setQuotaPerUnit] = useState(500000);
+  // F12 两步验证（TOTP）
+  const [twofaEnabled, setTwofaEnabled] = useState(false);
+  const [twofaSecret, setTwofaSecret] = useState('');
+  const [twofaOtpauthUrl, setTwofaOtpauthUrl] = useState('');
+  const [twofaQrUrl, setTwofaQrUrl] = useState('');
+  const [twofaCode, setTwofaCode] = useState('');
+  const [showTwoFASetupModal, setShowTwoFASetupModal] = useState(false);
+  const [showTwoFADisableModal, setShowTwoFADisableModal] = useState(false);
+  const [twofaLoading, setTwofaLoading] = useState(false);
 
   useEffect(() => {
     let status = localStorage.getItem('status');
@@ -55,7 +86,13 @@ const PersonalSetting = () => {
         setTurnstileEnabled(true);
         setTurnstileSiteKey(status.turnstile_site_key);
       }
+      if (status.quota_per_unit) {
+        setQuotaPerUnit(status.quota_per_unit);
+      }
     }
+    loadUserSetting();
+    loadSessions();
+    loadTwoFAStatus();
   }, []);
 
   useEffect(() => {
@@ -92,7 +129,8 @@ const PersonalSetting = () => {
     const res = await API.get('/api/user/aff');
     const { success, message, data } = res.data;
     if (success) {
-      let link = `${window.location.origin}/register?aff=${data}`;
+      const code = typeof data === 'string' ? data : (data?.aff_code || '');
+      let link = `${window.location.origin}/register?aff=${code}`;
       setAffLink(link);
       setSystemToken('');
       await copy(link);
@@ -182,6 +220,205 @@ const PersonalSetting = () => {
       showError(message);
     }
     setLoading(false);
+  };
+
+  // ---------- F10 通知设置 / 登录会话 ----------
+
+  const parseNotifyPayload = (payloadJson) => {
+    try {
+      return JSON.parse(payloadJson || '{}') || {};
+    } catch (e) {
+      return {};
+    }
+  };
+
+  const loadUserSetting = async () => {
+    const res = await API.get('/api/user/setting');
+    const { success, message, data } = res.data;
+    if (success) {
+      setNotifyType(data.notify_type || '');
+      const p = parseNotifyPayload(data.notify_payload);
+      setNotifyInputs({
+        bark_server: p.server_url || '',
+        bark_device_key: p.device_key || '',
+        gotify_server: p.server_url || '',
+        gotify_app_token: p.app_token || '',
+        webhook_url: p.url || '',
+        webhook_secret: p.secret || '',
+      });
+      setQuotaThreshold(
+        data.quota_warning_threshold > 0
+          ? (data.quota_warning_threshold / quotaPerUnit).toString()
+          : ''
+      );
+    } else {
+      showError(message);
+    }
+  };
+
+  const buildNotifyPayload = () => {
+    if (notifyType === 'bark') {
+      const p = { device_key: notifyInputs.bark_device_key };
+      if (notifyInputs.bark_server) p.server_url = notifyInputs.bark_server;
+      return JSON.stringify(p);
+    }
+    if (notifyType === 'gotify') {
+      return JSON.stringify({
+        server_url: notifyInputs.gotify_server,
+        app_token: notifyInputs.gotify_app_token,
+      });
+    }
+    if (notifyType === 'webhook') {
+      const p = { url: notifyInputs.webhook_url };
+      if (notifyInputs.webhook_secret) p.secret = notifyInputs.webhook_secret;
+      return JSON.stringify(p);
+    }
+    return '';
+  };
+
+  const saveUserSetting = async () => {
+    let threshold = 0;
+    if (quotaThreshold !== '' && quotaThreshold !== null) {
+      threshold = Number(quotaThreshold);
+      if (Number.isNaN(threshold) || threshold < 0) {
+        showError(t('setting.personal.notify.invalid_threshold'));
+        return;
+      }
+    }
+    if (notifyType === 'bark' && !notifyInputs.bark_device_key) {
+      showError(t('setting.personal.notify.missing_params'));
+      return;
+    }
+    if (
+      notifyType === 'gotify' &&
+      (!notifyInputs.gotify_server || !notifyInputs.gotify_app_token)
+    ) {
+      showError(t('setting.personal.notify.missing_params'));
+      return;
+    }
+    if (notifyType === 'webhook' && !notifyInputs.webhook_url) {
+      showError(t('setting.personal.notify.missing_params'));
+      return;
+    }
+    setSavingSetting(true);
+    const res = await API.put('/api/user/setting', {
+      notify_type: notifyType,
+      notify_payload: buildNotifyPayload(),
+      quota_warning_threshold: Math.round(threshold * quotaPerUnit),
+    });
+    const { success, message } = res.data;
+    if (success) {
+      showSuccess(t('setting.personal.notify.saved'));
+    } else {
+      showError(message);
+    }
+    setSavingSetting(false);
+  };
+
+  const testUserNotify = async () => {
+    setTestingNotify(true);
+    const res = await API.post('/api/user/setting/notify_test');
+    const { success, message } = res.data;
+    if (success) {
+      showSuccess(message || t('setting.personal.notify.test_ok'));
+    } else {
+      showError(message);
+    }
+    setTestingNotify(false);
+  };
+
+  const loadSessions = async () => {
+    const res = await API.get('/api/user/sessions');
+    const { success, data } = res.data;
+    if (success) {
+      setSessions(data || []);
+    }
+  };
+
+  const logoutOtherSessions = async () => {
+    setLogoutOthersLoading(true);
+    const res = await API.delete('/api/user/sessions/others');
+    const { success, message } = res.data;
+    if (success) {
+      showSuccess(message || t('setting.personal.sessions.logout_done'));
+      setShowLogoutOthersModal(false);
+      await loadSessions();
+    } else {
+      showError(message);
+    }
+    setLogoutOthersLoading(false);
+  };
+
+  const handleNotifyInputChange = (e, { name, value }) => {
+    setNotifyInputs((inputs) => ({ ...inputs, [name]: value }));
+  };
+
+  // ---------- F12 两步验证 ----------
+
+  const loadTwoFAStatus = async () => {
+    const res = await API.get('/api/user/2fa/status');
+    const { success, data } = res.data;
+    if (success) {
+      setTwofaEnabled(!!data.enabled);
+    }
+  };
+
+  const startTwoFASetup = async () => {
+    setTwofaLoading(true);
+    const res = await API.post('/api/user/2fa/setup');
+    const { success, message, data } = res.data;
+    if (success) {
+      setTwofaSecret(data.secret);
+      setTwofaOtpauthUrl(data.otpauth_url);
+      setTwofaCode('');
+      try {
+        const qr = await QRCode.toDataURL(data.otpauth_url, { width: 200 });
+        setTwofaQrUrl(qr);
+      } catch (e) {
+        setTwofaQrUrl('');
+      }
+      setShowTwoFASetupModal(true);
+    } else {
+      showError(message);
+    }
+    setTwofaLoading(false);
+  };
+
+  const confirmEnableTwoFA = async () => {
+    if (!twofaCode || twofaCode.length !== 6) {
+      showError(t('setting.personal.twofa.code_hint'));
+      return;
+    }
+    setTwofaLoading(true);
+    const res = await API.post('/api/user/2fa/enable', { code: twofaCode });
+    const { success, message } = res.data;
+    if (success) {
+      showSuccess(message || t('setting.personal.twofa.enable_done'));
+      setShowTwoFASetupModal(false);
+      setTwofaEnabled(true);
+    } else {
+      showError(message);
+    }
+    setTwofaLoading(false);
+  };
+
+  const confirmDisableTwoFA = async () => {
+    if (!twofaCode || twofaCode.length !== 6) {
+      showError(t('setting.personal.twofa.code_hint'));
+      return;
+    }
+    setTwofaLoading(true);
+    const res = await API.post('/api/user/2fa/disable', { code: twofaCode });
+    const { success, message } = res.data;
+    if (success) {
+      showSuccess(message || t('setting.personal.twofa.disable_done'));
+      setShowTwoFADisableModal(false);
+      setTwofaEnabled(false);
+      setTwofaCode('');
+    } else {
+      showError(message);
+    }
+    setTwofaLoading(false);
   };
 
   return (
@@ -347,6 +584,291 @@ const PersonalSetting = () => {
                 </Button>
               </div>
             </Form>
+          </Modal.Description>
+        </Modal.Content>
+      </Modal>
+      <Divider />
+      <Header as='h3'>{t('setting.personal.notify.title')}</Header>
+      <Form>
+        <Form.Group widths='equal'>
+          <Form.Select
+            fluid
+            label={t('setting.personal.notify.type')}
+            name='notify_type'
+            options={[
+              { key: 'close', text: t('setting.personal.notify.type_close'), value: '' },
+              { key: 'email', text: t('setting.personal.notify.type_email'), value: 'email' },
+              { key: 'bark', text: 'Bark', value: 'bark' },
+              { key: 'gotify', text: 'Gotify', value: 'gotify' },
+              { key: 'webhook', text: 'Webhook', value: 'webhook' },
+            ]}
+            value={notifyType}
+            onChange={(e, { value }) => setNotifyType(value)}
+          />
+          <Form.Input
+            fluid
+            label={t('setting.personal.notify.threshold')}
+            name='quota_threshold'
+            type='number'
+            step='0.01'
+            min='0'
+            placeholder='0'
+            value={quotaThreshold}
+            onChange={(e, { value }) => setQuotaThreshold(value)}
+          />
+        </Form.Group>
+        {notifyType === '' && (
+          <Message info size='small'>
+            {t('setting.personal.notify.threshold_tip')}
+          </Message>
+        )}
+        {notifyType === 'email' && (
+          <Message info size='small'>
+            {t('setting.personal.notify.email_tip')}
+          </Message>
+        )}
+        {notifyType === 'bark' && (
+          <Form.Group widths='equal'>
+            <Form.Input
+              fluid
+              label={t('setting.personal.notify.bark_server')}
+              name='bark_server'
+              placeholder='https://api.day.app'
+              value={notifyInputs.bark_server}
+              onChange={handleNotifyInputChange}
+            />
+            <Form.Input
+              fluid
+              label={t('setting.personal.notify.bark_device_key')}
+              name='bark_device_key'
+              value={notifyInputs.bark_device_key}
+              onChange={handleNotifyInputChange}
+            />
+          </Form.Group>
+        )}
+        {notifyType === 'gotify' && (
+          <Form.Group widths='equal'>
+            <Form.Input
+              fluid
+              label={t('setting.personal.notify.gotify_server')}
+              name='gotify_server'
+              placeholder='https://gotify.example.com'
+              value={notifyInputs.gotify_server}
+              onChange={handleNotifyInputChange}
+            />
+            <Form.Input
+              fluid
+              label={t('setting.personal.notify.gotify_app_token')}
+              name='gotify_app_token'
+              value={notifyInputs.gotify_app_token}
+              onChange={handleNotifyInputChange}
+            />
+          </Form.Group>
+        )}
+        {notifyType === 'webhook' && (
+          <Form.Group widths='equal'>
+            <Form.Input
+              fluid
+              label={t('setting.personal.notify.webhook_url')}
+              name='webhook_url'
+              placeholder='https://example.com/hook'
+              value={notifyInputs.webhook_url}
+              onChange={handleNotifyInputChange}
+            />
+            <Form.Input
+              fluid
+              label={t('setting.personal.notify.webhook_secret')}
+              name='webhook_secret'
+              value={notifyInputs.webhook_secret}
+              onChange={handleNotifyInputChange}
+            />
+          </Form.Group>
+        )}
+        <Button primary onClick={saveUserSetting} loading={savingSetting}>
+          {t('setting.personal.notify.save')}
+        </Button>
+        <Button
+          onClick={testUserNotify}
+          loading={testingNotify}
+          disabled={notifyType === ''}
+        >
+          {t('setting.personal.notify.test')}
+        </Button>
+      </Form>
+      <Divider />
+      <Header as='h3'>{t('setting.personal.sessions.title')}</Header>
+      {sessions.length === 0 ? (
+        <Message size='small'>{t('setting.personal.sessions.empty')}</Message>
+      ) : (
+        <Table celled size='small'>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell>{t('setting.personal.sessions.ip')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('setting.personal.sessions.device')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('setting.personal.sessions.created_at')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('setting.personal.sessions.last_active')}</Table.HeaderCell>
+              <Table.HeaderCell></Table.HeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {sessions.map((s) => (
+              <Table.Row key={s.id}>
+                <Table.Cell>{s.ip}</Table.Cell>
+                <Table.Cell style={{ maxWidth: '320px', overflowWrap: 'anywhere' }}>
+                  {s.user_agent}
+                </Table.Cell>
+                <Table.Cell>{timestamp2string(s.created_at)}</Table.Cell>
+                <Table.Cell>{timestamp2string(s.last_active_at)}</Table.Cell>
+                <Table.Cell>
+                  {s.current && (
+                    <Label color='green' size='small'>
+                      {t('setting.personal.sessions.current')}
+                    </Label>
+                  )}
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
+      )}
+      <Button
+        color='red'
+        onClick={() => setShowLogoutOthersModal(true)}
+        disabled={sessions.length <= 1}
+      >
+        {t('setting.personal.sessions.logout_others')}
+      </Button>
+      <Modal
+        onClose={() => setShowLogoutOthersModal(false)}
+        onOpen={() => setShowLogoutOthersModal(true)}
+        open={showLogoutOthersModal}
+        size={'tiny'}
+        style={{ maxWidth: '450px' }}
+      >
+        <Modal.Header>
+          {t('setting.personal.sessions.logout_confirm_title')}
+        </Modal.Header>
+        <Modal.Content>
+          <Modal.Description>
+            <p>{t('setting.personal.sessions.logout_confirm_content')}</p>
+          </Modal.Description>
+        </Modal.Content>
+        <Modal.Actions>
+          <Button onClick={() => setShowLogoutOthersModal(false)}>
+            {t('setting.personal.sessions.cancel')}
+          </Button>
+          <Button
+            color='red'
+            loading={logoutOthersLoading}
+            onClick={logoutOtherSessions}
+          >
+            {t('setting.personal.sessions.confirm')}
+          </Button>
+        </Modal.Actions>
+      </Modal>
+      <Divider />
+      <Header as='h3'>{t('setting.personal.twofa.title')}</Header>
+      {twofaEnabled ? (
+        <>
+          <Label color='green' size='small'>
+            {t('setting.personal.twofa.enabled')}
+          </Label>
+          <Button color='red' onClick={() => { setTwofaCode(''); setShowTwoFADisableModal(true); }}>
+            {t('setting.personal.twofa.disable')}
+          </Button>
+        </>
+      ) : (
+        <Button primary loading={twofaLoading} onClick={startTwoFASetup}>
+          {t('setting.personal.twofa.enable')}
+        </Button>
+      )}
+      <Modal
+        onClose={() => setShowTwoFASetupModal(false)}
+        open={showTwoFASetupModal}
+        size={'tiny'}
+        style={{ maxWidth: '450px' }}
+      >
+        <Modal.Header>{t('setting.personal.twofa.setup_title')}</Modal.Header>
+        <Modal.Content>
+          <Modal.Description>
+            <p>{t('setting.personal.twofa.setup_tip')}</p>
+            {twofaQrUrl && (
+              <div style={{ textAlign: 'center', margin: '10px 0' }}>
+                <Image src={twofaQrUrl} size='small' inline />
+              </div>
+            )}
+            <Form.Input
+              fluid
+              readOnly
+              value={twofaSecret}
+              onClick={(e) => e.target.select()}
+              label={t('setting.personal.twofa.secret')}
+            />
+            <Form.Input
+              fluid
+              label={t('setting.personal.twofa.code_label')}
+              placeholder={t('setting.personal.twofa.code_placeholder')}
+              value={twofaCode}
+              maxLength='6'
+              inputMode='numeric'
+              onChange={(e, { value }) =>
+                setTwofaCode(value.replace(/\D/g, '').slice(0, 6))
+              }
+            />
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginTop: '1rem',
+              }}
+            >
+              <Button color='green' fluid size='large' loading={twofaLoading} onClick={confirmEnableTwoFA}>
+                {t('setting.personal.twofa.confirm_enable')}
+              </Button>
+              <div style={{ width: '1rem' }}></div>
+              <Button fluid size='large' onClick={() => setShowTwoFASetupModal(false)}>
+                {t('setting.personal.twofa.cancel')}
+              </Button>
+            </div>
+          </Modal.Description>
+        </Modal.Content>
+      </Modal>
+      <Modal
+        onClose={() => setShowTwoFADisableModal(false)}
+        open={showTwoFADisableModal}
+        size={'tiny'}
+        style={{ maxWidth: '450px' }}
+      >
+        <Modal.Header>{t('setting.personal.twofa.disable_title')}</Modal.Header>
+        <Modal.Content>
+          <Modal.Description>
+            <p>{t('setting.personal.twofa.disable_tip')}</p>
+            <Form.Input
+              fluid
+              label={t('setting.personal.twofa.code_label')}
+              placeholder={t('setting.personal.twofa.code_placeholder')}
+              value={twofaCode}
+              maxLength='6'
+              inputMode='numeric'
+              onChange={(e, { value }) =>
+                setTwofaCode(value.replace(/\D/g, '').slice(0, 6))
+              }
+            />
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginTop: '1rem',
+              }}
+            >
+              <Button color='red' fluid size='large' loading={twofaLoading} onClick={confirmDisableTwoFA}>
+                {t('setting.personal.twofa.confirm_disable')}
+              </Button>
+              <div style={{ width: '1rem' }}></div>
+              <Button fluid size='large' onClick={() => setShowTwoFADisableModal(false)}>
+                {t('setting.personal.twofa.cancel')}
+              </Button>
+            </div>
           </Modal.Description>
         </Modal.Content>
       </Modal>

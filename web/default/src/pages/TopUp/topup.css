@@ -1,0 +1,376 @@
+/* ==========================================================================
+   充值中心（Task02 阶段 4）
+   - 余额 hero 卡 + 套餐静态槽位 + 兑换码核销区
+   - 全部规则 :where(html.theme-dark, html.theme-light) 前缀，引用 tokens.css
+   ========================================================================== */
+
+/* Task3-3：内容区占满菜单栏右侧空间（不再限制 1600px），padding 由 dashboard-container
+   同款规则约束；margin: 0 让外层 .main-content flex:1 决定宽度 */
+:where(html.theme-dark, html.theme-light) .topup-page {
+  position: relative;
+  z-index: 1;
+  max-width: none;
+  margin: 0;
+  /* Task3-4：缩小内容区间距 */
+  padding: 12px 16px 16px;
+}
+
+/* ---------- 余额卡 ---------- */
+:where(html.theme-dark, html.theme-light) .topup-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 26px 30px;
+  margin-bottom: 28px;
+  position: relative;
+  overflow: hidden;
+}
+:where(html.theme-dark, html.theme-light) .topup-hero::before {
+  content: '';
+  position: absolute;
+  top: -60%;
+  right: -10%;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.14),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+:where(html.theme-dark, html.theme-light) .topup-hero-label {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+:where(html.theme-dark, html.theme-light) .topup-hero-number {
+  font-family: var(--font-mono);
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.2;
+  background: var(--brand-gradient-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-variant-numeric: tabular-nums;
+}
+:where(html.theme-dark, html.theme-light) .topup-hero-tip {
+  font-size: 12px;
+  color: var(--text-disabled);
+  margin-top: 6px;
+}
+:where(html.theme-dark, html.theme-light) .topup-hero-btn {
+  border-radius: var(--radius-md) !important;
+}
+
+/* ---------- 套餐区 ---------- */
+:where(html.theme-dark, html.theme-light) .topup-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+:where(html.theme-dark, html.theme-light) .topup-section-sub {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin: 0 0 16px;
+}
+:where(html.theme-dark, html.theme-light) .topup-packages {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 10px;
+}
+:where(html.theme-dark, html.theme-light) .pkg-card {
+  position: relative;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 24px 20px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+:where(html.theme-dark, html.theme-light) .pkg-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--brand-blue);
+  box-shadow: var(--shadow-elevated);
+}
+:where(html.theme-dark, html.theme-light) .pkg-recommend {
+  border-color: var(--brand-blue);
+  box-shadow: var(--glow-primary);
+}
+:where(html.theme-dark, html.theme-light) .pkg-disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+:where(html.theme-dark, html.theme-light) .pkg-disabled:hover {
+  transform: none;
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-card);
+}
+:where(html.theme-dark, html.theme-light) .pkg-badge {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--brand-gradient);
+  color: var(--on-primary);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+:where(html.theme-dark, html.theme-light) .pkg-amount {
+  font-family: var(--font-mono);
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+:where(html.theme-dark, html.theme-light) .pkg-currency {
+  font-size: 20px;
+  margin-right: 2px;
+  color: var(--text-secondary);
+}
+:where(html.theme-dark, html.theme-light) .pkg-name {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin: 6px 0 16px;
+}
+:where(html.theme-dark, html.theme-light) .pkg-btn {
+  border-radius: var(--radius-md) !important;
+}
+:where(html.theme-dark, html.theme-light) .topup-soon {
+  text-align: center;
+  font-size: 13px;
+  color: var(--warning-text);
+  background: var(--warning-soft-bg);
+  border: 1px solid var(--warning-soft-border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 28px;
+}
+
+/* ---------- 在线支付区（F1 钱包页） ---------- */
+:where(html.theme-dark, html.theme-light) .topup-pay {
+  margin-bottom: 28px;
+}
+:where(html.theme-dark, html.theme-light) .pay-amount-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+:where(html.theme-dark, html.theme-light) .pay-chip {
+  display: flex;
+  align-items: center;
+  min-width: 108px;
+  padding: 12px 18px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease,
+    transform 0.2s ease;
+  user-select: none;
+}
+:where(html.theme-dark, html.theme-light) .pay-chip:hover {
+  border-color: var(--brand-blue);
+  transform: translateY(-2px);
+}
+:where(html.theme-dark, html.theme-light) .pay-chip.active {
+  border-color: var(--brand-blue);
+  box-shadow: var(--glow-primary);
+  background: var(--primary-soft-bg);
+}
+:where(html.theme-dark, html.theme-light) .pay-chip-currency {
+  font-size: 13px;
+  margin-right: 3px;
+  color: var(--text-secondary);
+}
+:where(html.theme-dark, html.theme-light) .pay-chip-custom {
+  min-width: 168px;
+  cursor: text;
+}
+:where(html.theme-dark, html.theme-light) .pay-custom-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+}
+:where(html.theme-dark, html.theme-light) .pay-custom-input::placeholder {
+  color: var(--text-disabled);
+  font-size: 13px;
+  font-weight: 400;
+}
+:where(html.theme-dark, html.theme-light) .pay-custom-input::-webkit-outer-spin-button,
+:where(html.theme-dark, html.theme-light) .pay-custom-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+:where(html.theme-dark, html.theme-light) .pay-method-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+/* 支付宝品牌 SVG：SUI 图标字体无 alipay 字形，用 Simple Icons 官方路径内联，
+   尺寸/右间距对齐 SUI .button .icon（1.18em + 0.4em），fill 跟随文字色 */
+:where(html.theme-dark, html.theme-light) .pay-brand-icon {
+  width: 1.18em;
+  height: 1.18em;
+  fill: currentColor;
+  vertical-align: -0.18em;
+  margin-right: 0.4em;
+  flex-shrink: 0;
+}
+:where(html.theme-dark, html.theme-light) .pay-quota-preview {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+:where(html.theme-dark, html.theme-light) .pay-submit-btn {
+  border-radius: var(--radius-md) !important;
+  min-width: 200px;
+}
+:where(html.theme-dark, html.theme-light) .pay-waiting {
+  margin-top: 16px;
+}
+
+/* ---------- 订单历史 ---------- */
+:where(html.theme-dark, html.theme-light) .topup-orders {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 24px 26px;
+  margin-bottom: 28px;
+}
+:where(html.theme-dark, html.theme-light) .topup-orders .topup-redeem-title .icon {
+  color: var(--brand-blue);
+}
+:where(html.theme-dark, html.theme-light) .orders-time {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+:where(html.theme-dark, html.theme-light) .orders-empty {
+  text-align: center;
+  color: var(--text-disabled);
+  padding: 28px 0 !important;
+}
+
+/* ---------- 兑换码区 ---------- */
+:where(html.theme-dark, html.theme-light) .topup-redeem {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 24px 26px;
+}
+:where(html.theme-dark, html.theme-light) .topup-redeem-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+:where(html.theme-dark, html.theme-light) .topup-redeem-title .icon {
+  color: var(--brand-green);
+}
+:where(html.theme-dark, html.theme-light) .topup-redeem .ui.button.green {
+  border-radius: var(--radius-md);
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 640px) {
+  :where(html.theme-dark, html.theme-light) .topup-page {
+    padding: 12px 12px 32px;
+  }
+  :where(html.theme-dark, html.theme-light) .topup-packages {
+    grid-template-columns: 1fr;
+  }
+  :where(html.theme-dark, html.theme-light) .topup-hero {
+    padding: 20px;
+  }
+}
+
+/* 签到卡 + 推荐计划卡（F5 + F4） */
+:where(html.theme-dark, html.theme-light) .topup-extra-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+:where(html.theme-dark, html.theme-light) .topup-extra-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+:where(html.theme-dark, html.theme-light) .topup-extra-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+:where(html.theme-dark, html.theme-light) .topup-extra-tip {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+:where(html.theme-dark, html.theme-light) .topup-aff-stats {
+  display: flex;
+  gap: 24px;
+  padding: 8px 0;
+}
+:where(html.theme-dark, html.theme-light) .topup-aff-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+:where(html.theme-dark, html.theme-light) .topup-aff-num {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--brand-blue);
+  font-variant-numeric: tabular-nums;
+}
+:where(html.theme-dark, html.theme-light) .topup-aff-label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+@media (max-width: 640px) {
+  :where(html.theme-dark, html.theme-light) .topup-extra-row {
+    grid-template-columns: 1fr;
+  }
+}

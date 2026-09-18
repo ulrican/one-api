@@ -1,109 +1,150 @@
-.dashboard-container {
-    padding: 20px 24px 40px;
-    background-color: #ffffff;
-    margin-top: -15px; /* 减小与导航栏的间距 */
-    max-width: 1600px;        /* 设置最大宽度 */
-    margin-left: auto;        /* 水平居中 */
-    margin-right: auto;
+/* ==========================================================================
+   数据看板（Task02 阶段 4）
+   - 指标卡 StatCard（mono 数字、渐变图标、微光晕）+ 双主题图表卡
+   - 全部规则 :where(html.theme-dark, html.theme-light) 前缀，引用 tokens.css
+   ========================================================================== */
+
+/* 注：.dashboard-container（页面容器）与 .chart-card（卡片）为全站复用类，
+   定义在 theme/app-frame.css，避免懒加载 chunk 导致样式缺失 */
+
+/* ---------- 今日指标卡 ---------- */
+:where(html.theme-dark, html.theme-light) .stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+:where(html.theme-dark, html.theme-light) .stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s ease, box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+:where(html.theme-dark, html.theme-light) .stat-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-elevated);
+}
+:where(html.theme-dark, html.theme-light) .stat-icon {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #fff;
+}
+:where(html.theme-dark, html.theme-light) .stat-icon .icon {
+  margin: 0;
+}
+:where(html.theme-dark, html.theme-light) .stat-icon-requests {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  box-shadow: 0 6px 16px -6px rgba(59, 130, 246, 0.55);
+}
+:where(html.theme-dark, html.theme-light) .stat-icon-quota {
+  background: linear-gradient(135deg, #047857, #10b981);
+  box-shadow: 0 6px 16px -6px rgba(16, 185, 129, 0.55);
+}
+:where(html.theme-dark, html.theme-light) .stat-icon-tokens {
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+  box-shadow: 0 6px 16px -6px rgba(139, 92, 246, 0.55);
+}
+:where(html.theme-dark, html.theme-light) .stat-icon-rpm {
+  background: linear-gradient(135deg, #d97706, #fbbf24);
+  box-shadow: 0 6px 16px -6px rgba(251, 191, 36, 0.55);
+}
+:where(html.theme-dark, html.theme-light) .stat-icon-tpm {
+  background: linear-gradient(135deg, #0e7490, #22d3ee);
+  box-shadow: 0 6px 16px -6px rgba(34, 211, 238, 0.55);
+}
+:where(html.theme-dark, html.theme-light) .stat-label {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+}
+:where(html.theme-dark, html.theme-light) .stat-number {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
 }
 
-.stat-card {
-    background: linear-gradient(135deg, #2185d0 0%, #1678c2 100%) !important;
-    color: white !important;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
-    transition: transform 0.2s ease !important;
-    margin-bottom: 1rem !important;
+/* ---------- 图表卡 ---------- */
+:where(html.theme-dark, html.theme-light) .charts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+:where(html.theme-dark, html.theme-light) .dashboard-container .chart-card {
+  padding: 18px 20px;
+}
+/* Task3-3：模型使用统计 / 模型维度调用分析 两个 chart-card 直接堆叠时补间距
+   （charts-grid 内的 chart-card 由 grid gap 接管，不受影响） */
+:where(html.theme-dark, html.theme-light) .dashboard-container > .chart-card {
+  margin-bottom: 16px;
+}
+:where(html.theme-dark, html.theme-light)
+  .dashboard-container
+  > .chart-card:last-child {
+  margin-bottom: 0;
+}
+:where(html.theme-dark, html.theme-light) .chart-card-header {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+:where(html.theme-dark, html.theme-light) .chart-container {
+  position: relative;
+  margin-top: 2px;
+  padding: 8px;
+  background: var(--bg-inset);
+  border-radius: var(--radius-md);
+}
+/* 零数据浮层提示（覆盖在图表区中央，避开底部 X 轴标签，不挡交互） */
+:where(html.theme-dark, html.theme-light) .chart-empty-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 30px;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--text-tertiary);
+  pointer-events: none;
 }
 
-.stat-card:hover {
-    transform: translateY(-5px);
+/* ---------- 响应式 ---------- */
+@media (max-width: 992px) {
+  :where(html.theme-dark, html.theme-light) .charts-grid {
+    grid-template-columns: 1fr;
+  }
 }
-
-.stat-card .statistic {
-    color: white !important;
+@media (max-width: 640px) {
+  :where(html.theme-dark, html.theme-light) .stat-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  :where(html.theme-dark, html.theme-light) .stat-card {
+    padding: 16px 18px;
+  }
+  :where(html.theme-dark, html.theme-light) .stat-number {
+    font-size: 22px;
+  }
 }
-
-.charts-grid {
-    margin-bottom: 1rem !important;
-}
-
-.charts-grid .column {
-    padding: 0.5rem !important;
-}
-
-.chart-card {
-    height: 100%;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04) !important;
-    border: none !important;
-    border-radius: 16px !important;
-    padding: 8px!important;
-}
-
-.chart-container {
-    margin-top: 2px;
-    padding: 16px;
-    background-color: white;
-    border-radius: 12px;
-}
-
-.ui.card > .content > .header {
-    color: #2B3674;
-    font-size: 1.2em;
-    margin-bottom: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: 600;
-    gap: 12px; /* 增加标题和数值之间的间距 */
-}
-
-.stat-value {
-    color: #4318FF;
-    font-weight: bold;
-    font-size: 1.1em;
-    background: rgba(67, 24, 255, 0.1);
-    padding: 4px 12px;
-    border-radius: 8px;
-    white-space: nowrap; /* 防止数值换行 */
-    margin-left: 16px;
-}
-
-/* 优化图表响应式布局 */
-@media (max-width: 768px) {
-    .dashboard-container {
-        padding: 10px 16px;   /* 移动端也相应减小内边距 */
-        max-width: 100%;      /* 移动端占满全宽 */
-    }
-    
-    .chart-container {
-        padding: 12px;
-    }
-    
-    .charts-grid .column {
-        padding: 0.25rem !important;
-    }
-}
-
-/* 设置页面的 Tab 样式 */
-.settings-tab {
-    margin-top: 1rem !important;
-    border-bottom: none !important;
-}
-
-.settings-tab .item {
-    color: #000 !important;
-    font-weight: 500 !important;
-    padding: 0.8rem 1.2rem !important;
-}
-
-.settings-tab .active.item {
-    color: #000 !important;
-    font-weight: 600 !important;
-    border-color: #000 !important;
-}
-
-.ui.tab.segment {
-    border: none !important;
-    box-shadow: none !important;
-    padding: 1rem 0 !important;
-} 

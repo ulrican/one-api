@@ -20,7 +20,6 @@ type Ability struct {
 }
 
 func GetRandomSatisfiedChannel(group string, model string, ignoreFirstPriority bool) (*Channel, error) {
-	ability := Ability{}
 	groupCol := "`group`"
 	trueVal := "1"
 	if common.UsingPostgreSQL {
@@ -28,7 +27,6 @@ func GetRandomSatisfiedChannel(group string, model string, ignoreFirstPriority b
 		trueVal = "true"
 	}
 
-	var err error = nil
 	var channelQuery *gorm.DB
 	if ignoreFirstPriority {
 		channelQuery = DB.Where(groupCol+" = ? and model = ? and enabled = "+trueVal, group, model)
@@ -36,18 +34,23 @@ func GetRandomSatisfiedChannel(group string, model string, ignoreFirstPriority b
 		maxPrioritySubQuery := DB.Model(&Ability{}).Select("MAX(priority)").Where(groupCol+" = ? and model = ? and enabled = "+trueVal, group, model)
 		channelQuery = DB.Where(groupCol+" = ? and model = ? and enabled = "+trueVal+" and priority = (?)", group, model, maxPrioritySubQuery)
 	}
-	if common.UsingSQLite || common.UsingPostgreSQL {
-		err = channelQuery.Order("RANDOM()").First(&ability).Error
-	} else {
-		err = channelQuery.Order("RAND()").First(&ability).Error
-	}
-	if err != nil {
+	// F9b: 取全部候选后内存挑选（动态剔除 + 延迟加权随机）
+	var abilities []Ability
+	if err := channelQuery.Find(&abilities).Error; err != nil {
 		return nil, err
 	}
-	channel := Channel{}
-	channel.Id = ability.ChannelId
-	err = DB.First(&channel, "id = ?", ability.ChannelId).Error
-	return &channel, err
+	if len(abilities) == 0 {
+		return nil, gorm.ErrRecordNotFound
+	}
+	channelIds := make([]int, 0, len(abilities))
+	for _, ability := range abilities {
+		channelIds = append(channelIds, ability.ChannelId)
+	}
+	var channels []*Channel
+	if err := DB.Find(&channels, "id IN (?)", channelIds).Error; err != nil {
+		return nil, err
+	}
+	return pickChannelWithRoutingStats(channels), nil
 }
 
 func (channel *Channel) AddAbilities() error {
@@ -109,4 +112,35 @@ func GetGroupModels(ctx context.Context, group string) ([]string, error) {
 	}
 	sort.Strings(models)
 	return models, err
+}
+
+// PricingModel 模型广场展示项
+type PricingModel struct {
+	Model   string   `json:"model"`
+	Groups  []string `json:"groups"` // 有权限访问该模型的分组
+	Enabled bool     `json:"enabled"`
+}
+
+// GetAllEnabledPricingModels 获取所有启用模型及其可用分组（用于公开价格页）
+func GetAllEnabledPricingModels() ([]PricingModel, error) {
+	trueVal := "1"
+	if common.UsingPostgreSQL {
+		trueVal = "true"
+	}
+	var abilities []Ability
+	err := DB.Where("enabled = " + trueVal).Find(&abilities).Error
+	if err != nil {
+		return nil, err
+	}
+	modelGroups := make(map[string][]string)
+	for _, a := range abilities {
+		modelGroups[a.Model] = append(modelGroups[a.Model], a.Group)
+	}
+	result := make([]PricingModel, 0, len(modelGroups))
+	for m, groups := range modelGroups {
+		sort.Strings(groups)
+		result = append(result, PricingModel{Model: m, Groups: groups, Enabled: true})
+	}
+	sort.Slice(result, func(i, j int) bool { return result[i].Model < result[j].Model })
+	return result, nil
 }

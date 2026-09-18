@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import EmptyState from './EmptyState';
 import {
   Button,
   Dropdown,
@@ -24,6 +25,58 @@ import { renderQuota } from '../helpers/render';
 
 function renderTimestamp(timestamp) {
   return <>{timestamp2string(timestamp)}</>;
+}
+
+function renderLimitation(token, t) {
+  const models = token.models
+    ? String(token.models)
+        .split(',')
+        .filter((m) => m.trim() !== '')
+    : [];
+  const subnet = token.subnet || '';
+  if (models.length === 0 && !subnet) {
+    return (
+      <Label basic color='grey' size='tiny'>
+        {t('token.table.no_limit')}
+      </Label>
+    );
+  }
+  const summary = [];
+  if (models.length > 0) {
+    summary.push(
+      t('token.table.model_limit').replace('{count}', models.length)
+    );
+  }
+  if (subnet) {
+    summary.push('IP');
+  }
+  return (
+    <Popup
+      trigger={
+        <Label basic color='blue' size='tiny' style={{ cursor: 'pointer' }}>
+          {summary.join(' / ')}
+        </Label>
+      }
+      on='hover'
+      flowing
+      hoverable
+    >
+      <div style={{ maxWidth: '320px', wordBreak: 'break-all' }}>
+        {models.length > 0 && (
+          <p>
+            <strong>{t('token.edit.models')}：</strong>
+            {models.join(', ')}
+          </p>
+        )}
+        {subnet && (
+          <p>
+            <strong>{t('token.edit.ip_limit')}：</strong>
+            {subnet}
+          </p>
+        )}
+      </div>
+    </Popup>
+  );
 }
 
 function renderStatus(status, t) {
@@ -366,11 +419,23 @@ const TokensTable = () => {
             >
               {t('token.table.expired_time')}
             </Table.HeaderCell>
+            <Table.HeaderCell>{t('token.table.limitations')}</Table.HeaderCell>
             <Table.HeaderCell>{t('token.table.actions')}</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
 
         <Table.Body>
+          {!loading && tokens.length === 0 && (
+            <Table.Row>
+              <Table.Cell colSpan='8' textAlign='center'>
+                <EmptyState
+                  icon='key'
+                  title={t('token.empty.title')}
+                  description={t('token.empty.desc')}
+                />
+              </Table.Cell>
+            </Table.Row>
+          )}
           {tokens
             .slice(
               (activePage - 1) * ITEMS_PER_PAGE,
@@ -413,6 +478,7 @@ const TokensTable = () => {
                       ? t('token.table.never_expire')
                       : renderTimestamp(token.expired_time)}
                   </Table.Cell>
+                  <Table.Cell>{renderLimitation(token, t)}</Table.Cell>
                   <Table.Cell>
                     <div>
                       <Button.Group color='green' size={'tiny'}>
@@ -495,7 +561,7 @@ const TokensTable = () => {
 
         <Table.Footer>
           <Table.Row>
-            <Table.HeaderCell colSpan='7'>
+            <Table.HeaderCell colSpan='8'>
               <Button size='small' as={Link} to='/token/add' loading={loading}>
                 {t('token.buttons.add')}
               </Button>

@@ -113,6 +113,12 @@ func GetTokenByIds(id int, userId int) (*Token, error) {
 	return &token, err
 }
 
+func GetTokenNameExists(userId int, name string) (bool, error) {
+	var count int64
+	err := DB.Model(&Token{}).Where("user_id = ? and name = ?", userId, name).Count(&count).Error
+	return count > 0, err
+}
+
 func GetTokenById(id int) (*Token, error) {
 	if id == 0 {
 		return nil, errors.New("id 为空！")

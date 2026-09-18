@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Button, Dropdown, Form, Input, Label, Message, Pagination, Popup, Table,} from 'semantic-ui-react';
+import EmptyState from './EmptyState';
+import {Button, Checkbox, Dropdown, Form, Input, Label, Message, Pagination, Popup, Table,} from 'semantic-ui-react';
 import {Link} from 'react-router-dom';
 import {
   API,
@@ -87,6 +88,58 @@ const ChannelsTable = () => {
   const [updatingBalance, setUpdatingBalance] = useState(false);
   const [showPrompt, setShowPrompt] = useState(shouldShowPrompt(promptID));
   const [showDetail, setShowDetail] = useState(isShowDetail());
+  // F9: 勾选批量操作
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [batchLoading, setBatchLoading] = useState(false);
+  // F11: 渠道可用率 + F9b 路由统计（内存滑动窗口，30s 轮询）
+  const [metrics, setMetrics] = useState({});
+  const [routing, setRouting] = useState({});
+
+  const loadMetrics = async () => {
+    try {
+      const res = await API.get('/api/channel/metrics');
+      const { success, data } = res.data;
+      if (success && data && data.metrics) {
+        setMetrics(data.metrics);
+      }
+      if (success && data && data.routing) {
+        setRouting(data.routing);
+      }
+    } catch (e) {
+      // 静默失败，不影响渠道管理主流程
+    }
+  };
+
+  const getPageChannels = () =>
+    channels
+      .slice((activePage - 1) * ITEMS_PER_PAGE, activePage * ITEMS_PER_PAGE)
+      .filter((c) => !c.deleted);
+
+  const toggleSelect = (id) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    setSelectedIds(next);
+  };
+
+  const toggleSelectAll = () => {
+    const pageChannels = getPageChannels();
+    const allSelected =
+      pageChannels.length > 0 &&
+      pageChannels.every((c) => selectedIds.has(c.id));
+    const next = new Set(selectedIds);
+    if (allSelected) {
+      pageChannels.forEach((c) => next.delete(c.id));
+    } else {
+      pageChannels.forEach((c) => next.add(c.id));
+    }
+    setSelectedIds(next);
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
 
   const processChannelData = (channel) => {
     if (channel.models === '') {
@@ -144,6 +197,7 @@ const ChannelsTable = () => {
   const refresh = async () => {
     setLoading(true);
     await loadChannels(activePage - 1);
+    clearSelection();
   };
 
   const toggleShowDetail = () => {
@@ -158,7 +212,45 @@ const ChannelsTable = () => {
         showError(reason);
       });
     loadChannelModels().then();
+    loadMetrics().then();
+    const timer = setInterval(loadMetrics, 30000);
+    return () => clearInterval(timer);
   }, []);
+
+  // F11/F9b: 渲染渠道可用率（Popup 内含路由统计：平均延迟/连败/剔除状态）
+  const renderSuccessRate = (channelId, t) => {
+    const m = metrics[channelId];
+    const r = routing[channelId];
+    if ((!m || m.total === 0) && (!r || (r.sample_count === 0 && r.consecutive_fails === 0))) {
+      return <span>-</span>;
+    }
+    const pct = m && m.total > 0 ? (m.success_rate * 100).toFixed(0) : null;
+    const color = !m || m.total === 0 ? 'grey' : m.success_rate >= 0.8 ? 'green' : m.success_rate >= 0.5 ? 'yellow' : 'red';
+    return (
+      <Popup
+        trigger={
+          <Label basic color={color}>
+            {pct !== null ? `${pct}%` : t('channel.table.success_rate_no_data')}
+          </Label>
+        }
+        content={
+          <div>
+            {m && m.total > 0 && (
+              <div>{t('channel.table.success_rate_tip', { success: m.success, fail: m.fail, total: m.total })}</div>
+            )}
+            {r && (
+              <div style={{ marginTop: m && m.total > 0 ? 4 : 0 }}>
+                <div>{t('channel.table.routing_latency', { latency: r.avg_latency_ms, count: r.sample_count })}</div>
+                <div>{t('channel.table.routing_fails', { fails: r.consecutive_fails })}</div>
+                {r.excluded && <div style={{ color: '#db2828' }}>{t('channel.table.routing_excluded')}</div>}
+              </div>
+            )}
+          </div>
+        }
+        basic
+      />
+    );
+  };
 
   const manageChannel = async (id, action, idx, value) => {
     let data = { id };
@@ -359,6 +451,39 @@ const ChannelsTable = () => {
     }
   };
 
+  // F9: 批量启用/禁用/删除/测试选中渠道
+  const batchManageChannels = async (action) => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    setBatchLoading(true);
+    try {
+      const res = await API.post(`/api/channel/batch`, { ids, action });
+      const { success, message } = res.data;
+      if (success) {
+        if (action === 'test') {
+          showInfo(t('channel.messages.test_all_started'));
+        } else {
+          showSuccess(t('channel.messages.batch_success', { count: ids.length }));
+        }
+        if (action === 'delete') {
+          let newChannels = [...channels];
+          ids.forEach((id) => {
+            const idx = newChannels.findIndex((c) => c.id === id);
+            if (idx >= 0) newChannels[idx].deleted = true;
+          });
+          setChannels(newChannels);
+          clearSelection();
+        } else if (action !== 'test') {
+          await refresh();
+        }
+      } else {
+        showError(message);
+      }
+    } finally {
+      setBatchLoading(false);
+    }
+  };
+
   const updateChannelBalance = async (id, name, idx) => {
     const res = await API.get(`/api/channel/update_balance/${id}/`);
     const { success, message, balance } = res.data;
@@ -440,6 +565,15 @@ const ChannelsTable = () => {
       <Table basic={'very'} compact size='small'>
         <Table.Header>
           <Table.Row>
+            <Table.HeaderCell style={{ width: '36px' }}>
+              <Checkbox
+                checked={
+                  getPageChannels().length > 0 &&
+                  getPageChannels().every((c) => selectedIds.has(c.id))
+                }
+                onChange={toggleSelectAll}
+              />
+            </Table.HeaderCell>
             <Table.HeaderCell
               style={{ cursor: 'pointer' }}
               onClick={() => {
@@ -455,6 +589,14 @@ const ChannelsTable = () => {
               }}
             >
               {t('channel.table.name')}
+            </Table.HeaderCell>
+            <Table.HeaderCell
+              style={{ cursor: 'pointer' }}
+              onClick={() => {
+                sortChannel('tag');
+              }}
+            >
+              {t('channel.table.tag')}
             </Table.HeaderCell>
             <Table.HeaderCell
               style={{ cursor: 'pointer' }}
@@ -488,6 +630,9 @@ const ChannelsTable = () => {
             >
               {t('channel.table.response_time')}
             </Table.HeaderCell>
+            <Table.HeaderCell>
+              {t('channel.table.success_rate')}
+            </Table.HeaderCell>
             <Table.HeaderCell
               style={{ cursor: 'pointer' }}
               onClick={() => {
@@ -506,6 +651,9 @@ const ChannelsTable = () => {
               {t('channel.table.priority')}
             </Table.HeaderCell>
             <Table.HeaderCell hidden={!showDetail}>
+              {t('channel.table.weight')}
+            </Table.HeaderCell>
+            <Table.HeaderCell hidden={!showDetail}>
               {t('channel.table.test_model')}
             </Table.HeaderCell>
             <Table.HeaderCell>{t('channel.table.actions')}</Table.HeaderCell>
@@ -513,6 +661,20 @@ const ChannelsTable = () => {
         </Table.Header>
 
         <Table.Body>
+          {!loading && channels.length === 0 && (
+            <Table.Row>
+              <Table.Cell
+                colSpan={showDetail ? '13' : '10'}
+                textAlign='center'
+              >
+                <EmptyState
+                  icon='server'
+                  title={t('channel.empty.title')}
+                  description={t('channel.empty.desc')}
+                />
+              </Table.Cell>
+            </Table.Row>
+          )}
           {channels
             .slice(
               (activePage - 1) * ITEMS_PER_PAGE,
@@ -522,9 +684,24 @@ const ChannelsTable = () => {
               if (channel.deleted) return <></>;
               return (
                 <Table.Row key={channel.id}>
+                  <Table.Cell>
+                    <Checkbox
+                      checked={selectedIds.has(channel.id)}
+                      onChange={() => toggleSelect(channel.id)}
+                    />
+                  </Table.Cell>
                   <Table.Cell>{channel.id}</Table.Cell>
                   <Table.Cell>
                     {channel.name ? channel.name : t('channel.table.no_name')}
+                  </Table.Cell>
+                  <Table.Cell>
+                    {channel.tag ? (
+                      <Label basic color='teal'>
+                        {channel.tag}
+                      </Label>
+                    ) : (
+                      '-'
+                    )}
                   </Table.Cell>
                   <Table.Cell>{renderGroup(channel.group)}</Table.Cell>
                   <Table.Cell>{renderType(channel.type, t)}</Table.Cell>
@@ -541,6 +718,7 @@ const ChannelsTable = () => {
                       basic
                     />
                   </Table.Cell>
+                  <Table.Cell>{renderSuccessRate(channel.id, t)}</Table.Cell>
                   <Table.Cell>
                     <Popup
                       trigger={
@@ -576,6 +754,28 @@ const ChannelsTable = () => {
                         </Input>
                       }
                       content={t('channel.table.priority_tip')}
+                      basic
+                    />
+                  </Table.Cell>
+                  <Table.Cell hidden={!showDetail}>
+                    <Popup
+                      trigger={
+                        <Input
+                          type='number'
+                          defaultValue={channel.weight}
+                          onBlur={(event) => {
+                            manageChannel(
+                              channel.id,
+                              'weight',
+                              idx,
+                              event.target.value
+                            );
+                          }}
+                        >
+                          <input style={{ maxWidth: '60px' }} />
+                        </Input>
+                      }
+                      content={t('channel.table.weight_tip')}
                       basic
                     />
                   </Table.Cell>
@@ -664,10 +864,63 @@ const ChannelsTable = () => {
 
         <Table.Footer>
           <Table.Row>
-            <Table.HeaderCell colSpan={showDetail ? '10' : '8'}>
+            <Table.HeaderCell colSpan={showDetail ? '14' : '11'}>
               <Button size='tiny' as={Link} to='/channel/add' loading={loading}>
                 {t('channel.buttons.add')}
               </Button>
+              {selectedIds.size > 0 && (
+                <>
+                  <Label size='small' color='blue'>
+                    {t('channel.table.selected_count', {
+                      count: selectedIds.size,
+                    })}
+                  </Label>
+                  <Button
+                    size='tiny'
+                    color='green'
+                    loading={batchLoading}
+                    onClick={() => batchManageChannels('enable')}
+                  >
+                    {t('channel.buttons.batch_enable')}
+                  </Button>
+                  <Button
+                    size='tiny'
+                    color='orange'
+                    loading={batchLoading}
+                    onClick={() => batchManageChannels('disable')}
+                  >
+                    {t('channel.buttons.batch_disable')}
+                  </Button>
+                  <Button
+                    size='tiny'
+                    color='blue'
+                    loading={batchLoading}
+                    onClick={() => batchManageChannels('test')}
+                  >
+                    {t('channel.buttons.batch_test')}
+                  </Button>
+                  <Popup
+                    trigger={
+                      <Button size='tiny' color='red' loading={batchLoading}>
+                        {t('channel.buttons.batch_delete')}
+                      </Button>
+                    }
+                    on='click'
+                    flowing
+                    hoverable
+                  >
+                    <Button
+                      size='tiny'
+                      negative
+                      onClick={() => batchManageChannels('delete')}
+                    >
+                      {t('channel.buttons.confirm_batch_delete', {
+                        count: selectedIds.size,
+                      })}
+                    </Button>
+                  </Popup>
+                </>
+              )}
               <Button
                 size='tiny'
                 loading={loading}

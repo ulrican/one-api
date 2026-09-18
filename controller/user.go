@@ -14,6 +14,7 @@ import (
 	"github.com/songquanpeng/one-api/common/config"
 	"github.com/songquanpeng/one-api/common/ctxkey"
 	"github.com/songquanpeng/one-api/common/i18n"
+	"github.com/songquanpeng/one-api/common/logger"
 	"github.com/songquanpeng/one-api/common/random"
 	"github.com/songquanpeng/one-api/model"
 )
@@ -61,12 +62,37 @@ func Login(c *gin.Context) {
 		})
 		return
 	}
+	// F12 两步验证：密码正确且已启用 TOTP 时，不建立会话，签发一次性 pending token
+	if model.TwoFAEnabled(user.Id) {
+		token, err := issueTwoFAPending(user.Id)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"message": "服务器内部错误，请重试",
+				"success": false,
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"message": "",
+			"success": true,
+			"data": gin.H{
+				"need_2fa":    true,
+				"twofa_token": token,
+			},
+		})
+		return
+	}
 	SetupLogin(&user, c)
 }
 
 // setup session & cookies and then return user info
 func SetupLogin(user *model.User, c *gin.Context) {
 	session := sessions.Default(c)
+	// F10 会话登记：生成会话 ID + 记录会话版本号，供"会话列表/注销其他会话"使用
+	sessionId := random.GetUUID()
+	epoch := model.GetSessionEpoch(user.Id)
+	session.Set("session_id", sessionId)
+	session.Set("epoch", epoch)
 	session.Set("id", user.Id)
 	session.Set("username", user.Username)
 	session.Set("role", user.Role)
@@ -78,6 +104,10 @@ func SetupLogin(user *model.User, c *gin.Context) {
 			"success": false,
 		})
 		return
+	}
+	if err := model.RecordUserSession(sessionId, user.Id, c.ClientIP(), c.Request.UserAgent()); err != nil {
+		// 登记失败不阻断登录
+		logger.SysErrorf("record user session failed (user %d): %s", user.Id, err.Error())
 	}
 	cleanUser := model.User{
 		Id:          user.Id,
@@ -95,6 +125,10 @@ func SetupLogin(user *model.User, c *gin.Context) {
 
 func Logout(c *gin.Context) {
 	session := sessions.Default(c)
+	// F10：移除会话登记记录
+	if sid, ok := session.Get("session_id").(string); ok {
+		_ = model.DeleteUserSession(sid)
+	}
 	session.Clear()
 	err := session.Save()
 	if err != nil {
@@ -338,10 +372,16 @@ func GetAffCode(c *gin.Context) {
 			return
 		}
 	}
+	inviteCount, _ := model.GetInviteCount(id)
+	totalReward := inviteCount * config.QuotaForInviter
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    user.AffCode,
+		"data": gin.H{
+			"aff_code":     user.AffCode,
+			"invite_count": inviteCount,
+			"total_reward": totalReward,
+		},
 	})
 	return
 }
@@ -503,12 +543,17 @@ func DeleteUser(c *gin.Context) {
 	}
 	err = model.DeleteUserById(id)
 	if err != nil {
+		logger.SysError(err.Error())
 		c.JSON(http.StatusOK, gin.H{
-			"success": true,
-			"message": "",
+			"success": false,
+			"message": err.Error(),
 		})
 		return
 	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+	})
 }
 
 func DeleteSelf(c *gin.Context) {

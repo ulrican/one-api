@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/songquanpeng/one-api/common"
@@ -19,6 +20,7 @@ import (
 	"github.com/songquanpeng/one-api/relay/controller"
 	"github.com/songquanpeng/one-api/relay/model"
 	"github.com/songquanpeng/one-api/relay/relaymode"
+	"github.com/songquanpeng/one-api/routingstats"
 )
 
 // https://platform.openai.com/docs/api-reference/chat
@@ -51,10 +53,16 @@ func Relay(c *gin.Context) {
 	}
 	channelId := c.GetInt(ctxkey.ChannelId)
 	userId := c.GetInt(ctxkey.Id)
+	start := time.Now()
 	bizErr := relayHelper(c, relayMode)
+	// F9b: 每次尝试均采样（成功记延迟；仅 429/5xx 计入渠道健康失败，客户端错误 4xx 不计）
 	if bizErr == nil {
+		routingstats.Record(channelId, time.Since(start).Milliseconds(), true)
 		monitor.Emit(channelId, true)
 		return
+	}
+	if bizErr.StatusCode == http.StatusTooManyRequests || bizErr.StatusCode/100 == 5 {
+		routingstats.Record(channelId, time.Since(start).Milliseconds(), false)
 	}
 	lastFailedChannelId := channelId
 	channelName := c.GetString(ctxkey.ChannelName)
@@ -80,14 +88,21 @@ func Relay(c *gin.Context) {
 		middleware.SetupContextForSelectedChannel(c, channel, originalModel)
 		requestBody, err := common.GetRequestBody(c)
 		c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
+		retryStart := time.Now()
 		bizErr = relayHelper(c, relayMode)
+		retryChannelId := c.GetInt(ctxkey.ChannelId)
 		if bizErr == nil {
+			// F9b: 重试成功同样采样（修复此前重试成功漏记指标的缺陷）
+			routingstats.Record(retryChannelId, time.Since(retryStart).Milliseconds(), true)
+			monitor.Emit(retryChannelId, true)
 			return
 		}
-		channelId := c.GetInt(ctxkey.ChannelId)
-		lastFailedChannelId = channelId
+		if bizErr.StatusCode == http.StatusTooManyRequests || bizErr.StatusCode/100 == 5 {
+			routingstats.Record(retryChannelId, time.Since(retryStart).Milliseconds(), false)
+		}
+		lastFailedChannelId = retryChannelId
 		channelName := c.GetString(ctxkey.ChannelName)
-		go processChannelRelayError(ctx, userId, channelId, channelName, *bizErr)
+		go processChannelRelayError(ctx, userId, retryChannelId, channelName, *bizErr)
 	}
 	if bizErr != nil {
 		if bizErr.StatusCode == http.StatusTooManyRequests {

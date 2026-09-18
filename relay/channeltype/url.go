@@ -54,6 +54,8 @@ var ChannelBaseURLs = []string{
 	"",                                          // 50
 
 	"https://generativelanguage.googleapis.com/v1beta/openai/", // 51
+	"https://openai.qiniu.com",                                  // 52 Task4-2 七牛模型库
+	"",                                                          // 53 Task4-2 其他模型库（预留）
 }
 
 func init() {

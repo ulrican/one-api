@@ -24,13 +24,18 @@ export function isRoot() {
 
 export function getSystemName() {
   let system_name = localStorage.getItem('system_name');
-  if (!system_name) return 'One API';
+  if (!system_name) return 'FluxAI';
   return system_name;
 }
 
+// 内置品牌图版本号：更换 public/logo.png / favicon.ico 后需手动递增，避免浏览器
+// 7 天强缓存（静态资源 Cache-Control: max-age=604800）导致旧图持续显示
+const LOGO_VERSION = '20260914';
+
 export function getLogo() {
   let logo = localStorage.getItem('logo');
-  if (!logo) return '/logo.png';
+  if (!logo) logo = '/logo.png';
+  if (logo.startsWith('/logo.png')) return `${logo}?v=${LOGO_VERSION}`;
   return logo;
 }
 

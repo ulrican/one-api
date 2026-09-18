@@ -216,7 +216,8 @@ func TestChannel(c *gin.Context) {
 var testAllChannelsLock sync.Mutex
 var testAllChannelsRunning bool = false
 
-func testChannels(ctx context.Context, notify bool, scope string) error {
+// testChannelsList 对给定渠道列表执行异步批量测试（全局锁防重），F9 重构抽出供 scope/ids 两种入口复用
+func testChannelsList(ctx context.Context, notify bool, channels []*model.Channel) error {
 	if config.RootUserEmail == "" {
 		config.RootUserEmail = model.GetRootUserEmail()
 	}
@@ -227,10 +228,6 @@ func testChannels(ctx context.Context, notify bool, scope string) error {
 	}
 	testAllChannelsRunning = true
 	testAllChannelsLock.Unlock()
-	channels, err := model.GetAllChannels(0, 0, scope)
-	if err != nil {
-		return err
-	}
 	var disableThreshold = int64(config.ChannelDisableThreshold * 1000)
 	if disableThreshold == 0 {
 		disableThreshold = 10000000 // a impossible value
@@ -271,6 +268,26 @@ func testChannels(ctx context.Context, notify bool, scope string) error {
 		}
 	}()
 	return nil
+}
+
+func testChannels(ctx context.Context, notify bool, scope string) error {
+	channels, err := model.GetAllChannels(0, 0, scope)
+	if err != nil {
+		return err
+	}
+	return testChannelsList(ctx, notify, channels)
+}
+
+// testChannelsByIds F9: 对选中的渠道执行批量测试
+func testChannelsByIds(ctx context.Context, notify bool, ids []int) error {
+	channels, err := model.GetChannelsByIds(ids)
+	if err != nil {
+		return err
+	}
+	if len(channels) == 0 {
+		return errors.New("未找到指定渠道")
+	}
+	return testChannelsList(ctx, notify, channels)
 }
 
 func TestChannels(c *gin.Context) {

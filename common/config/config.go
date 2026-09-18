@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
-var SystemName = "One API"
+var SystemName = "FluxAI"
 var ServerAddress = "http://localhost:3000"
 var Footer = ""
 var Logo = ""
@@ -92,6 +92,27 @@ var TurnstileSecretKey = ""
 var QuotaForNewUser int64 = 0
 var QuotaForInviter int64 = 0
 var QuotaForInvitee int64 = 0
+
+// 在线充值（易支付 Epay）
+var PayEnabled = false
+var PayAddress = ""      // 易支付网关地址
+var EpayId = ""          // 商户 PID
+var EpaySecret = ""      // 商户密钥（key 含 Secret，GetOptions 自动脱敏）
+var PayPrice = 7.3       // 每 1 美元额度的人民币售价
+var MinTopUp = 1.0       // 最低充值金额（元）
+var MaxTopUp = 5000.0    // 最高充值金额（元）
+var TopupAmountOptions = "[10,30,50,100,200,500]" // 充值金额预设（JSON 数组）
+// 每日签到
+var CheckInEnabled = false
+var CheckInMinReward int64 = 100
+var CheckInMaxReward int64 = 10000
+// Playground 内嵌对话（F7）
+var PlaygroundEnabled = false
+// F15 公开排行榜
+var RankingEnabled = false
+// Task4-1 模型广场（七牛模型库每日同步，公开营销页，默认开启）
+var MarketplaceEnabled = true
+var QiniuApiSecret = "sk-e758eb517d7a76372d911ca3fe2c40e46c0a78eb844ed29e09a8358e5875e6e3"
 var ChannelDisableThreshold = 5.0
 var AutomaticDisableChannelEnabled = false
 var AutomaticEnableChannelEnabled = false
@@ -108,9 +129,17 @@ var requestInterval, _ = strconv.Atoi(os.Getenv("POLLING_INTERVAL"))
 var RequestInterval = time.Duration(requestInterval) * time.Second
 
 var SyncFrequency = env.Int("SYNC_FREQUENCY", 10*60) // unit is second
-
 var BatchUpdateEnabled = false
 var BatchUpdateInterval = env.Int("BATCH_UPDATE_INTERVAL", 5)
+
+// F10 配额警告扫描间隔（秒）；用户侧开关为 per-user 配置（user_settings），不配置即不告警
+var QuotaWarningInterval = env.Int("QUOTA_WARNING_INTERVAL", 600)
+
+// F11 渠道监控告警（管理端 options 可配）
+var ChannelAlertEnabled = false        // 渠道故障 webhook 告警总开关（邮件通知为原有行为，不受此开关影响）
+var ChannelAlertWebhookUrl = ""        // 告警 webhook 地址
+var ChannelAlertCooldownMinutes = 30   // 同一渠道告警冷却（分钟），恢复事件不受冷却限制
+var ChannelMetricEnabled = true        // 渠道可用率统计（内存滑动窗口；与 env ENABLE_METRIC 为或关系）
 
 var RelayTimeout = env.Int("RELAY_TIMEOUT", 0) // unit is second
 
@@ -149,6 +178,10 @@ var MetricQueueSize = env.Int("METRIC_QUEUE_SIZE", 10)
 var MetricSuccessRateThreshold = env.Float64("METRIC_SUCCESS_RATE_THRESHOLD", 0.8)
 var MetricSuccessChanSize = env.Int("METRIC_SUCCESS_CHAN_SIZE", 1024)
 var MetricFailChanSize = env.Int("METRIC_FAIL_CHAN_SIZE", 128)
+
+// F9b 数据面路由增强：动态剔除参数（连续失败阈值 / 失败窗口；窗口过期自动恢复参与选路）
+var RoutingExcludeThreshold = env.Int("ROUTING_EXCLUDE_THRESHOLD", 3)
+var RoutingExcludeWindowSeconds = env.Int("ROUTING_EXCLUDE_WINDOW_SECONDS", 600)
 
 var InitialRootToken = os.Getenv("INITIAL_ROOT_TOKEN")
 

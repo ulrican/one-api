@@ -15,33 +15,44 @@ const Home = () => {
   const [userState] = useContext(UserContext);
 
   const displayNotice = async () => {
-    const res = await API.get('/api/notice');
-    const { success, message, data } = res.data;
-    if (success) {
-      let oldNotice = localStorage.getItem('notice');
-      if (data !== oldNotice && data !== '') {
-        const htmlNotice = marked(data);
-        showNotice(htmlNotice, true);
-        localStorage.setItem('notice', data);
+    try {
+      const res = await API.get('/api/notice');
+      // 后端不可达时 axios 拦截器会返回 undefined，这里做防御避免页面崩溃
+      const { success, message, data } = res?.data ?? {};
+      if (success) {
+        let oldNotice = localStorage.getItem('notice');
+        if (data !== oldNotice && data !== '') {
+          const htmlNotice = marked(data);
+          showNotice(htmlNotice, true);
+          localStorage.setItem('notice', data);
+        }
+      } else if (message) {
+        showError(message);
       }
-    } else {
-      showError(message);
+    } catch (e) {
+      // 网络错误已由 axios 拦截器统一提示，忽略以避免未捕获异常
     }
   };
 
   const displayHomePageContent = async () => {
     setHomePageContent(localStorage.getItem('home_page_content') || '');
-    const res = await API.get('/api/home_page_content');
-    const { success, message, data } = res.data;
-    if (success) {
-      let content = data;
-      if (!data.startsWith('https://')) {
-        content = marked.parse(data);
+    try {
+      const res = await API.get('/api/home_page_content');
+      // 后端不可达时 axios 拦截器会返回 undefined，这里做防御避免页面崩溃
+      const { success, message, data } = res?.data ?? {};
+      if (success) {
+        let content = data;
+        if (data && !data.startsWith('https://')) {
+          content = marked.parse(data);
+        }
+        setHomePageContent(content);
+        localStorage.setItem('home_page_content', content);
+      } else {
+        if (message) showError(message);
+        setHomePageContent(t('home.loading_failed'));
       }
-      setHomePageContent(content);
-      localStorage.setItem('home_page_content', content);
-    } else {
-      showError(message);
+    } catch (e) {
+      // 网络错误已由 axios 拦截器统一提示，显示兜底内容
       setHomePageContent(t('home.loading_failed'));
     }
     setHomePageContentLoaded(true);
@@ -86,7 +97,7 @@ const Home = () => {
                   >
                     <Card.Content>
                       <Card.Header>
-                        <Header as='h3' style={{ color: '#444' }}>
+                        <Header as='h3'>
                           {t('home.system_status.info.title')}
                         </Header>
                       </Card.Header>
@@ -135,7 +146,7 @@ const Home = () => {
                           <a
                             href='https://github.com/songquanpeng/one-api'
                             target='_blank'
-                            style={{ color: '#2185d0' }}
+                            style={{ color: 'var(--brand-blue)' }}
                           >
                             {t('home.system_status.info.source_link')}
                           </a>
@@ -166,7 +177,7 @@ const Home = () => {
                   >
                     <Card.Content>
                       <Card.Header>
-                        <Header as='h3' style={{ color: '#444' }}>
+                        <Header as='h3'>
                           {t('home.system_status.config.title')}
                         </Header>
                       </Card.Header>
@@ -187,8 +198,8 @@ const Home = () => {
                           <span
                             style={{
                               color: statusState?.status?.email_verification
-                                ? '#21ba45'
-                                : '#db2828',
+                                ? 'var(--brand-green)'
+                                : 'var(--brand-danger)',
                               fontWeight: '500',
                             }}
                           >
@@ -211,8 +222,8 @@ const Home = () => {
                           <span
                             style={{
                               color: statusState?.status?.github_oauth
-                                ? '#21ba45'
-                                : '#db2828',
+                                ? 'var(--brand-green)'
+                                : 'var(--brand-danger)',
                               fontWeight: '500',
                             }}
                           >
@@ -235,8 +246,8 @@ const Home = () => {
                           <span
                             style={{
                               color: statusState?.status?.wechat_login
-                                ? '#21ba45'
-                                : '#db2828',
+                                ? 'var(--brand-green)'
+                                : 'var(--brand-danger)',
                               fontWeight: '500',
                             }}
                           >
@@ -259,8 +270,8 @@ const Home = () => {
                           <span
                             style={{
                               color: statusState?.status?.turnstile_check
-                                ? '#21ba45'
-                                : '#db2828',
+                                ? 'var(--brand-green)'
+                                : 'var(--brand-danger)',
                               fontWeight: '500',
                             }}
                           >

@@ -1,0 +1,254 @@
+/* ==========================================================================
+   全站设计令牌（双主题：科技暗色 theme-dark / 简约亮色 theme-light）
+   - class 挂在 <html> 上（public/index.html 内联脚本在首帧前设置，防闪烁）
+   - 令牌来源：Task01 Landing 双主题（.trae/skills/tech-web/SKILL.md + blue-style-rules）
+   - 所有主题化样式只引用本文件变量，禁止硬编码颜色
+   ========================================================================== */
+
+/* ====================== 暗色科技霓虹主题（默认） ====================== */
+html.theme-dark {
+  /* 品牌色 */
+  --brand-blue: #3b82f6;
+  --brand-blue-hover: #60a5fa;
+  --brand-blue-deep: #2563eb;
+  --brand-purple: #8b5cf6;
+  --brand-purple-hover: #a78bfa;
+  --brand-green: #10b981;
+  --brand-green-hover: #34d399;
+  --brand-amber: #fbbf24;
+  --brand-danger: #ef4444;
+  --brand-danger-hover: #f87171;
+  --brand-gradient: linear-gradient(
+    135deg,
+    #2563eb 0%,
+    #7c3aed 50%,
+    #34d399 100%
+  );
+  --brand-gradient-text: linear-gradient(90deg, #60a5fa, #a78bfa, #34d399);
+
+  /* 表面 / 背景 */
+  --bg-page: #0b0f17;
+  --bg-surface: #111827;
+  --bg-surface-translucent: rgba(17, 24, 39, 0.5);
+  --bg-elevated: #161f2e; /* Modal / Popup / Dropdown 菜单 */
+  --bg-inset: #0a0e14; /* 输入框 / 终端 */
+  --bg-glass: rgba(11, 15, 23, 0.8);
+  --bg-hover: rgba(255, 255, 255, 0.04);
+  --bg-active: rgba(59, 130, 246, 0.12);
+
+  /* 文本（四级） */
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-tertiary: #9ca3af;
+  --text-disabled: #6b7280;
+  --on-primary: #ffffff;
+
+  /* 边框 */
+  --border-color: #1f2937;
+  --border-strong: #374151;
+
+  /* 主操作色（按钮/链接/选中态） */
+  --primary: #3b82f6;
+  --primary-hover: #60a5fa;
+  --primary-active: #2563eb;
+  --primary-soft-bg: rgba(23, 37, 84, 0.6);
+  --primary-soft-border: rgba(30, 58, 138, 0.5);
+  --primary-soft-text: #60a5fa;
+
+  /* 语义色（软底徽章/标签） */
+  --success: #10b981;
+  --success-text: #34d399;
+  --success-soft-bg: rgba(6, 78, 59, 0.5);
+  --success-soft-border: rgba(6, 95, 70, 0.5);
+  --warning: #fbbf24;
+  --warning-text: #fbbf24;
+  --warning-soft-bg: rgba(120, 53, 15, 0.55);
+  --warning-soft-border: rgba(146, 64, 14, 0.5);
+  --danger: #ef4444;
+  --danger-text: #f87171;
+  --danger-soft-bg: rgba(127, 29, 29, 0.5);
+  --danger-soft-border: rgba(153, 27, 27, 0.5);
+  --info: #3b82f6;
+  --info-text: #60a5fa;
+  --purple: #8b5cf6;
+  --purple-text: #a78bfa;
+  --purple-soft-bg: rgba(59, 7, 100, 0.6);
+  --purple-soft-border: rgba(107, 33, 168, 0.5);
+
+  /* 实心语义按钮三态（hover/active 取更深色，保证按钮上白字对比度） */
+  --btn-success-hover: #059669;
+  --btn-success-active: #047857;
+  --btn-danger-hover: #dc2626;
+  --btn-danger-active: #b91c1c;
+  --btn-warning-bg: #fbbf24;
+  --btn-warning-hover: #f59e0b;
+  --btn-warning-active: #d97706;
+  --on-warning: #1a1305; /* 琥珀底上的深色文字 */
+
+  /* 阴影 / 光晕 */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-elevated: 0 12px 32px -8px rgba(0, 0, 0, 0.6);
+  --glow-primary: 0 0 20px rgba(59, 130, 246, 0.25);
+  --glow-purple: 0 0 20px rgba(139, 92, 246, 0.25);
+
+  /* 网格点阵 */
+  --grid-dot: rgba(30, 41, 59, 0.9);
+
+  color-scheme: dark;
+}
+
+/* ====================== 亮色简约主题 ====================== */
+html.theme-light {
+  /* 品牌色 */
+  --brand-blue: #2563eb;
+  --brand-blue-hover: #1d4ed8;
+  --brand-blue-deep: #2563eb;
+  --brand-purple: #7c3aed;
+  --brand-purple-hover: #6d28d9;
+  --brand-green: #10b981;
+  --brand-green-hover: #059669;
+  --brand-amber: #d97706;
+  --brand-danger: #dc2626;
+  --brand-danger-hover: #b91c1c;
+  --brand-gradient: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #0891b2 100%);
+  --brand-gradient-text: linear-gradient(90deg, #2563eb, #7c3aed, #0891b2);
+
+  /* 表面 / 背景 */
+  --bg-page: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-translucent: rgba(255, 255, 255, 0.85);
+  --bg-elevated: #ffffff;
+  --bg-inset: #f1f5f9;
+  --bg-glass: rgba(255, 255, 255, 0.88);
+  --bg-hover: rgba(15, 23, 42, 0.04);
+  --bg-active: rgba(37, 99, 235, 0.1);
+
+  /* 文本（四级） */
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-tertiary: #64748b;
+  --text-disabled: #94a3b8;
+  --on-primary: #ffffff;
+
+  /* 边框 */
+  --border-color: #e2e8f0;
+  --border-strong: #cbd5e1;
+
+  /* 主操作色 */
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-active: #1e40af;
+  --primary-soft-bg: #eff6ff;
+  --primary-soft-border: #dbeafe;
+  --primary-soft-text: #2563eb;
+
+  /* 语义色（软底徽章/标签） */
+  --success: #10b981;
+  --success-text: #059669;
+  --success-soft-bg: #ecfdf5;
+  --success-soft-border: #d1fae5;
+  --warning: #d97706;
+  --warning-text: #d97706;
+  --warning-soft-bg: #fffbeb;
+  --warning-soft-border: #fde68a;
+  --danger: #dc2626;
+  --danger-text: #dc2626;
+  --danger-soft-bg: #fef2f2;
+  --danger-soft-border: #fecaca;
+  --info: #2563eb;
+  --info-text: #2563eb;
+  --purple: #7c3aed;
+  --purple-text: #7c3aed;
+  --purple-soft-bg: #f5f3ff;
+  --purple-soft-border: #ede9fe;
+
+  /* 实心语义按钮三态（hover/active 取更深色） */
+  --btn-success-hover: #059669;
+  --btn-success-active: #047857;
+  --btn-danger-hover: #b91c1c;
+  --btn-danger-active: #991b1b;
+  --btn-warning-bg: #d97706;
+  --btn-warning-hover: #b45309;
+  --btn-warning-active: #92400e;
+  --on-warning: #ffffff;
+
+  /* 阴影 / 光晕 */
+  --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.08);
+  --shadow-elevated: 0 12px 32px -8px rgba(15, 23, 42, 0.18);
+  --glow-primary: 0 4px 14px rgba(37, 99, 235, 0.2);
+  --glow-purple: 0 4px 14px rgba(124, 58, 237, 0.18);
+
+  /* 网格点阵 */
+  --grid-dot: rgba(148, 163, 184, 0.35);
+
+  color-scheme: light;
+}
+
+/* ====================== 两主题共享令牌 ====================== */
+html.theme-dark,
+html.theme-light {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: ui-monospace, 'JetBrains Mono', 'SF Mono', Consolas,
+    'Courier New', monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  --transition-theme: background-color 0.3s ease, border-color 0.3s ease,
+    color 0.3s ease;
+}
+
+/* 页面基础底色（含 overscroll 区域），主题切换平滑过渡 */
+body {
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  transition: var(--transition-theme);
+}
+
+code,
+pre,
+.mono {
+  font-family: var(--font-mono);
+}
+
+a {
+  color: var(--brand-blue);
+}
+a:hover {
+  color: var(--brand-blue-hover);
+}
+
+::selection {
+  background: rgba(59, 130, 246, 0.3);
+}
+
+/* 滚动条（暗色下不刺眼；亮色保持系统浅色风格） */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 全局焦点环（可访问性） */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.55);
+  outline-offset: 2px;
+}

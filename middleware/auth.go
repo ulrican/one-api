@@ -18,6 +18,7 @@ func authHelper(c *gin.Context, minRole int) {
 	role := session.Get("role")
 	id := session.Get("id")
 	status := session.Get("status")
+	fromSession := username != nil
 	if username == nil {
 		// Check access token
 		accessToken := c.Request.Header.Get("Authorization")
@@ -43,6 +44,25 @@ func authHelper(c *gin.Context, minRole int) {
 			})
 			c.Abort()
 			return
+		}
+	}
+	// F10 会话吊销校验（仅 cookie 会话；access token 非会话不受影响）：
+	// 用户执行"注销其他会话"后版本号递增，旧会话（epoch 不匹配或缺失）立即失效；
+	// epoch=0 表示从未吊销，兼容存量会话
+	if fromSession {
+		if curEpoch := model.GetSessionEpoch(id.(int)); curEpoch > 0 {
+			sid, _ := session.Get("session_id").(string)
+			epoch, _ := session.Get("epoch").(int64)
+			if sid == "" || epoch != curEpoch {
+				session.Clear()
+				_ = session.Save()
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"success": false,
+					"message": "登录状态已失效，请重新登录",
+				})
+				c.Abort()
+				return
+			}
 		}
 	}
 	if status.(int) == model.UserStatusDisabled || blacklist.IsUserBanned(id.(int)) {

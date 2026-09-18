@@ -16,7 +16,10 @@ const (
 	RMB       = USD / USD2RMB
 )
 
-var modelRatioLock sync.RWMutex
+var (
+	modelRatioLock      sync.RWMutex
+	completionRatioLock sync.RWMutex // Task4-3：原 CompletionRatio 读写无锁，补齐与 ModelRatio 同等保护
+)
 
 // ModelRatio
 // https://platform.openai.com/docs/models/model-endpoint-compatibility
@@ -718,11 +721,15 @@ func CompletionRatio2JSONString() string {
 }
 
 func UpdateCompletionRatioByJSONString(jsonStr string) error {
+	completionRatioLock.Lock()
+	defer completionRatioLock.Unlock()
 	CompletionRatio = make(map[string]float64)
 	return json.Unmarshal([]byte(jsonStr), &CompletionRatio)
 }
 
 func GetCompletionRatio(name string, channelType int) float64 {
+	completionRatioLock.RLock()
+	defer completionRatioLock.RUnlock()
 	if strings.HasPrefix(name, "qwen-") && strings.HasSuffix(name, "-internet") {
 		name = strings.TrimSuffix(name, "-internet")
 	}
@@ -832,4 +839,77 @@ func GetCompletionRatio(name string, channelType int) float64 {
 	}
 
 	return 1
+}
+
+// ===== Task4-3 模型倍率自动计算：单 key 写入 / 静默查询 / 批量落库 =====
+// 不改变 GetModelRatio / GetCompletionRatio 的读函数签名，计费链路无感。
+
+// SetModelRatio 写入/覆盖单个模型输入倍率（加锁）
+func SetModelRatio(name string, ratio float64) {
+	modelRatioLock.Lock()
+	defer modelRatioLock.Unlock()
+	ModelRatio[name] = ratio
+}
+
+// SetCompletionRatio 写入/覆盖单个模型输出倍率（加锁）
+func SetCompletionRatio(name string, ratio float64) {
+	completionRatioLock.Lock()
+	defer completionRatioLock.Unlock()
+	CompletionRatio[name] = ratio
+}
+
+// PeekModelRatio 静默查询当前生效输入倍率（运营覆盖 map → 硬编码默认）。
+// 未命中返回 (0,false)，不打日志（重算差异比对/锁定快照用，避免批量刷错误日志）
+func PeekModelRatio(name string) (float64, bool) {
+	modelRatioLock.RLock()
+	defer modelRatioLock.RUnlock()
+	if ratio, ok := ModelRatio[name]; ok {
+		return ratio, true
+	}
+	if ratio, ok := DefaultModelRatio[name]; ok {
+		return ratio, true
+	}
+	return 0, false
+}
+
+// PeekCompletionRatio 静默查询当前生效输出倍率（运营覆盖 map → 硬编码默认）
+func PeekCompletionRatio(name string) (float64, bool) {
+	completionRatioLock.RLock()
+	defer completionRatioLock.RUnlock()
+	if ratio, ok := CompletionRatio[name]; ok {
+		return ratio, true
+	}
+	if ratio, ok := DefaultCompletionRatio[name]; ok {
+		return ratio, true
+	}
+	return 0, false
+}
+
+// ApplyModelRatioUpdates 批量合并输入倍率到内存 map，并在同一把写锁内序列化整表 JSON，
+// 供调用方持久化到 option 表（避免边写边序列化与计费并发读竞争）
+func ApplyModelRatioUpdates(updates map[string]float64) string {
+	modelRatioLock.Lock()
+	defer modelRatioLock.Unlock()
+	for name, r := range updates {
+		ModelRatio[name] = r
+	}
+	jsonBytes, err := json.Marshal(ModelRatio)
+	if err != nil {
+		logger.SysError("error marshalling model ratio: " + err.Error())
+	}
+	return string(jsonBytes)
+}
+
+// ApplyCompletionRatioUpdates 批量合并输出倍率到内存 map，并在同一把写锁内返回整表 JSON
+func ApplyCompletionRatioUpdates(updates map[string]float64) string {
+	completionRatioLock.Lock()
+	defer completionRatioLock.Unlock()
+	for name, r := range updates {
+		CompletionRatio[name] = r
+	}
+	jsonBytes, err := json.Marshal(CompletionRatio)
+	if err != nil {
+		logger.SysError("error marshalling completion ratio: " + err.Error())
+	}
+	return string(jsonBytes)
 }

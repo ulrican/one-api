@@ -1,0 +1,477 @@
+﻿docker : #0 building with "desktop-linux" instance using docker driver
+At line:15 char:1495
++ ... de\ripgrep\bin'; docker build -t one-api-custom:latest . 2>&1 | Out-F ...
++                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (#0 building wit...g docker driver:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.24kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/alpine:latest
+#2 ...
+
+#3 [internal] load metadata for docker.io/library/golang:alpine
+#3 DONE 1.9s
+
+#2 [internal] load metadata for docker.io/library/alpine:latest
+#2 DONE 2.0s
+
+#4 [internal] load metadata for docker.io/library/node:16
+#4 DONE 2.0s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 2B done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 DONE 0.0s
+
+#7 [stage-2 1/4] FROM docker.io/library/alpine:latest@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434
+943f8b
+#7 resolve docker.io/library/alpine:latest@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b 0.1s
+ done
+#7 DONE 0.1s
+
+#8 [builder 1/6] FROM docker.io/library/node:16@sha256:f77a1aef2da8d83e45ec990f45df50f1a286c5fe8bbfb8c6e4246c6389705c0b
+#8 resolve docker.io/library/node:16@sha256:f77a1aef2da8d83e45ec990f45df50f1a286c5fe8bbfb8c6e4246c6389705c0b
+#8 resolve docker.io/library/node:16@sha256:f77a1aef2da8d83e45ec990f45df50f1a286c5fe8bbfb8c6e4246c6389705c0b 0.1s done
+#8 DONE 0.1s
+
+#9 [builder2 1/8] FROM docker.io/library/golang:alpine@sha256:cf6fca6641884b8433441b2b0652976f975e1d0fdd26d177eaaf85960
+87f3125
+#9 resolve docker.io/library/golang:alpine@sha256:cf6fca6641884b8433441b2b0652976f975e1d0fdd26d177eaaf8596087f3125 0.1s
+ done
+#9 DONE 0.1s
+
+#6 [internal] load build context
+#6 transferring context: 53.09MB 4.9s
+#6 transferring context: 122.29MB 10.0s
+#6 transferring context: 141.76MB 15.0s
+#6 transferring context: 141.82MB 15.2s done
+#6 DONE 15.3s
+
+#10 [builder 2/6] WORKDIR /web
+#10 CACHED
+
+#11 [builder 3/6] COPY ./VERSION .
+#11 CACHED
+
+#12 [builder2 3/8] WORKDIR /build
+#12 CACHED
+
+#13 [builder2 4/8] ADD go.mod go.sum ./
+#13 CACHED
+
+#14 [builder2 2/8] RUN apk add --no-cache     gcc     musl-dev     sqlite-dev     build-base
+#14 CACHED
+
+#15 [builder2 5/8] RUN go mod download
+#15 CACHED
+
+#16 [builder2 6/8] COPY . .
+#16 ...
+
+#17 [builder 4/6] COPY ./web .
+#17 DONE 21.8s
+
+#16 [builder2 6/8] COPY . .
+#16 DONE 21.7s
+
+#18 [builder 5/6] RUN npm install --prefix /web/default &     npm install --prefix /web/berry &     npm install --prefi
+x /web/air &     wait
+#18 5.466 npm WARN ERESOLVE overriding peer dependency
+#18 5.467 npm WARN While resolving: i18next@24.2.3
+#18 5.470 npm WARN Found: typescript@7.0.2
+#18 5.470 npm WARN node_modules/typescript
+#18 5.470 npm WARN   peer typescript@">= 2.7" from fork-ts-checker-webpack-plugin@6.5.3
+#18 5.470 npm WARN   node_modules/fork-ts-checker-webpack-plugin
+#18 5.471 npm WARN     fork-ts-checker-webpack-plugin@"^6.5.0" from react-dev-utils@12.0.1
+#18 5.471 npm WARN     node_modules/react-dev-utils
+#18 5.471 npm WARN   1 more (tsutils)
+#18 5.471 npm WARN 
+#18 5.471 npm WARN Could not resolve dependency:
+#18 5.471 npm WARN peerOptional typescript@"^3.2.1 || ^4" from react-scripts@5.0.1
+#18 5.471 npm WARN node_modules/react-scripts
+#18 5.471 npm WARN   react-scripts@"5.0.1" from the root project
+#18 5.501 npm WARN EBADENGINE Unsupported engine {
+#18 5.501 npm WARN EBADENGINE   package: 'node-releases@2.0.54',
+#18 5.501 npm WARN EBADENGINE   required: { node: '>=18' },
+#18 5.501 npm WARN EBADENGINE   current: { node: 'v16.20.2', npm: '8.19.4' }
+#18 5.501 npm WARN EBADENGINE }
+#18 5.508 npm WARN EBADENGINE Unsupported engine {
+#18 5.508 npm WARN EBADENGINE   package: 'postcss-load-config@6.0.1',
+#18 5.508 npm WARN EBADENGINE   required: { node: '>= 18' },
+#18 5.508 npm WARN EBADENGINE   current: { node: 'v16.20.2', npm: '8.19.4' }
+#18 5.508 npm WARN EBADENGINE }
+#18 21.19 
+#18 21.19 removed 1 package, changed 1 package, and audited 1358 packages in 20s
+#18 21.19 
+#18 21.19 274 packages are looking for funding
+#18 21.19   run `npm fund` for details
+#18 21.28 
+#18 21.28 34 vulnerabilities (9 low, 10 moderate, 15 high)
+#18 21.28 
+#18 21.28 To address issues that do not require attention, run:
+#18 21.28   npm audit fix
+#18 21.28 
+#18 21.28 To address all issues (including breaking changes), run:
+#18 21.28   npm audit fix --force
+#18 21.28 
+#18 21.28 Run `npm audit` for details.
+#18 21.28 npm notice 
+#18 21.28 npm notice New major version of npm available! 8.19.4 -> 12.0.2
+#18 21.28 npm notice Changelog: <https://github.com/npm/cli/releases/tag/v12.0.2>
+#18 21.28 npm notice Run `npm install -g npm@12.0.2` to update!
+#18 21.28 npm notice 
+#18 55.32 npm WARN EBADENGINE Unsupported engine {
+#18 55.32 npm WARN EBADENGINE   package: 'sass@1.104.0',
+#18 55.32 npm WARN EBADENGINE   required: { node: '>=20.19.0' },
+#18 55.32 npm WARN EBADENGINE   current: { node: 'v16.20.2', npm: '8.19.4' }
+#18 55.32 npm WARN EBADENGINE }
+#18 55.32 npm WARN EBADENGINE Unsupported engine {
+#18 55.32 npm WARN EBADENGINE   package: 'node-releases@2.0.54',
+#18 55.32 npm WARN EBADENGINE   required: { node: '>=18' },
+#18 55.32 npm WARN EBADENGINE   current: { node: 'v16.20.2', npm: '8.19.4' }
+#18 55.32 npm WARN EBADENGINE }
+#18 55.33 npm WARN EBADENGINE Unsupported engine {
+#18 55.33 npm WARN EBADENGINE   package: 'node-releases@2.0.54',
+#18 55.33 npm WARN EBADENGINE   required: { node: '>=18' },
+#18 55.33 npm WARN EBADENGINE   current: { node: 'v16.20.2', npm: '8.19.4' }
+#18 55.33 npm WARN EBADENGINE }
+#18 55.33 npm WARN EBADENGINE Unsupported engine {
+#18 55.33 npm WARN EBADENGINE   package: 'chokidar@5.0.0',
+#18 55.33 npm WARN EBADENGINE   required: { node: '>= 20.19.0' },
+#18 55.33 npm WARN EBADENGINE   current: { node: 'v16.20.2', npm: '8.19.4' }
+#18 55.33 npm WARN EBADENGINE }
+#18 55.33 npm WARN EBADENGINE Unsupported engine {
+#18 55.33 npm WARN EBADENGINE   package: 'postcss-load-config@6.0.1',
+#18 55.33 npm WARN EBADENGINE   required: { node: '>= 18' },
+#18 55.33 npm WARN EBADENGINE   current: { node: 'v16.20.2', npm: '8.19.4' }
+#18 55.33 npm WARN EBADENGINE }
+#18 55.34 npm WARN EBADENGINE Unsupported engine {
+#18 55.34 npm WARN EBADENGINE   package: 'readdirp@5.1.1',
+#18 55.34 npmnpm WARN EBADENGINE   required: { node: '>= 20.19.0' },
+#18 55.34  npm WARNWARN EBADENGINE   current: { node: 'v16.20.2', npm: '8.19.4' }
+#18 55.34 npm  WARNEBADENGINE Unsupported engine {
+#18 55.34  npmEBADENGINE  }
+#18 55.34 WARN EBADENGINE   package: 'postcss-load-config@6.0.1',
+#18 55.34 npm WARN EBADENGINE   required: { node: '>= 18' },
+#18 55.34 npm WARN EBADENGINE   current: { node: 'v16.20.2', npm: '8.19.4' }
+#18 55.34 npm WARN EBADENGINE }
+#18 63.29 npm WARN deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
+#18 63.51 npm WARN deprecated rollup-plugin-terser@7.0.2: This package has been deprecated and is no longer maintained.
+ Please use @rollup/plugin-terser
+#18 64.17 npm WARN deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
+#18 64.58 npm WARN deprecated rollup-plugin-terser@7.0.2: This package has been deprecated and is no longer maintained.
+ Please use @rollup/plugin-terser
+#18 65.14 npm WARN deprecated workbox-cacheable-response@6.6.0: workbox-background-sync@6.6.0
+#18 65.40 npm WARN deprecated workbox-google-analytics@6.6.0: It is not compatible with newer versions of GA starting w
+ith v4, as long as you are using GAv3 it should be ok, but the package is not longer being maintained
+#18 66.20 npm WARN deprecated stable@0.1.8: Modern JS already guarantees Array#sort() is a stable sort, so this library
+ is deprecated. See the compatibility table on MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/G
+lobal_Objects/Array/sort#browser_compatibility
+#18 66.27 npm WARN deprecated workbox-cacheable-response@6.6.0: workbox-background-sync@6.6.0
+#18 66.32 npm WARN deprecated q@1.5.1: You or someone you depend on is using Q, the JavaScript Promise library that gav
+e JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript prom
+ise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+#18 66.32 npm WARN deprecated 
+#18 66.32 npm WARN deprecated (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
+#18 66.55 npm WARN deprecated workbox-google-analytics@6.6.0: It is not compatible with newer versions of GA starting w
+ith v4, as long as you are using GAv3 it should be ok, but the package is not longer being maintained
+#18 66.95 npm WARN deprecated stable@0.1.8: Modern JS already guarantees Array#sort() is a stable sort, so this library
+ is deprecated. See the compatibility table on MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/G
+lobal_Objects/Array/sort#browser_compatibility
+#18 67.03 npm WARN deprecated q@1.5.1: You or someone you depend on is using Q, the JavaScript Promise library that gav
+e JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript prom
+ise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+#18 67.03 npm WARN deprecated 
+#18 67.03 npm WARN deprecated (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
+#18 70.23 npm WARN deprecated text-encoding@0.6.4: no longer maintained
+#18 70.34 npm WARN deprecated whatwg-encoding@1.0.5: Use @exodus/bytes instead for a more spec-conformant and faster im
+plementation
+#18 70.42 npm WARN deprecated w3c-hr-time@1.0.2: Use your platform's native performance.now() and performance.timeOrigi
+n.
+#18 70.52 npm WARN deprecated domexception@2.0.1: Use your platform's native DOMException instead
+#18 70.53 npm WARN deprecated whatwg-encoding@1.0.5: Use @exodus/bytes instead for a more spec-conformant and faster im
+plementation
+#18 70.64 npm WARN deprecated w3c-hr-time@1.0.2: Use your platform's native performance.now() and performance.timeOrigi
+n.
+#18 70.76 npm WARN deprecated domexception@2.0.1: Use your platform's native DOMException instead
+#18 70.76 npm WARN deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
+#18 70.84 npm WARN deprecated uuid@8.3.2: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@
+latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+#18 70.90 npm WARN deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
+#18 71.45 npm WARN deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out 
+lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive
+ and powerful.
+#18 71.61 npm WARN deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized securit
+y vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchas
+ed (at exorbitant rates) by contacting i@izs.me
+#18 71.74 npm WARN deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out 
+lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive
+ and powerful.
+#18 71.89 npm WARN deprecated uuid@8.3.2: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@
+latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+#18 71.93 npm WARN deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized securit
+y vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchas
+ed (at exorbitant rates) by contacting i@izs.me
+#18 72.44 npm WARN deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+#18 74.60 npm WARN deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
+#18 75.51 npm WARN deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead
+#18 76.15 npm WARN deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+#18 76.74 npm WARN deprecated @babel/plugin-proposal-numeric-separator@7.18.6: This proposal has been merged to the ECM
+AScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-numeric-separator ins
+tead.
+#18 76.74 npm WARN deprecated @babel/plugin-proposal-optional-chaining@7.21.0: This proposal has been merged to the ECM
+AScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-optional-chaining ins
+tead.
+#18 76.74 npm WARN deprecated @babel/plugin-proposal-nullish-coalescing-operator@7.18.6: This proposal has been merged 
+to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-nullish-coa
+lescing-operator instead.
+#18 76.74 npm WARN deprecated @babel/plugin-proposal-private-methods@7.18.6: This proposal has been merged to the ECMAS
+cript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-private-methods instead
+.
+#18 76.96 npm WARN deprecated @babel/plugin-proposal-class-properties@7.18.6: This proposal has been merged to the ECMA
+Script standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-class-properties inste
+ad.
+#18 79.68 npm WARN deprecated @babel/plugin-proposal-private-methods@7.18.6: This proposal has been merged to the ECMAS
+cript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-private-methods instead
+.
+#18 79.73 npm WARN deprecated @babel/plugin-proposal-optional-chaining@7.21.0: This proposal has been merged to the ECM
+AScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-optional-chaining ins
+tead.
+#18 79.74 npm WARN deprecated @babel/plugin-proposal-numeric-separator@7.18.6: This proposal has been merged to the ECM
+AScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-numeric-separator ins
+tead.
+#18 79.80 npm WARN deprecated @babel/plugin-proposal-nullish-coalescing-operator@7.18.6: This proposal has been merged 
+to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-nullish-coa
+lescing-operator instead.
+#18 79.81 npm WARN deprecated @babel/plugin-proposal-private-property-in-object@7.21.11: This proposal has been merged 
+to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-private-pro
+perty-in-object instead.
+#18 80.19 npm WARN deprecated @babel/plugin-proposal-class-properties@7.18.6: This proposal has been merged to the ECMA
+Script standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-class-properties inste
+ad.
+#18 80.29 npm WARN deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
+#18 80.92 npm WARN deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead
+#18 81.49 npm WARN deprecated svgo@1.3.2: This SVGO version is no longer supported. Upgrade to v2.x.x.
+#18 83.76 npm WARN deprecated svgo@1.3.2: This SVGO version is no longer supported. Upgrade to v2.x.x.
+#18 95.80 npm WARN deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version
+-support for other options.
+#18 102.3 npm WARN deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version
+-support for other options.
+#18 106.1 npm WARN deprecated @babel/plugin-proposal-private-property-in-object@7.21.11: This proposal has been merged 
+to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-private-pro
+perty-in-object instead.
+#18 109.0 npm WARN deprecated @mui/base@5.0.0-beta.40-1: This package has been replaced by @base-ui/react
+#18 137.9 
+#18 137.9 added 1410 packages, and audited 1411 packages in 2m
+#18 137.9 
+#18 137.9 293 packages are looking for funding
+#18 137.9   run `npm fund` for details
+#18 138.0 
+#18 138.0 34 vulnerabilities (9 low, 10 moderate, 15 high)
+#18 138.0 
+#18 138.0 To address issues that do not require attention, run:
+#18 138.0   npm audit fix
+#18 138.0 
+#18 138.0 To address all issues (including breaking changes), run:
+#18 138.0   npm audit fix --force
+#18 138.0 
+#18 138.0 Run `npm audit` for details.
+#18 138.0 npm notice 
+#18 138.0 npm notice New major version of npm available! 8.19.4 -> 12.0.2
+#18 138.0 npm notice Changelog: <https://github.com/npm/cli/releases/tag/v12.0.2>
+#18 138.0 npm notice Run `npm install -g npm@12.0.2` to update!
+#18 138.0 npm notice 
+#18 139.6 
+#18 139.6 added 1611 packages, and audited 1612 packages in 2m
+#18 139.6 
+#18 139.6 424 packages are looking for funding
+#18 139.6   run `npm fund` for details
+#18 139.7 
+#18 139.7 36 vulnerabilities (9 low, 10 moderate, 15 high, 2 critical)
+#18 139.7 
+#18 139.7 To address issues that do not require attention, run:
+#18 139.7   npm audit fix
+#18 139.7 
+#18 139.7 To address all issues (including breaking changes), run:
+#18 139.7   npm audit fix --force
+#18 139.7 
+#18 139.7 Run `npm audit` for details.
+#18 139.7 npm notice 
+#18 139.7 npm notice New major version of npm available! 8.19.4 -> 12.0.2
+#18 139.7 npm notice Changelog: <https://github.com/npm/cli/releases/tag/v12.0.2>
+#18 139.7 npm notice Run `npm install -g npm@12.0.2` to update!
+#18 139.7 npm notice 
+#18 DONE 141.0s
+
+#19 [builder 6/6] RUN DISABLE_ESLINT_PLUGIN='true' REACT_APP_VERSION=$(cat ./VERSION) npm run build --prefix /web/defau
+lt &     DISABLE_ESLINT_PLUGIN='true' REACT_APP_VERSION=$(cat ./VERSION) npm run build --prefix /web/berry &     DISABL
+E_ESLINT_PLUGIN='true' REACT_APP_VERSION=$(cat ./VERSION) npm run build --prefix /web/air &     wait
+#19 3.136 
+#19 3.136 > one_api_web@1.0.0 build
+#19 3.136 > react-scripts build && mv -f build ../build/berry
+#19 3.136 
+#19 3.140 
+#19 3.140 > react-template@0.1.0 build
+#19 3.140 > react-scripts build && mv -f build ../build/air
+#19 3.140 
+#19 3.141 
+#19 3.141 > react-template@0.1.0 build
+#19 3.141 > react-scripts build && rm -rf ../build/default && mv -f build ../build/default
+#19 3.141 
+#19 5.532 Creating an optimized production build...
+#19 5.828 Creating an optimized production build...
+#19 5.856 Creating an optimized production build...
+#19 79.02 Compiled successfully.
+#19 79.02 
+#19 79.02 File sizes after gzip:
+#19 79.02 
+#19 79.08 Compiled successfully.
+#19 79.08 
+#19 79.08 File sizes after gzip:
+#19 79.08 
+#19 79.15   174.05 kB  build/static/js/main.e78f65ed.js
+#19 79.15   129.24 kB  build/static/js/51.42b1466f.chunk.js
+#19 79.15   55.9 kB    build/static/js/585.8b661cc1.chunk.js
+#19 79.15   32.56 kB   build/static/js/219.87fce4c9.chunk.js
+#19 79.15   29.81 kB   build/static/js/509.80996827.chunk.js
+#19 79.15   11.78 kB   build/static/js/822.f2f2e48b.chunk.js
+#19 79.15   11.71 kB   build/static/js/96.7c9eb97b.chunk.js
+#19 79.15   10.92 kB   build/static/js/464.5932fd5c.chunk.js
+#19 79.15   9.34 kB    build/static/js/721.65217c5b.chunk.js
+#19 79.15   9.03 kB    build/static/js/814.8d090453.chunk.js
+#19 79.15   8.62 kB    build/static/js/381.5a3cbbb3.chunk.js
+#19 79.16   8.25 kB    build/static/js/331.58eb43ae.chunk.js
+#19 79.16   8.01 kB    build/static/js/101.900966c6.chunk.js
+#19 79.16   7.33 kB    build/static/js/415.ed4a2e58.chunk.js
+#19 79.16   6.34 kB    build/static/js/208.3b4172c5.chunk.js
+#19 79.16   6.18 kB    build/static/js/402.ebf98af4.chunk.js
+#19 79.16   5.92 kB    build/static/js/930.6bbddfb5.chunk.js
+#19 79.16   4.64 kB    build/static/js/224.28b3d5aa.chunk.js
+#19 79.16   4.5 kB     build/static/js/871.f4e1bf5d.chunk.js
+#19 79.16   4.4 kB     build/static/js/813.396ddfba.chunk.js
+#19 79.16   4.3 kB     build/static/js/905.b580dc45.chunk.js
+#19 79.16   4.19 kB    build/static/js/260.55c0020a.chunk.js
+#19 79.16   3.93 kB    build/static/js/154.f9df2549.chunk.js
+#19 79.16   3.67 kB    build/static/js/41.5234fa4e.chunk.js
+#19 79.16   3.49 kB    build/static/js/739.216567dc.chunk.js
+#19 79.16   3.48 kB    build/static/js/4.435bcbc9.chunk.js
+#19 79.16   3.39 kB    build/static/js/444.79469eba.chunk.js
+#19 79.16   3.21 kB    build/static/js/157.f04693cd.chunk.js
+#19 79.16   3.18 kB    build/static/js/617.87108198.chunk.js
+#19 79.16   2.52 kB    build/static/js/399.2609b3a7.chunk.js
+#19 79.16   2.43 kB    build/static/js/982.7173cdb8.chunk.js
+#19 79.16   2.43 kB    build/static/js/375.7a936923.chunk.js
+#19 79.16   2.43 kB    build/static/js/397.a8bbc3b2.chunk.js
+#19 79.16   1.21 kB    build/static/css/main.d77598b1.css
+#19 79.16   809 B      build/static/js/347.3afcb8a4.chunk.js
+#19 79.16   542 B      build/static/js/262.0dfbfdd3.chunk.js
+#19 79.16 
+#19 79.16 The project was built assuming it is hosted at /.
+#19 79.16 You can control this with the homepage field in your package.json.
+#19 79.16 
+#19 79.16 The build folder is ready to be deployed.
+#19 79.16 You may serve it with a static server:
+#19 79.16 
+#19 79.16   npm install -g serve
+#19 79.16   serve -s build
+#19 79.16 
+#19 79.16 Find out more about deployment here:
+#19 79.16 
+#19 79.16   https://cra.link/deployment
+#19 79.16 
+#19 79.21   296.83 kB (-91 B)  build/static/js/main.05d310a4.js
+#19 79.21   106.46 kB          build/static/css/main.1abcbe05.css
+#19 79.21   3.32 kB            build/static/css/665.d3dba4c6.chunk.css
+#19 79.21   2.95 kB            build/static/js/665.2121540d.chunk.js
+#19 79.21   1.59 kB            build/static/js/151.b1e51667.chunk.js
+#19 79.21   744 B              build/static/js/585.80af3e0c.chunk.js
+#19 79.21 
+#19 79.21 The project was built assuming it is hosted at /.
+#19 79.21 You can control this with the homepage field in your package.json.
+#19 79.21 
+#19 79.21 The build folder is ready to be deployed.
+#19 79.21 You may serve it with a static server:
+#19 79.21 
+#19 79.21   npm install -g serve
+#19 79.21   serve -s build
+#19 79.21 
+#19 79.21 Find out more about deployment here:
+#19 79.21 
+#19 79.21   https://cra.link/deployment
+#19 79.21 
+#19 ...
+
+#12 [builder2 3/8] WORKDIR /build
+#12 CACHED
+
+#10 [builder 2/6] WORKDIR /web
+#10 CACHED
+
+#7 [stage-2 1/4] FROM docker.io/library/alpine:latest@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434
+943f8b
+#7 CACHED
+
+#19 [builder 6/6] RUN DISABLE_ESLINT_PLUGIN='true' REACT_APP_VERSION=$(cat ./VERSION) npm run build --prefix /web/defau
+lt &     DISABLE_ESLINT_PLUGIN='true' REACT_APP_VERSION=$(cat ./VERSION) npm run build --prefix /web/berry &     DISABL
+E_ESLINT_PLUGIN='true' REACT_APP_VERSION=$(cat ./VERSION) npm run build --prefix /web/air &     wait
+#19 211.8 Compiled successfully.
+#19 211.8 
+#19 211.8 File sizes after gzip:
+#19 211.8 
+#19 212.3   986.41 kB  build/static/js/main.eaba3997.js
+#19 212.4   152.73 kB  build/static/css/main.7cb3d5b3.css
+#19 212.4   1.32 kB    build/static/js/151.622a0d97.chunk.js
+#19 212.4   766 B      build/static/js/585.229a1ffd.chunk.js
+#19 212.4 
+#19 212.4 The bundle size is significantly larger than recommended.
+#19 212.4 Consider reducing it with code splitting: https://goo.gl/9VhYWB
+#19 212.4 You can also analyze the project dependencies: https://goo.gl/LeUzfb
+#19 212.4 
+#19 212.4 The project was built assuming it is hosted at /.
+#19 212.4 You can control this with the homepage field in your package.json.
+#19 212.4 
+#19 212.4 The build folder is ready to be deployed.
+#19 212.4 You may serve it with a static server:
+#19 212.4 
+#19 212.4   npm install -g serve
+#19 212.4   serve -s build
+#19 212.4 
+#19 212.4 Find out more about deployment here:
+#19 212.4 
+#19 212.4   https://cra.link/deployment
+#19 212.4 
+#19 DONE 213.1s
+
+#20 [builder2 7/8] COPY --from=builder /web/build ./web/build
+#20 DONE 1.0s
+
+#21 [builder2 8/8] RUN go build -trimpath -ldflags "-s -w -X 'github.com/songquanpeng/one-api/common.Version=$(cat VERS
+ION)' -linkmode external -extldflags '-static'" -o one-api
+#21 DONE 248.6s
+
+#22 [stage-2 2/4] RUN apk add --no-cache ca-certificates tzdata
+#22 CACHED
+
+#23 [stage-2 3/4] COPY --from=builder2 /build/one-api /
+#23 DONE 0.3s
+
+#24 [stage-2 4/4] WORKDIR /data
+#24 DONE 0.2s
+
+#25 exporting to image
+#25 exporting layers
+#25 exporting layers 6.3s done
+#25 exporting manifest sha256:e13545c8d17939c006f78e06bcc2741cf069121ef11824e63c2d9afc18163f69 0.1s done
+#25 exporting config sha256:ef77315c0d55f25235f704d08996fecfd2a1e21a552443c147338eafec6db933 0.1s done
+#25 exporting attestation manifest sha256:97f5baaf324856ea076ed901fe5960b87390885bca97cf7342e261192207b634 0.1s done
+#25 exporting manifest list sha256:6f24d3d3bea1a9b666c51cebb8d73bcc752090aa79717f892debd1ad9a81b2fd 0.1s done
+#25 naming to docker.io/library/one-api-custom:latest 0.0s done
+#25 unpacking to docker.io/library/one-api-custom:latest
+#25 unpacking to docker.io/library/one-api-custom:latest 1.1s done
+#25 DONE 7.9s

@@ -38,6 +38,7 @@ const (
 	LogTypeManage
 	LogTypeSystem
 	LogTypeTest
+	LogTypeCheckIn
 )
 
 func recordLogHelper(ctx context.Context, log *Log) {

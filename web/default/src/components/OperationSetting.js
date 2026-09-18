@@ -8,6 +8,7 @@ import {
   timestamp2string,
   verifyJSON,
 } from '../helpers';
+import RatioAutoSetting from './RatioAutoSetting';
 
 const OperationSetting = () => {
   const { t } = useTranslation();
@@ -32,9 +33,31 @@ const OperationSetting = () => {
     DisplayTokenStatEnabled: '',
     ApproximateTokenEnabled: '',
     RetryTimes: 0,
+    PayEnabled: '',
+    PayAddress: '',
+    EpayId: '',
+    EpaySecret: '',
+    PayPrice: 0,
+    CheckInEnabled: '',
+    CheckInMinReward: 0,
+    CheckInMaxReward: 0,
+    PlaygroundEnabled: '',
+    RankingEnabled: '',
+    MarketplaceEnabled: '',
+    QiniuApiSecret: '',
+    MarketplaceLastSyncTime: '',
+    MinTopUp: 0,
+    MaxTopUp: 0,
+    TopupAmountOptions: '',
+    // F11 渠道监控告警
+    ChannelAlertEnabled: '',
+    ChannelAlertWebhookUrl: '',
+    ChannelAlertCooldownMinutes: 30,
+    ChannelMetricEnabled: '',
   });
   const [originInputs, setOriginInputs] = useState({});
   let [loading, setLoading] = useState(false);
+  let [marketSyncing, setMarketSyncing] = useState(false);
   let [historyTimestamp, setHistoryTimestamp] = useState(
     timestamp2string(now.getTime() / 1000 - 30 * 24 * 3600)
   ); // a month ago
@@ -114,6 +137,24 @@ const OperationSetting = () => {
             inputs.QuotaRemindThreshold
           );
         }
+        if (
+          originInputs['ChannelAlertWebhookUrl'] !==
+          inputs.ChannelAlertWebhookUrl
+        ) {
+          await updateOption(
+            'ChannelAlertWebhookUrl',
+            inputs.ChannelAlertWebhookUrl
+          );
+        }
+        if (
+          originInputs['ChannelAlertCooldownMinutes'] !==
+          inputs.ChannelAlertCooldownMinutes
+        ) {
+          await updateOption(
+            'ChannelAlertCooldownMinutes',
+            inputs.ChannelAlertCooldownMinutes
+          );
+        }
         break;
       case 'ratio':
         if (originInputs['ModelRatio'] !== inputs.ModelRatio) {
@@ -152,6 +193,22 @@ const OperationSetting = () => {
           await updateOption('PreConsumedQuota', inputs.PreConsumedQuota);
         }
         break;
+      case 'checkin':
+        if (originInputs['CheckInMinReward'] !== inputs.CheckInMinReward) {
+          await updateOption('CheckInMinReward', inputs.CheckInMinReward);
+        }
+        if (originInputs['CheckInMaxReward'] !== inputs.CheckInMaxReward) {
+          await updateOption('CheckInMaxReward', inputs.CheckInMaxReward);
+        }
+        break;
+      case 'marketplace':
+        // QiniuApiSecret 后端不回显，留空表示不修改
+        if (inputs.QiniuApiSecret) {
+          await updateOption('QiniuApiSecret', inputs.QiniuApiSecret);
+        }
+        // MarketplaceEnabled 为复选框，勾选/取消时已即时保存，不可重复提交
+        break;
+      // RankingEnabled 为复选框，勾选/取消时已即时保存，无需提交（重复提交会被取反）
       case 'general':
         if (originInputs['TopUpLink'] !== inputs.TopUpLink) {
           await updateOption('TopUpLink', inputs.TopUpLink);
@@ -166,7 +223,59 @@ const OperationSetting = () => {
           await updateOption('RetryTimes', inputs.RetryTimes);
         }
         break;
+      case 'pay':
+        if (originInputs['PayAddress'] !== inputs.PayAddress) {
+          await updateOption('PayAddress', inputs.PayAddress);
+        }
+        if (originInputs['EpayId'] !== inputs.EpayId) {
+          await updateOption('EpayId', inputs.EpayId);
+        }
+        if (inputs.EpaySecret) {
+          // 密钥留空（或后端未下发）表示不修改
+          await updateOption('EpaySecret', inputs.EpaySecret);
+        }
+        if (originInputs['PayPrice'] !== inputs.PayPrice) {
+          await updateOption('PayPrice', inputs.PayPrice);
+        }
+        if (originInputs['MinTopUp'] !== inputs.MinTopUp) {
+          await updateOption('MinTopUp', inputs.MinTopUp);
+        }
+        if (originInputs['MaxTopUp'] !== inputs.MaxTopUp) {
+          await updateOption('MaxTopUp', inputs.MaxTopUp);
+        }
+        if (originInputs['TopupAmountOptions'] !== inputs.TopupAmountOptions) {
+          if (!verifyJSON(inputs.TopupAmountOptions)) {
+            showError('充值金额预设不是合法的 JSON 字符串');
+            return;
+          }
+          await updateOption('TopupAmountOptions', inputs.TopupAmountOptions);
+        }
+        // PayEnabled 为复选框，勾选/取消时已由 handleInputChange 即时保存，
+        // 此处不可再次提交：updateOption 会对 *Enabled 键取反，重复提交会把刚保存的状态翻转
+        break;
     }
+  };
+
+  const syncMarketplace = async () => {
+    setMarketSyncing(true);
+    try {
+      const res = await API.post('/api/marketplace/sync');
+      const { success, message, data } = res.data;
+      if (success) {
+        showSuccess(
+          t('setting.operation.marketplace.sync_success', {
+            count: data?.synced ?? 0,
+          })
+        );
+        await getOptions();
+        setInputs((inputs) => ({ ...inputs, QiniuApiSecret: '' }));
+      } else {
+        showError(message);
+      }
+    } catch (e) {
+      showError(e?.message || 'sync failed');
+    }
+    setMarketSyncing(false);
   };
 
   const deleteHistoryLogs = async () => {
@@ -241,6 +350,101 @@ const OperationSetting = () => {
             {t('setting.operation.quota.buttons.save')}
           </Form.Button>
           <Divider />
+          <Header as='h3'>{t('setting.operation.checkin.title')}</Header>
+          <Form.Group widths='equal'>
+            <Form.Checkbox
+              label={t('setting.operation.checkin.enabled')}
+              name='CheckInEnabled'
+              onChange={handleInputChange}
+              checked={inputs.CheckInEnabled === 'true' || inputs.CheckInEnabled === true}
+            />
+            <Form.Input
+              label={t('setting.operation.checkin.min')}
+              name='CheckInMinReward'
+              onChange={handleInputChange}
+              value={inputs.CheckInMinReward}
+              type='number'
+              min='0'
+            />
+            <Form.Input
+              label={t('setting.operation.checkin.max')}
+              name='CheckInMaxReward'
+              onChange={handleInputChange}
+              value={inputs.CheckInMaxReward}
+              type='number'
+              min='0'
+            />
+          </Form.Group>
+          <Form.Button
+            onClick={() => {
+              submitConfig('checkin').then();
+            }}
+          >
+            {t('setting.operation.checkin.buttons.save')}
+          </Form.Button>
+          <Divider />
+          <Header as='h3'>{t('setting.operation.ranking.title')}</Header>
+          <Form.Group widths='equal'>
+            <Form.Checkbox
+              label={t('setting.operation.ranking.enabled')}
+              name='RankingEnabled'
+              onChange={handleInputChange}
+              checked={inputs.RankingEnabled === 'true' || inputs.RankingEnabled === true}
+            />
+          </Form.Group>
+          <Divider />
+          <Header as='h3'>{t('setting.operation.marketplace.title')}</Header>
+          <Form.Group widths='equal'>
+            <Form.Checkbox
+              label={t('setting.operation.marketplace.enabled')}
+              name='MarketplaceEnabled'
+              onChange={handleInputChange}
+              checked={
+                inputs.MarketplaceEnabled === 'true' ||
+                inputs.MarketplaceEnabled === true
+              }
+            />
+          </Form.Group>
+          <Form.Group widths='equal'>
+            <Form.Input
+              label={t('setting.operation.marketplace.secret')}
+              name='QiniuApiSecret'
+              onChange={handleInputChange}
+              autoComplete='new-password'
+              value={inputs.QiniuApiSecret || ''}
+              type='password'
+              placeholder={t(
+                'setting.operation.marketplace.secret_placeholder'
+              )}
+            />
+            <Form.Input
+              label={t('setting.operation.marketplace.last_sync')}
+              value={
+                inputs.MarketplaceLastSyncTime ||
+                t('setting.operation.marketplace.last_sync_never')
+              }
+              readOnly
+            />
+          </Form.Group>
+          <Form.Button
+            onClick={() => {
+              submitConfig('marketplace').then();
+            }}
+          >
+            {t('setting.operation.marketplace.buttons.save')}
+          </Form.Button>
+          <Form.Button
+            onClick={() => {
+              syncMarketplace().then();
+            }}
+            loading={marketSyncing}
+            style={{ marginLeft: 8 }}
+          >
+            {marketSyncing
+              ? t('setting.operation.marketplace.syncing')
+              : t('setting.operation.marketplace.sync_now')}
+          </Form.Button>
+          <Divider />
           <Header as='h3'>{t('setting.operation.ratio.title')}</Header>
           <Form.Group widths='equal'>
             <Form.TextArea
@@ -282,6 +486,8 @@ const OperationSetting = () => {
           >
             {t('setting.operation.ratio.buttons.save')}
           </Form.Button>
+          {/* Task4-3 倍率自动计算 + 分组倍率维护（与上方手动 JSON 区块并存） */}
+          <RatioAutoSetting onRatioChanged={getOptions} />
           <Divider />
           <Header as='h3'>{t('setting.operation.log.title')}</Header>
           <Form.Group inline>
@@ -351,6 +557,46 @@ const OperationSetting = () => {
               label={t('setting.operation.monitor.auto_enable')}
               name='AutomaticEnableChannelEnabled'
               onChange={handleInputChange}
+            />
+            <Form.Checkbox
+              checked={
+                inputs.ChannelMetricEnabled === 'true' ||
+                inputs.ChannelMetricEnabled === true
+              }
+              label={t('setting.operation.monitor.channel_metric')}
+              name='ChannelMetricEnabled'
+              onChange={handleInputChange}
+            />
+            <Form.Checkbox
+              checked={
+                inputs.ChannelAlertEnabled === 'true' ||
+                inputs.ChannelAlertEnabled === true
+              }
+              label={t('setting.operation.monitor.channel_alert')}
+              name='ChannelAlertEnabled'
+              onChange={handleInputChange}
+            />
+          </Form.Group>
+          <Form.Group widths={2}>
+            <Form.Input
+              label={t('setting.operation.monitor.alert_webhook')}
+              name='ChannelAlertWebhookUrl'
+              onChange={handleInputChange}
+              autoComplete='new-password'
+              value={inputs.ChannelAlertWebhookUrl || ''}
+              type='url'
+              placeholder={t(
+                'setting.operation.monitor.alert_webhook_placeholder'
+              )}
+            />
+            <Form.Input
+              label={t('setting.operation.monitor.alert_cooldown')}
+              name='ChannelAlertCooldownMinutes'
+              onChange={handleInputChange}
+              autoComplete='new-password'
+              value={inputs.ChannelAlertCooldownMinutes}
+              type='number'
+              min='1'
             />
           </Form.Group>
           <Form.Button
@@ -429,6 +675,15 @@ const OperationSetting = () => {
               name='ApproximateTokenEnabled'
               onChange={handleInputChange}
             />
+            <Form.Checkbox
+              checked={
+                inputs.PlaygroundEnabled === 'true' ||
+                inputs.PlaygroundEnabled === true
+              }
+              label={t('setting.operation.general.playground_enabled')}
+              name='PlaygroundEnabled'
+              onChange={handleInputChange}
+            />
           </Form.Group>
           <Form.Button
             onClick={() => {
@@ -436,6 +691,93 @@ const OperationSetting = () => {
             }}
           >
             {t('setting.operation.general.buttons.save')}
+          </Form.Button>
+
+          <Divider />
+          <Header as='h3'>{t('setting.operation.pay.title')}</Header>
+          <Form.Group inline>
+            <Form.Checkbox
+              checked={inputs.PayEnabled === 'true'}
+              label={t('setting.operation.pay.enable')}
+              name='PayEnabled'
+              onChange={handleInputChange}
+            />
+          </Form.Group>
+          <Form.Group widths={3}>
+            <Form.Input
+              label={t('setting.operation.pay.address')}
+              name='PayAddress'
+              onChange={handleInputChange}
+              autoComplete='new-password'
+              value={inputs.PayAddress}
+              type='link'
+              placeholder={t('setting.operation.pay.address_placeholder')}
+            />
+            <Form.Input
+              label={t('setting.operation.pay.pid')}
+              name='EpayId'
+              onChange={handleInputChange}
+              autoComplete='new-password'
+              value={inputs.EpayId}
+              placeholder={t('setting.operation.pay.pid_placeholder')}
+            />
+            <Form.Input
+              label={t('setting.operation.pay.secret')}
+              name='EpaySecret'
+              onChange={handleInputChange}
+              autoComplete='new-password'
+              value={inputs.EpaySecret || ''}
+              type='password'
+              placeholder={t('setting.operation.pay.secret_placeholder')}
+            />
+          </Form.Group>
+          <Form.Group widths={4}>
+            <Form.Input
+              label={t('setting.operation.pay.price')}
+              name='PayPrice'
+              onChange={handleInputChange}
+              autoComplete='new-password'
+              value={inputs.PayPrice}
+              type='number'
+              step='0.01'
+              min='0'
+              placeholder={t('setting.operation.pay.price_placeholder')}
+            />
+            <Form.Input
+              label={t('setting.operation.pay.min_topup')}
+              name='MinTopUp'
+              onChange={handleInputChange}
+              autoComplete='new-password'
+              value={inputs.MinTopUp}
+              type='number'
+              step='0.01'
+              min='0'
+            />
+            <Form.Input
+              label={t('setting.operation.pay.max_topup')}
+              name='MaxTopUp'
+              onChange={handleInputChange}
+              autoComplete='new-password'
+              value={inputs.MaxTopUp}
+              type='number'
+              step='0.01'
+              min='0'
+            />
+            <Form.Input
+              label={t('setting.operation.pay.amount_options')}
+              name='TopupAmountOptions'
+              onChange={handleInputChange}
+              autoComplete='new-password'
+              value={inputs.TopupAmountOptions}
+              placeholder={t('setting.operation.pay.amount_options_placeholder')}
+            />
+          </Form.Group>
+          <Form.Button
+            onClick={() => {
+              submitConfig('pay').then();
+            }}
+          >
+            {t('setting.operation.pay.buttons.save')}
           </Form.Button>
         </Form>
       </Grid.Column>

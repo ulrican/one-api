@@ -1,0 +1,856 @@
+/* ==========================================================================
+   全站框架样式（Task02 阶段 2）
+   - 玻璃拟态全局导航（sticky）、C 端/管理组分隔、active 高亮、品牌渐变字
+   - 页脚双主题、全局点阵网格背景（常规页面）、科技风加载态
+   - 主题相关规则一律 :where(html.theme-dark, html.theme-light) 前缀，引用 tokens.css 变量
+   ========================================================================== */
+
+/* ---------- 全局点阵网格背景（固定在内容之下，不拦截事件） ---------- */
+:where(html.theme-dark, html.theme-light) body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
+  background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(
+    ellipse 90% 55% at 50% 0%,
+    #000 0%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 90% 55% at 50% 0%,
+    #000 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 0.3s ease;
+}
+:where(html.theme-light) body::before {
+  opacity: 0.45;
+}
+/* 主内容抬到网格之上 */
+:where(html.theme-dark, html.theme-light) .main-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* sticky 导航自身占位，不再需要 body 顶距（Landing 等全屏页自行处理） */
+:where(html.theme-dark, html.theme-light) body {
+  padding-top: 0;
+}
+
+/* ---------- 全站页面容器与卡片（dashboard-container / chart-card 复用类） ---------- */
+:where(html.theme-dark, html.theme-light) .dashboard-container {
+  position: relative;
+  z-index: 1;
+  /* Task3-4：缩小内容区与导航/侧栏/页脚间距（原 20px 24px 40px 空白过大） */
+  padding: 12px 16px 16px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+:where(html.theme-dark, html.theme-light) .chart-card,
+:where(html.theme-dark, html.theme-light) .ui.card.chart-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+:where(html.theme-dark, html.theme-light) .ui.card.chart-card > .content {
+  border-color: var(--border-color);
+}
+@media (max-width: 640px) {
+  :where(html.theme-dark, html.theme-light) .dashboard-container {
+    padding: 12px 12px 32px;
+  }
+  /* 宽表格（渠道/日志/用户等列多）窄屏横向滚动，避免挤压破版；
+     Dropdown/Popup 菜单走 Portal 挂 body，不受 overflow 裁剪 */
+  :where(html.theme-dark, html.theme-light) .chart-card > .content {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  :where(html.theme-dark, html.theme-light) .chart-card .content .ui.table {
+    min-width: 720px;
+  }
+  :where(html.theme-dark, html.theme-light) .chat-shell {
+    padding: 12px 12px 32px;
+  }
+}
+
+/* ---------- 全局玻璃导航 ---------- */
+:where(html.theme-dark, html.theme-light) .app-header.ui.menu {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  margin: 0;
+  min-height: 56px;
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 1px 0 rgba(59, 130, 246, 0.06),
+    0 8px 24px -12px rgba(0, 0, 0, 0.5);
+}
+:where(html.theme-light) .app-header.ui.menu {
+  box-shadow: 0 1px 0 rgba(37, 99, 235, 0.05),
+    0 8px 24px -16px rgba(15, 23, 42, 0.25);
+}
+
+:where(html.theme-dark, html.theme-light) .app-header .item {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+/* hover / :active 必须门控：SUI 对导航内链接项的规则是
+   .ui.menu a.item:hover { color:#000000f2 } (0,4,1) 且无 !important，
+   :where() 版 (0,3,0) 被压 → 暗色下 hover 文字变黑。
+   门控 html.theme-* .app-header.ui.menu a.item:hover (0,6,2) 彻底压过，
+   同时覆盖 a.item:active（按下瞬间也变黑）。 */
+html.theme-dark .app-header.ui.menu a.item:hover,
+html.theme-dark .app-header.ui.menu a.item:active,
+html.theme-dark .app-header.ui.menu .item:hover,
+html.theme-light .app-header.ui.menu a.item:hover,
+html.theme-light .app-header.ui.menu a.item:active,
+html.theme-light .app-header.ui.menu .item:hover {
+  color: var(--text-primary);
+  background: transparent;
+}
+/* 激活项：暗色下文字用 --text-primary（白），靠蓝色下划线区分激活态；
+   亮色下保持品牌蓝（与原 SUI 风格一致）。下划线两主题统一品牌蓝。 */
+html.theme-dark .app-header .item.app-nav-active {
+  color: var(--text-primary);
+  border-bottom-color: var(--brand-blue);
+  background: transparent;
+}
+html.theme-light .app-header .item.app-nav-active {
+  color: var(--brand-blue);
+  border-bottom-color: var(--brand-blue);
+  background: transparent;
+}
+:where(html.theme-dark, html.theme-light) .app-header .item .icon {
+  margin-right: 4px;
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
+}
+:where(html.theme-dark, html.theme-light) .app-header .item:hover .icon,
+:where(html.theme-dark, html.theme-light) .app-header .item.app-nav-active .icon {
+  opacity: 1;
+}
+
+/* 品牌区 */
+:where(html.theme-dark, html.theme-light) .app-brand-logo {
+  height: 30px;
+  width: auto;
+  border-radius: 8px;
+}
+:where(html.theme-dark, html.theme-light) .app-brand-name {
+  font-size: 18px;
+  font-weight: 700;
+  background: var(--brand-gradient-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: 0.01em;
+}
+
+/* C 端 / 管理端菜单分组分隔线 */
+:where(html.theme-dark, html.theme-light) .app-nav-divider {
+  width: 1px;
+  min-height: 22px;
+  height: 22px;
+  margin: auto 6px !important;
+  padding: 0 !important;
+  align-self: center;
+  background: var(--border-strong);
+  border: none !important;
+  border-bottom: none !important;
+  pointer-events: none;
+  cursor: default;
+}
+:where(html.theme-dark, html.theme-light) .app-nav-divider:hover {
+  background: var(--border-strong) !important;
+  color: inherit;
+}
+
+/* 导航右侧操作区：主题切换 / 语言 / 用户 */
+:where(html.theme-dark, html.theme-light) .app-header .app-theme-toggle-item {
+  border-bottom: none;
+  padding: 0 10px !important;
+}
+:where(html.theme-dark, html.theme-light) .app-header .app-theme-toggle {
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+}
+:where(html.theme-dark, html.theme-light) .app-header .ui.dropdown.item {
+  color: var(--text-secondary);
+}
+:where(html.theme-dark, html.theme-light) .app-header .ui.dropdown.item:hover {
+  color: var(--text-primary);
+}
+
+/* 移动端汉堡按钮 */
+:where(html.theme-dark, html.theme-light) .app-header .app-burger {
+  border-bottom: none;
+  font-size: 18px;
+  color: var(--text-secondary);
+}
+
+/* Task3-3：顶部导航栏内 Container 占满页宽
+   index.css 在 ≥1367px 设 `.ui.container{width:1200px!important}` 居中收窄，
+   769-1366px 设 `width:auto!important`（仍受 SUI tablet 727px 默认值影响），
+   两条 !important 压过 Header 内联 style，故需门控 (0,5,0)+!important 覆盖为全宽 */
+:where(html.theme-dark, html.theme-light) .app-header.ui.menu .ui.container {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding: 0 24px !important;
+}
+
+/* 移动端展开的侧边菜单 */
+:where(html.theme-dark, html.theme-light) .app-mobile-menu.ui.segment {
+  margin: 0;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  border-radius: 0;
+  background: var(--bg-glass);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-card);
+}
+:where(html.theme-dark, html.theme-light) .app-mobile-menu .ui.vertical.menu {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+:where(html.theme-dark, html.theme-light) .app-mobile-menu .item {
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+}
+:where(html.theme-dark, html.theme-light) .app-mobile-menu .item.app-nav-active {
+  color: var(--brand-blue);
+  background: var(--bg-active);
+}
+:where(html.theme-dark, html.theme-light) .app-mobile-menu .app-nav-divider {
+  width: auto;
+  height: 1px;
+  min-height: 1px;
+  margin: 6px 10px !important;
+}
+
+/* ---------- 页脚（Task3-4：高度 32px，仅占内容区宽度，钉在内容列底部） ---------- */
+:where(html.theme-dark, html.theme-light) .app-footer.ui.segment.vertical {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 0;
+  padding: 0 16px;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+:where(html.theme-dark, html.theme-light) .app-footer .ui.container {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+:where(html.theme-dark, html.theme-light) .app-footer a {
+  color: var(--brand-blue);
+}
+:where(html.theme-dark, html.theme-light) .app-footer a:hover {
+  color: var(--brand-blue-hover);
+}
+:where(html.theme-dark, html.theme-light) .app-footer .custom-footer {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* ---------- 科技风加载态 ---------- */
+:where(html.theme-dark, html.theme-light) .app-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 64px 0;
+  color: var(--text-tertiary);
+  font-size: 14px;
+  position: relative;
+  z-index: 1;
+}
+:where(html.theme-dark, html.theme-light) .app-loading-dots {
+  display: inline-flex;
+  gap: 8px;
+}
+:where(html.theme-dark, html.theme-light) .app-loading-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--brand-blue);
+  animation: app-loading-pulse 1.2s ease-in-out infinite;
+}
+:where(html.theme-dark, html.theme-light) .app-loading-dots span:nth-child(2) {
+  background: var(--brand-purple);
+  animation-delay: 0.15s;
+}
+:where(html.theme-dark, html.theme-light) .app-loading-dots span:nth-child(3) {
+  background: var(--brand-green);
+  animation-delay: 0.3s;
+}
+@keyframes app-loading-pulse {
+  0%,
+  100% {
+    transform: scale(0.7);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+    box-shadow: 0 0 12px currentColor;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :where(html.theme-dark, html.theme-light) .app-loading-dots span {
+    animation: none;
+    opacity: 0.8;
+  }
+}
+
+/* ---------- 科技风 404 ---------- */
+:where(html.theme-dark, html.theme-light) .nf-page {
+  position: relative;
+  z-index: 1;
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 64px 20px;
+}
+:where(html.theme-dark, html.theme-light) .nf-code {
+  font-family: var(--font-mono);
+  font-size: clamp(96px, 20vw, 180px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  background: var(--brand-gradient-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 32px rgba(59, 130, 246, 0.25));
+  user-select: none;
+}
+:where(html.theme-dark, html.theme-light) .nf-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 14px 0 8px;
+}
+:where(html.theme-dark, html.theme-light) .nf-desc {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  max-width: 420px;
+  margin: 0 0 26px;
+  line-height: 1.8;
+}
+:where(html.theme-dark, html.theme-light) .nf-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+:where(html.theme-dark, html.theme-light) .nf-btn {
+  border-radius: var(--radius-md);
+}
+
+/* ---------- 空状态（EmptyState，表格/页面空数据复用） ---------- */
+:where(html.theme-dark, html.theme-light) .empty-state {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 56px 24px;
+  color: var(--text-tertiary);
+}
+:where(html.theme-dark, html.theme-light) .empty-state-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: var(--brand-blue);
+  background: var(--primary-soft-bg);
+  border: 1px solid var(--primary-soft-border);
+  margin-bottom: 16px;
+}
+:where(html.theme-dark, html.theme-light) .empty-state-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+:where(html.theme-dark, html.theme-light) .empty-state-desc {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  max-width: 420px;
+  line-height: 1.8;
+  margin-bottom: 20px;
+}
+:where(html.theme-dark, html.theme-light) .empty-state-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ---------- 设置页 Tab（secondary pointing） ---------- */
+:where(html.theme-dark, html.theme-light) .ui.menu.settings-tab {
+  border-bottom: 1px solid var(--border-color);
+  margin-top: 1rem;
+}
+:where(html.theme-dark, html.theme-light) .ui.menu.settings-tab .item {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+:where(html.theme-dark, html.theme-light) .ui.menu.settings-tab .item:hover {
+  color: var(--text-primary);
+  background: transparent;
+}
+:where(html.theme-dark, html.theme-light) .ui.menu.settings-tab .active.item {
+  color: var(--brand-blue);
+  font-weight: 600;
+  border-color: var(--brand-blue) !important;
+}
+:where(html.theme-dark, html.theme-light) .ui.tab.segment {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  padding: 1rem 0;
+}
+
+/* ---------- WebChat 科技外壳（容器规则与 dashboard-container 一致） ---------- */
+:where(html.theme-dark, html.theme-light) .chat-shell {
+  position: relative;
+  z-index: 1;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 12px 16px 16px;
+}
+:where(html.theme-dark, html.theme-light) .chat-shell-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-bottom: none;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 12px 18px;
+}
+:where(html.theme-dark, html.theme-light) .chat-shell-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+:where(html.theme-dark, html.theme-light) .chat-shell-title .icon {
+  color: var(--brand-blue);
+}
+:where(html.theme-dark, html.theme-light) .chat-shell-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--brand-blue);
+}
+:where(html.theme-dark, html.theme-light) .chat-shell-link:hover {
+  color: var(--brand-blue-hover);
+}
+:where(html.theme-dark, html.theme-light) .chat-shell iframe {
+  display: block;
+  width: 100%;
+  height: 82vh;
+  border: 1px solid var(--border-color);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  background: var(--bg-surface);
+}
+
+/* ---------- Task3-3：菜单栏 / 内容区独立滚动 + Footer 永久可见 ---------- */
+/* 骨架：app-frame 占满视口高度（含浏览器 chrome 与系统状态栏预留由 100vh 自然承担），
+   三段弹性：Header（固定高）→ app-shell（剩余高度，菜单与内容各自独立竖向滚动）
+   → Footer（始终可见于视口底，不再被内容挤出可视区） */
+:where(html.theme-dark, html.theme-light) .app-frame {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+:where(html.theme-dark, html.theme-light) .app-header.ui.menu {
+  flex-shrink: 0;
+}
+:where(html.theme-dark, html.theme-light) .app-shell {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+/* Task3-4：内容列（侧栏右侧），弹性列；内部内容区独立滚动，Footer 钉列底 */
+:where(html.theme-dark, html.theme-light) .app-main-col {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+/* SUI Container 自带 max-width/margin auto（部分带 !important），
+   在内容列内作为弹性滚动区需彻底展开；页面根容器
+   （dashboard-container/topup-page/chat-shell/pricing-page 等）自带 padding */
+:where(html.theme-dark, html.theme-light) .app-shell .main-content.ui.container {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+/* 页面根容器：菜单栏宽度 + 内容区域宽度 = 页面宽度，
+   不再设 max-width:1600px（原值在宽屏下两侧出现空白），改为占满内容区 */
+:where(html.theme-dark, html.theme-light) .dashboard-container,
+:where(html.theme-dark, html.theme-light) .chat-shell {
+  max-width: none !important;
+}
+
+/* 左侧菜单栏：占满 shell 高度，栏面即表面色 + 右边框分隔；
+   内部 .app-sidenav-scroll 独立竖向滚动，与内容区滚动互不干扰 */
+:where(html.theme-dark, html.theme-light) .app-sidenav {
+  width: 212px;
+  flex-shrink: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-color);
+  z-index: 90;
+  transition: width 0.2s ease;
+}
+:where(html.theme-dark, html.theme-light) .app-sidenav-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 8px 8px;
+}
+:where(html.theme-dark, html.theme-light) .app-sidenav-footer {
+  flex-shrink: 0;
+  /* Task3-5：与内容区状态栏同高（32px 内容 + 1px 分隔线） */
+  height: 32px;
+  border-top: 1px solid var(--border-color);
+  padding: 0;
+}
+/* 菜单本体压平：栏面已是表面色，Menu 不再要卡片背景/边框/阴影。
+   注意 DOM：aside.app-sidenav > div.app-sidenav-scroll > div.ui.vertical.menu，
+   复合写法 .app-sidenav.ui.vertical.menu 不匹配，必须后代选择器 */
+:where(html.theme-dark, html.theme-light) .app-sidenav .ui.vertical.menu {
+  width: 100%;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+/* SUI vertical menu item 默认 display:block 且 icon float:right（(0,4,0)/(0,5,1)），
+   :where() 版压不过 → html.theme-* 门控 (0,6,1) */
+html.theme-dark .app-sidenav .ui.vertical.menu .item,
+html.theme-light .app-sidenav .ui.vertical.menu .item {
+  display: flex;
+  align-items: center;
+  margin: 2px 0;
+  padding: 10px 12px !important;
+  border: none !important;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+/* hover/active 必须与基础项规则同路径（含 .ui.vertical.menu）才能压过 (0,6,1)：
+   hover (0,7,2)、active (0,7,1)；否则被基础规则 color/background 盖住，点击无选中效果 */
+html.theme-dark .app-sidenav .ui.vertical.menu a.item:hover,
+html.theme-dark .app-sidenav .ui.vertical.menu a.item:active,
+html.theme-light .app-sidenav .ui.vertical.menu a.item:hover,
+html.theme-light .app-sidenav .ui.vertical.menu a.item:active {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+html.theme-dark .app-sidenav .ui.vertical.menu .item.app-sidenav-active,
+html.theme-dark .app-sidenav .ui.vertical.menu .item.app-sidenav-active:hover,
+html.theme-light .app-sidenav .ui.vertical.menu .item.app-sidenav-active,
+html.theme-light .app-sidenav .ui.vertical.menu .item.app-sidenav-active:hover {
+  color: var(--brand-blue);
+  background: var(--bg-active);
+  font-weight: 600;
+}
+html.theme-dark .app-sidenav .ui.vertical.menu .item i.icon,
+html.theme-light .app-sidenav .ui.vertical.menu .item i.icon {
+  float: none;
+  /* Task3-5：固定宽（SUI 默认 1.18em），字形宽度不一会导致各项文字左缘参差 */
+  width: 1.18em;
+  margin: 0 8px 0 0 !important;
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
+}
+html.theme-dark .app-sidenav .ui.vertical.menu .item:hover .icon,
+html.theme-light .app-sidenav .ui.vertical.menu .item:hover .icon {
+  opacity: 1;
+}
+/* 选中项图标显式品牌蓝（覆盖基础图标规则的次级色继承） */
+html.theme-dark .app-sidenav .ui.vertical.menu .item.app-sidenav-active .icon,
+html.theme-light .app-sidenav .ui.vertical.menu .item.app-sidenav-active .icon {
+  opacity: 1;
+  color: var(--brand-blue);
+}
+/* 菜单项文字（收缩态隐藏） */
+:where(html.theme-dark, html.theme-light) .app-sidenav-label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* 顶部独立聊天入口：默认态与常规菜单项视觉一致（避免"恒高亮"误以为是选中态），
+   仅在路由命中时（.app-sidenav-chat-active）切换为品牌渐变高亮，与其他菜单项的
+   选中态变化规律保持一致 */
+:where(html.theme-dark, html.theme-light) .app-sidenav-chat {
+  display: flex;
+  align-items: center;
+  margin: 2px 0 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  box-shadow: none;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+:where(html.theme-dark, html.theme-light) .app-sidenav-chat:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+:where(html.theme-dark, html.theme-light) .app-sidenav-chat .icon {
+  width: 1.18em;
+  margin: 0 8px 0 0 !important;
+  opacity: 0.85;
+  color: var(--brand-blue);
+  transition: opacity 0.2s ease;
+}
+:where(html.theme-dark, html.theme-light) .app-sidenav-chat:hover .icon {
+  opacity: 1;
+}
+/* 选中态：品牌渐变 + 恒白字（特许硬编码 --on-primary，渐变上两主题统一） */
+:where(html.theme-dark, html.theme-light) .app-sidenav-chat-active {
+  background: var(--brand-gradient);
+  color: var(--on-primary);
+  font-weight: 600;
+  box-shadow: var(--glow-primary);
+}
+:where(html.theme-dark, html.theme-light) .app-sidenav-chat-active:hover {
+  filter: brightness(1.1);
+  background: var(--brand-gradient);
+  color: var(--on-primary);
+}
+:where(html.theme-dark, html.theme-light) .app-sidenav-chat-active .icon {
+  color: var(--on-primary);
+  opacity: 1;
+}
+
+/* 底部收缩/展开按钮（Task3-5：高度 32px 占满侧栏底条，规格与状态栏一致） */
+:where(html.theme-dark, html.theme-light) .app-sidenav-toggle {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 32px;
+  margin: 0;
+  padding: 0 12px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+:where(html.theme-dark, html.theme-light) .app-sidenav-toggle:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+:where(html.theme-dark, html.theme-light) .app-sidenav-toggle .icon {
+  width: 1.18em;
+  margin: 0 8px 0 0;
+}
+
+/* 分组标题（Task3-5：分类与菜单项显示区分）
+   小号大写 + 品牌蓝竖形装饰条；分组标题本身也是 .item，
+   必须 (0,7,1) 门控压过基础项规则 (0,6,1) 的 color/padding/margin */
+html.theme-dark .app-sidenav .ui.vertical.menu .item.app-sidenav-group-title,
+html.theme-light .app-sidenav .ui.vertical.menu .item.app-sidenav-group-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  background: transparent;
+  padding: 14px 12px 6px !important;
+  margin: 8px 0 0 !important;
+  cursor: default;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+}
+/* 分类装饰条（::before 为首个 flex 子元素）
+   SUI 三个干扰：① .ui.vertical.menu .item:first-child:before{display:none!important}
+   会隐藏首个分组标题的伪元素（首组正是菜单首子元素）；② 分隔线伪元素
+   position:absolute;top:0;left:0;width:100%;height:1px，会让装饰条脱离 flex 流；
+   ③ SideNav 的 Menu 带 borderless：.ui.borderless.menu .item:before{background:0 0!important}
+   会把背景清透明（!important 必须同用 !important 且靠更高特异性 (0,7,2) 压过 (0,4,1)） */
+html.theme-dark .app-sidenav .ui.vertical.menu .item.app-sidenav-group-title::before,
+html.theme-light .app-sidenav .ui.vertical.menu .item.app-sidenav-group-title::before {
+  content: '';
+  position: static !important;
+  display: block !important;
+  top: auto;
+  left: auto;
+  flex-shrink: 0;
+  width: 3px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--brand-blue) !important;
+  opacity: 0.75;
+}
+/* 首个分组紧随聊天入口，收敛上边距 */
+html.theme-dark .app-sidenav .ui.vertical.menu .item.app-sidenav-group-title:first-child,
+html.theme-light .app-sidenav .ui.vertical.menu .item.app-sidenav-group-title:first-child {
+  margin-top: 0 !important;
+  padding-top: 10px !important;
+}
+/* 移动端抽屉分组标题：保持小号大写灰字（:where 版足够，抽屉项未被门控规则覆盖） */
+:where(html.theme-dark, html.theme-light) .app-mobile-menu .app-mobile-group-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  background: transparent;
+  padding: 12px 12px 4px !important;
+  margin: 4px 0 0;
+  cursor: default;
+  pointer-events: none;
+}
+/* 移动端抽屉内的分组标题不参与 hover 变色 */
+html.theme-dark .app-mobile-menu .app-mobile-group-title:hover,
+html.theme-light .app-mobile-menu .app-mobile-group-title:hover {
+  color: var(--text-tertiary);
+  background: transparent;
+}
+
+/* 收缩态：64px 仅图标 */
+:where(html.theme-dark, html.theme-light) .app-sidenav-collapsed {
+  width: 64px;
+}
+:where(html.theme-dark, html.theme-light) .app-sidenav-collapsed .app-sidenav-label {
+  display: none;
+}
+/* 分组标题本身也是 .item，命中门控 flex 规则 (0,6,1)，此处需 (0,7,1)+!important 才能隐藏 */
+html.theme-dark .app-sidenav-collapsed .ui.vertical.menu .item.app-sidenav-group-title,
+html.theme-light .app-sidenav-collapsed .ui.vertical.menu .item.app-sidenav-group-title {
+  display: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+html.theme-dark .app-sidenav-collapsed .ui.vertical.menu .item,
+html.theme-light .app-sidenav-collapsed .ui.vertical.menu .item,
+:where(html.theme-dark, html.theme-light) .app-sidenav-collapsed .app-sidenav-toggle {
+  justify-content: center;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+:where(html.theme-dark, html.theme-light) .app-sidenav-collapsed .item .icon,
+:where(html.theme-dark, html.theme-light) .app-sidenav-collapsed .app-sidenav-toggle .icon {
+  margin: 0 !important;
+}
+:where(html.theme-dark, html.theme-light) .app-sidenav-collapsed .app-sidenav-chat {
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin: 2px auto 12px;
+  padding: 0;
+}
+:where(html.theme-dark, html.theme-light) .app-sidenav-collapsed .app-sidenav-chat .icon {
+  margin: 0 !important;
+}
+
+/* 响应式：窄屏收起左侧栏（顶部导航仍在，功能入口走汉堡抽屉） */
+@media (max-width: 1000px) {
+  :where(html.theme-dark, html.theme-light) .app-sidenav {
+    display: none;
+  }
+}
+
+/* ===================== About 页 FluxAPI 使用说明（markdown 渲染）排版 ====================== */
+.flux-guide { line-height: 1.75; }
+.flux-guide h1 { font-size: 1.5em; margin: 0.6em 0 0.5em; }
+.flux-guide h2 {
+  font-size: 1.22em; margin: 1.3em 0 0.6em; padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--border-strong);
+}
+.flux-guide h3 { font-size: 1.08em; margin: 1em 0 0.5em; }
+.flux-guide table { border-collapse: collapse; width: 100%; margin: 0.8em 0; font-size: 0.95em; }
+.flux-guide th, .flux-guide td {
+  border: 1px solid var(--border-strong); padding: 6px 10px; text-align: left;
+}
+.flux-guide th { background: var(--bg-inset); }
+.flux-guide code {
+  background: var(--bg-inset); padding: 2px 5px; border-radius: 4px; font-size: 0.9em;
+}
+.flux-guide pre {
+  background: var(--bg-inset); padding: 12px; border-radius: 8px;
+  overflow-x: auto; border: 1px solid var(--border-strong);
+}
+.flux-guide pre code { background: none; padding: 0; }
+.flux-guide blockquote {
+  border-left: 3px solid var(--brand-blue); margin: 0.8em 0;
+  padding: 0.2em 1em; color: var(--text-secondary);
+}
+.flux-guide hr { border: none; border-top: 1px solid var(--border-strong); margin: 1.2em 0; }

@@ -38,6 +38,7 @@ type Channel struct {
 	Priority           *int64  `json:"priority" gorm:"bigint;default:0"`
 	Config             string  `json:"config"`
 	SystemPrompt       *string `json:"system_prompt" gorm:"type:text"`
+	Tag                string  `json:"tag" gorm:"type:varchar(64);default:''"` // F9: 渠道标签（管理面分组标记）
 }
 
 type ChannelConfig struct {
@@ -172,7 +173,14 @@ func (channel *Channel) Delete() error {
 		return err
 	}
 	err = channel.DeleteAbilities()
-	return err
+	if err != nil {
+		return err
+	}
+	// Task4-2 同步清理模型库凭证扩展表（best-effort，含加密密钥不应残留）
+	if err := DeleteChannelModelSource(channel.Id); err != nil {
+		logger.SysError(fmt.Sprintf("failed to delete channel_model_sources for channel %d: %s", channel.Id, err.Error()))
+	}
+	return nil
 }
 
 func (channel *Channel) LoadConfig() (ChannelConfig, error) {
@@ -214,11 +222,77 @@ func updateChannelUsedQuota(id int, quota int64) {
 }
 
 func DeleteChannelByStatus(status int64) (int64, error) {
+	// Task4-2：先收集待删渠道 id，删除后清理 channel_model_sources 凭证
+	var ids []int
+	DB.Model(&Channel{}).Where("status = ?", status).Pluck("id", &ids)
 	result := DB.Where("status = ?", status).Delete(&Channel{})
+	if result.Error == nil && len(ids) > 0 {
+		if err := DB.Where("channel_id IN ?", ids).Delete(&ChannelModelSource{}).Error; err != nil {
+			logger.SysError("failed to cleanup channel_model_sources by status: " + err.Error())
+		}
+	}
 	return result.RowsAffected, result.Error
 }
 
 func DeleteDisabledChannel() (int64, error) {
+	// Task4-2：先收集待删禁用渠道 id，删除后清理 channel_model_sources 凭证
+	var ids []int
+	DB.Model(&Channel{}).
+		Where("status = ? or status = ?", ChannelStatusAutoDisabled, ChannelStatusManuallyDisabled).
+		Pluck("id", &ids)
 	result := DB.Where("status = ? or status = ?", ChannelStatusAutoDisabled, ChannelStatusManuallyDisabled).Delete(&Channel{})
+	if result.Error == nil && len(ids) > 0 {
+		if err := DB.Where("channel_id IN ?", ids).Delete(&ChannelModelSource{}).Error; err != nil {
+			logger.SysError("failed to cleanup channel_model_sources for disabled channels: " + err.Error())
+		}
+	}
 	return result.RowsAffected, result.Error
+}
+
+// F9 渠道管理增强：批量操作（管理面低频，循环复用单条逻辑，保证 abilities 同步）
+
+// GetChannelsByIds 按 ID 列表查询渠道（含 key，测试需要），保持入参顺序
+func GetChannelsByIds(ids []int) ([]*Channel, error) {
+	var channels []*Channel
+	err := DB.Where("id IN ?", ids).Find(&channels).Error
+	if err != nil {
+		return nil, err
+	}
+	channelMap := make(map[int]*Channel, len(channels))
+	for _, ch := range channels {
+		channelMap[ch.Id] = ch
+	}
+	ordered := make([]*Channel, 0, len(ids))
+	for _, id := range ids {
+		if ch, ok := channelMap[id]; ok {
+			ordered = append(ordered, ch)
+		}
+	}
+	return ordered, nil
+}
+
+// BatchUpdateChannelStatus 批量启用/禁用渠道，同步更新 abilities 状态
+func BatchUpdateChannelStatus(ids []int, status int) error {
+	for _, id := range ids {
+		UpdateChannelStatusById(id, status)
+	}
+	return nil
+}
+
+// BatchDeleteChannels 批量删除渠道（含 abilities 清理），返回删除条数
+func BatchDeleteChannels(ids []int) (int64, error) {
+	var count int64
+	for _, id := range ids {
+		channel := Channel{Id: id}
+		if err := channel.Delete(); err != nil {
+			return count, err
+		}
+		count++
+	}
+	return count, nil
+}
+
+// UpdateChannelTag 显式更新渠道标签（struct Updates 零值不更新，清空标签需单独处理）
+func UpdateChannelTag(id int, tag string) error {
+	return DB.Model(&Channel{}).Where("id = ?", id).Update("tag", tag).Error
 }

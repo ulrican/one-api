@@ -157,6 +157,27 @@ func migrateDB() error {
 	if err = DB.AutoMigrate(&Log{}); err != nil {
 		return err
 	}
+	if err = DB.AutoMigrate(&Order{}); err != nil {
+		return err
+	}
+	if err = DB.AutoMigrate(&UserSetting{}); err != nil {
+		return err
+	}
+	if err = DB.AutoMigrate(&UserSession{}); err != nil {
+		return err
+	}
+	if err = DB.AutoMigrate(&UserTwoFA{}); err != nil { // F12 两步验证
+		return err
+	}
+	if err = DB.AutoMigrate(&MarketModel{}); err != nil { // Task4-1 模型广场
+		return err
+	}
+	if err = DB.AutoMigrate(&ChannelModelSource{}); err != nil { // Task4-2 渠道模型库凭证
+		return err
+	}
+	if err = DB.AutoMigrate(&ModelRatioLock{}); err != nil { // Task4-3 模型倍率手动锁定
+		return err
+	}
 	if err = DB.AutoMigrate(&Channel{}); err != nil {
 		return err
 	}

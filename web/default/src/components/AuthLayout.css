@@ -1,0 +1,149 @@
+/* ==========================================================================
+   认证页布局（Task02 阶段 3）
+   登录/注册/重置密码复用：全屏居中玻璃卡 + 品牌区 + 返回首页
+   主题规则一律 :where(html.theme-dark, html.theme-light) 前缀，引用 tokens.css
+   ========================================================================== */
+
+:where(html.theme-dark, html.theme-light) .auth-layout {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+}
+
+:where(html.theme-dark, html.theme-light) .auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg-glass);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevated);
+  padding: 36px 36px 28px;
+}
+:where(html.theme-light) .auth-card {
+  background: var(--bg-surface);
+}
+
+:where(html.theme-dark, html.theme-light) .auth-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+:where(html.theme-dark, html.theme-light) .auth-logo {
+  height: 44px;
+  width: auto;
+  border-radius: 10px;
+}
+:where(html.theme-dark, html.theme-light) .auth-brand-name {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  background: var(--brand-gradient-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+:where(html.theme-dark, html.theme-light) .auth-title {
+  text-align: center;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 18px 0 22px;
+}
+
+/* 卡内链接行（忘记密码/注册等） */
+:where(html.theme-dark, html.theme-light) .auth-links {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+  flex-wrap: wrap;
+}
+:where(html.theme-dark, html.theme-light) .auth-links a,
+:where(html.theme-dark, html.theme-light) .auth-footer a {
+  color: var(--brand-blue);
+  font-weight: 500;
+}
+:where(html.theme-dark, html.theme-light) .auth-links a:hover,
+:where(html.theme-dark, html.theme-light) .auth-footer a:hover {
+  color: var(--brand-blue-hover);
+}
+:where(html.theme-dark, html.theme-light) .auth-note {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  text-align: center;
+  line-height: 1.7;
+}
+
+:where(html.theme-dark, html.theme-light) .auth-footer {
+  margin-top: 22px;
+  font-size: 13px;
+}
+:where(html.theme-dark, html.theme-light) .auth-footer-icon {
+  margin-right: 2px;
+}
+
+/* 第三方登录圆形按钮组 */
+:where(html.theme-dark, html.theme-light) .auth-oauth {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+}
+:where(html.theme-dark, html.theme-light) .auth-oauth-btn.ui.button {
+  width: 42px;
+  height: 42px;
+  min-height: 42px;
+  padding: 0;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-inset);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  transition: border-color 0.2s ease, color 0.2s ease,
+    box-shadow 0.2s ease, transform 0.2s ease;
+}
+:where(html.theme-dark, html.theme-light) .auth-oauth-btn.ui.button:hover {
+  border-color: var(--brand-blue);
+  color: var(--brand-blue);
+  box-shadow: var(--glow-primary);
+  transform: translateY(-1px);
+}
+:where(html.theme-dark, html.theme-light) .auth-oauth-btn img {
+  width: 22px;
+  height: 22px;
+}
+
+/* 认证卡内主按钮：渐变品牌按钮（替代旧内联 #2F73FF） */
+:where(html.theme-dark, html.theme-light) .auth-card .ui.button.auth-submit {
+  background: var(--brand-gradient);
+  color: var(--on-primary);
+  font-weight: 600;
+  border: none;
+  margin-bottom: 1.5em;
+  transition: box-shadow 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+}
+:where(html.theme-dark, html.theme-light) .auth-card .ui.button.auth-submit:hover {
+  opacity: 0.92;
+  box-shadow: var(--glow-primary);
+  color: var(--on-primary);
+}
+
+/* 小屏适配 */
+@media (max-width: 480px) {
+  :where(html.theme-dark, html.theme-light) .auth-card {
+    padding: 28px 20px 22px;
+  }
+}
