@@ -120,3 +120,7 @@ export const CHANNEL_OPTIONS = [
     description: '预留框架，待接入具体供应商',
   },
 ];
+
+// 屏蔽硬编码渠道类型：对外（渠道新建/编辑下拉）仅暴露模型库类型，数据源为市场同步。
+// 完整 CHANNEL_OPTIONS 保留不动（ChannelsTable/helper 的类型标签映射仍需全量）。
+export const LIBRARY_CHANNEL_KEYS = [52, 53];

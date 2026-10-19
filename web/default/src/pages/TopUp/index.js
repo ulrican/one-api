@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, Form, Icon, Label, Message, Table } from 'semantic-ui-react';
+import { Button, Form, Icon, Label, Message, Modal, Popup, Table } from 'semantic-ui-react';
+import QRCode from 'qrcode';
 import { API, showError, showInfo, showSuccess } from '../../helpers';
 import { renderQuota } from '../../helpers/render';
 import { useTranslation } from 'react-i18next';
@@ -21,13 +22,23 @@ const TopUp = () => {
   const [payMethod, setPayMethod] = useState('alipay');
   const [creating, setCreating] = useState(false);
   const [waitingPaid, setWaitingPaid] = useState(false); // 轮询等待支付结果
+  const [qrPay, setQrPay] = useState(null); // 直连模式微信扫码：{img, amount, trade_no}
   const [orders, setOrders] = useState([]);
+  // 兑换码充值记录（Task4-4）
+  const [redeemRecords, setRedeemRecords] = useState([]);
+  const [redeemTotal, setRedeemTotal] = useState(0);
+  const [redeemPage, setRedeemPage] = useState(0);
+  const redeemPageSize = 10;
   const pollTimer = useRef(null);
   // 签到（F5）
   const [checkinStatus, setCheckinStatus] = useState(null); // {enabled, checked, min_reward, max_reward}
   const [checkingIn, setCheckingIn] = useState(false);
   // 推荐计划（F4）
   const [affData, setAffData] = useState(null); // {aff_code, invite_count, total_reward}
+  // Task4-11 套餐自助升级
+  const [vipPackages, setVipPackages] = useState([]);
+  const [myPackages, setMyPackages] = useState([]);
+  const [buyingId, setBuyingId] = useState(0);
 
   const topUp = async () => {
     if (redemptionCode === '') {
@@ -53,6 +64,8 @@ const TopUp = () => {
       showError(t('topup.redeem_code.request_failed'));
     } finally {
       setIsSubmitting(false);
+      // 成功/失败均会产生记录，刷新列表并回到首页
+      loadRedemptionRecords(0).then();
     }
   };
 
@@ -90,6 +103,12 @@ const TopUp = () => {
         if (Array.isArray(data.amount_options) && data.amount_options.length > 0) {
           setSelectedAmount(data.amount_options[0]);
         }
+        // Task4-10b：支付方式由后端按模式/开关下发（直连默认仅微信，开启支付宝后含支付宝）
+        if (Array.isArray(data.methods) && data.methods.length > 0) {
+          setPayMethod((prev) =>
+            data.methods.includes(prev) ? prev : data.methods[0],
+          );
+        }
         loadOrders();
       }
     } catch (err) {
@@ -103,6 +122,23 @@ const TopUp = () => {
       const { success, data } = res.data;
       if (success && Array.isArray(data)) {
         setOrders(data);
+      }
+    } catch (err) {
+      // 静默
+    }
+  };
+
+  // Task4-4：兑换码充值记录（成功/失败流水）
+  const loadRedemptionRecords = async (page = redeemPage) => {
+    try {
+      const res = await API.get('/api/user/topup/records', {
+        params: { p: page, page_size: redeemPageSize },
+      });
+      const { success, data, total } = res.data;
+      if (success) {
+        setRedeemRecords(Array.isArray(data) ? data : []);
+        setRedeemTotal(total || 0);
+        setRedeemPage(page);
       }
     } catch (err) {
       // 静默
@@ -128,9 +164,17 @@ const TopUp = () => {
       const res = await API.post('/api/user/check_in');
       const { success, message, data } = res.data;
       if (success) {
-        showSuccess(t('topup.checkin.success', { quota: renderQuota(data.reward, t) }));
-        setUserQuota((q) => q + data.reward);
-        setCheckinStatus((s) => ({ ...s, checked: true }));
+        let msg = t('topup.checkin.success', { quota: renderQuota(data.total_reward, t) });
+        if (data.tier_hit > 0) {
+          msg += t('topup.checkin.tier_bonus', {
+            days: data.tier_hit,
+            quota: renderQuota(data.tier_reward, t),
+          });
+        }
+        showSuccess(msg);
+        setUserQuota((q) => q + data.total_reward);
+        // 刷新签到日历
+        loadCheckinStatus().then();
       } else {
         showInfo(message);
         if (message && message.includes('已签到')) {
@@ -153,6 +197,62 @@ const TopUp = () => {
       }
     } catch (err) {
       // 静默
+    }
+  };
+
+  // Task4-11 套餐自助升级：套餐列表 + 本人有效套餐
+  const loadPackages = async () => {
+    try {
+      const res = await API.get('/api/package/available');
+      const { success, data } = res.data;
+      if (success && Array.isArray(data)) {
+        setVipPackages(data);
+      }
+    } catch (err) {
+      // 静默：无套餐时隐藏升级区
+    }
+  };
+
+  const loadMyPackages = async () => {
+    try {
+      const res = await API.get('/api/package/my');
+      const { success, data } = res.data;
+      if (success && Array.isArray(data)) {
+        setMyPackages(data);
+      }
+    } catch (err) {
+      // 静默
+    }
+  };
+
+  // 购买套餐：创建套餐订单后走与充值一致的支付交互（扫码/收银台）+ 轮询
+  const startPackagePay = async (pkg) => {
+    setBuyingId(pkg.id);
+    try {
+      const res = await API.post('/api/package/purchase', {
+        package_id: pkg.id,
+        method: payMethod,
+      });
+      const { success, message, data } = res.data;
+      if (success) {
+        if (data.pay_type === 'qrcode' && data.code_url) {
+          try {
+            const img = await QRCode.toDataURL(data.code_url, { width: 220, margin: 1 });
+            setQrPay({ img, amount: data.amount, trade_no: data.trade_no, method: payMethod });
+          } catch (e) {
+            showError(t('topup.pay.qr_failed'));
+          }
+        } else if (data.pay_url) {
+          window.open(data.pay_url, '_blank');
+        }
+        pollOrderStatus(data.trade_no);
+      } else {
+        showError(message);
+      }
+    } catch (err) {
+      showError(t('topup.pay.create_failed'));
+    } finally {
+      setBuyingId(0);
     }
   };
 
@@ -181,6 +281,12 @@ const TopUp = () => {
     setWaitingPaid(false);
   };
 
+  // 关闭微信扫码弹窗：停止轮询与弹窗状态
+  const closeQrPay = () => {
+    stopPolling();
+    setQrPay(null);
+  };
+
   const pollOrderStatus = (tradeNo) => {
     stopPolling();
     setWaitingPaid(true);
@@ -198,8 +304,16 @@ const TopUp = () => {
         const { success, data } = res.data;
         if (success && data && data.status === 1) {
           stopPolling();
+          setQrPay(null); // 支付成功，关闭扫码弹窗
           showSuccess(t('topup.pay.success'));
           getUserQuota();
+          loadOrders();
+          loadMyPackages(); // Task4-11 套餐单支付成功后刷新身份
+        } else if (success && data && data.status === 2) {
+          // 订单已超时/支付平台已关闭（终态不可能再支付），停止轮询并提示重新下单
+          stopPolling();
+          setQrPay(null);
+          showInfo(t('topup.pay.poll_timeout'));
           loadOrders();
         }
       } catch (err) {
@@ -225,7 +339,18 @@ const TopUp = () => {
       });
       const { success, message, data } = res.data;
       if (success) {
-        window.open(data.pay_url, '_blank');
+        if (data.pay_type === 'qrcode' && data.code_url) {
+          // 直连模式：微信 Native / 支付宝当面付订单码，统一渲染扫码二维码弹窗
+          try {
+            const img = await QRCode.toDataURL(data.code_url, { width: 220, margin: 1 });
+            setQrPay({ img, amount: data.amount, trade_no: data.trade_no, method: payMethod });
+          } catch (e) {
+            showError(t('topup.pay.qr_failed'));
+          }
+        } else if (data.pay_url) {
+          // 易支付：跳转支付网关
+          window.open(data.pay_url, '_blank');
+        }
         pollOrderStatus(data.trade_no);
       } else {
         showError(message);
@@ -271,6 +396,9 @@ const TopUp = () => {
     loadPayConfig().then();
     loadCheckinStatus().then();
     loadAff().then();
+    loadRedemptionRecords(0).then();
+    loadPackages().then(); // Task4-11 套餐列表
+    loadMyPackages().then();
     return () => {
       // 组件卸载时停止轮询，避免资源泄漏
       if (pollTimer.current) {
@@ -292,11 +420,14 @@ const TopUp = () => {
 
   return (
     <div className='topup-page'>
+      {/* 顶部两栏：左=余额+推荐计划，右=每日签到日历 */}
+      <div className={checkinStatus?.enabled ? 'topup-top-grid' : 'topup-top-grid solo'}>
+      <div className='topup-top-left'>
       {/* 余额卡 */}
       <div className='topup-hero'>
         <div className='topup-hero-info'>
           <div className='topup-hero-label'>
-            <Icon name='wallet' />
+            <Icon name='money bill alternate' />
             {t('topup.balance.label')}
           </div>
           <div className='topup-hero-number'>{renderQuota(userQuota, t)}</div>
@@ -315,61 +446,229 @@ const TopUp = () => {
           </Button>
         )}
       </div>
-
-      {/* 签到卡 + 推荐计划卡（F5 + F4） */}
-      {(checkinStatus?.enabled || affData) && (
-        <div className='topup-extra-row'>
-          {checkinStatus && checkinStatus.enabled && (
-            <div className='topup-extra-card topup-checkin-card'>
-              <div className='topup-extra-title'>
-                <Icon name='calendar check outline' />
-                {t('topup.checkin.title')}
-              </div>
-              <div className='topup-extra-tip'>
-                {t('topup.checkin.reward_range', {
-                  min: renderQuota(checkinStatus.min_reward, t),
-                  max: renderQuota(checkinStatus.max_reward, t),
-                })}
-              </div>
-              <Button
-                color='green'
-                fluid
-                disabled={checkinStatus.checked}
-                loading={checkingIn}
-                onClick={doCheckIn}
-              >
-                {checkinStatus.checked ? t('topup.checkin.checked') : t('topup.checkin.button')}
-              </Button>
+        {affData && (
+          <div className='topup-extra-card topup-aff-card'>
+            <div className='topup-extra-title'>
+              <Icon name='share alternate' />
+              {t('topup.aff.title')}
             </div>
-          )}
-          {affData && (
-            <div className='topup-extra-card topup-aff-card'>
-              <div className='topup-extra-title'>
-                <Icon name='share alternate' />
-                {t('topup.aff.title')}
+            <div className='topup-extra-tip'>{t('topup.aff.subtitle')}</div>
+            <div className='topup-aff-stats'>
+              <div className='topup-aff-stat'>
+                <div className='topup-aff-num'>{affData.invite_count || 0}</div>
+                <div className='topup-aff-label'>{t('topup.aff.invite_count')}</div>
               </div>
-              <div className='topup-extra-tip'>{t('topup.aff.subtitle')}</div>
-              <div className='topup-aff-stats'>
-                <div className='topup-aff-stat'>
-                  <div className='topup-aff-num'>{affData.invite_count || 0}</div>
-                  <div className='topup-aff-label'>{t('topup.aff.invite_count')}</div>
+              <div className='topup-aff-stat'>
+                <div className='topup-aff-num'>{renderQuota(affData.total_reward || 0, t)}</div>
+                <div className='topup-aff-label'>{t('topup.aff.total_reward')}</div>
+              </div>
+            </div>
+            <Button primary fluid onClick={copyAffLink}>
+              <Icon name='copy outline' />
+              {t('topup.aff.copy')}
+            </Button>
+          </div>
+        )}
+      </div>
+      {checkinStatus && checkinStatus.enabled && (
+        <div className='topup-extra-card topup-checkin-card'>
+              <div className='topup-checkin-header'>
+                <div className='topup-extra-title'>
+                  <Icon name='calendar check outline' />
+                  {t('topup.checkin.title')}
                 </div>
-                <div className='topup-aff-stat'>
-                  <div className='topup-aff-num'>{renderQuota(affData.total_reward || 0, t)}</div>
-                  <div className='topup-aff-label'>{t('topup.aff.total_reward')}</div>
+                <div className='topup-checkin-right'>
+                <div className='topup-checkin-stats'>
+                  <span className='topup-checkin-stat'>
+                    {t('topup.checkin.continuous', { days: checkinStatus.continuous_days || 0 })}
+                  </span>
+                  <span className='topup-checkin-stat'>
+                    {t('topup.checkin.month_total', { days: checkinStatus.month_total || 0 })}
+                  </span>
+                  <span className='topup-checkin-stat topup-checkin-stat-reward'>
+                    {t('topup.checkin.month_reward', { quota: renderQuota(checkinStatus.month_reward || 0, t) })}
+                  </span>
+                  <Popup
+                    trigger={
+                      <span className='topup-tier-info'>
+                        <Icon name='question circle outline' />
+                      </span>
+                    }
+                    on='hover'
+                    position='bottom right'
+                  >
+                  <div className='topup-tier-pop'>
+                    <div className='topup-tier-pop-title'>
+                      {t('topup.checkin.tiers_title')} · {checkinStatus.year_month}
+                    </div>
+                    {(checkinStatus.tiers || []).map((tier) => (
+                      <div
+                        key={tier.days}
+                        className={'topup-tier-pop-row' + (tier.earned ? ' earned' : '')}
+                      >
+                        <span>
+                          {t('topup.checkin.tier_tooltip', {
+                            days: tier.days,
+                            quota: renderQuota(tier.quota, t),
+                          })}
+                        </span>
+                        {tier.earned && <Icon name='check circle' color='green' />}
+                      </div>
+                    ))}
+                  </div>
+                </Popup>
+                </div>
+                <Button
+                  color='green'
+                  className='topup-checkin-btn'
+                  disabled={checkinStatus.checked}
+                  loading={checkingIn}
+                  onClick={doCheckIn}
+                >
+                  {checkinStatus.checked ? t('topup.checkin.checked') : t('topup.checkin.button')}
+                </Button>
                 </div>
               </div>
-              <Button primary fluid onClick={copyAffLink}>
-                <Icon name='copy outline' />
-                {t('topup.aff.copy')}
-              </Button>
+
+              {/* 日历网格 */}
+              <div className='topup-calendar'>
+                <div className='topup-calendar-weekdays'>
+                  {['一', '二', '三', '四', '五', '六', '日'].map((w) => (
+                    <div key={w} className='topup-calendar-wd'>{w}</div>
+                  ))}
+                </div>
+                <div className='topup-calendar-grid'>
+                  {(() => {
+                    const ym = checkinStatus.year_month;
+                    const firstDay = new Date(ym + '-01');
+                    const offset = (firstDay.getDay() + 6) % 7; // 周一为 0
+                    const blanks = [];
+                    for (let i = 0; i < offset; i++) blanks.push(i);
+                    return (
+                      <>
+                        {blanks.map((i) => (
+                          <div key={'b' + i} className='topup-cal-cell blank' />
+                        ))}
+                        {(checkinStatus.calendar || []).map((d) => (
+                          <div
+                            key={d.date}
+                            className={
+                              'topup-cal-cell' +
+                              (d.checked ? ' checked' : '') +
+                              (d.is_today ? ' today' : '') +
+                              (d.is_future ? ' future' : '') +
+                              (d.tier_hit > 0 ? ' tier' : '')
+                            }
+                            title={
+                              d.checked
+                                ? t('topup.checkin.cell_checked', {
+                                    date: d.date,
+                                    quota: renderQuota(d.reward, t),
+                                  })
+                                : d.date
+                            }
+                          >
+                            <span className='topup-cal-day'>{d.day}</span>
+                            {d.checked && <Icon name='check' className='topup-cal-check' />}
+                            {d.tier_hit > 0 && <span className='topup-cal-tier-badge'>{d.tier_hit}</span>}
+                          </div>
+                        ))}
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
             </div>
           )}
         </div>
+
+      {/* Task4-11 套餐自助升级（payEnabled 且存在上架套餐时显示） */}
+      {payEnabled && vipPackages.length > 0 && (
+        <div className='topup-pay-card'>
+          <div className='topup-section-title'>{t('topup.vip.title')}</div>
+          <div className='topup-section-sub'>{t('topup.vip.subtitle')}</div>
+          {myPackages.length > 0 && (
+            <div
+              style={{
+                marginBottom: 12,
+                display: 'flex',
+                gap: 8,
+                flexWrap: 'wrap',
+              }}
+            >
+              {myPackages.map((p) => (
+                <Label key={p.id} color='purple' size='small'>
+                  {t('topup.vip.current_badge', {
+                    group: p.group_name,
+                    date:
+                      p.expire_at > 0
+                        ? new Date(p.expire_at * 1000).toLocaleDateString()
+                        : t('topup.vip.permanent'),
+                  })}
+                </Label>
+              ))}
+            </div>
+          )}
+          <div className='topup-packages'>
+            {vipPackages.map((pkg) => (
+              <div key={pkg.id} className='pkg-card'>
+                <div className='pkg-amount'>
+                  <span className='pkg-currency'>¥</span>
+                  {Number(pkg.price).toFixed(2)}
+                </div>
+                <div className='pkg-name'>{pkg.name}</div>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    justifyContent: 'center',
+                    margin: '6px 0',
+                  }}
+                >
+                  <Label size='mini' color='blue'>
+                    {pkg.group_name}
+                  </Label>
+                  <span
+                    style={{
+                      fontSize: 12,
+                      color: 'var(--text-secondary)',
+                    }}
+                  >
+                    {pkg.duration_days === 0
+                      ? t('topup.vip.permanent')
+                      : t('topup.vip.duration', { days: pkg.duration_days })}
+                  </span>
+                </div>
+                {pkg.description && (
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: 'var(--text-secondary)',
+                      margin: '6px 0',
+                    }}
+                  >
+                    {pkg.description}
+                  </div>
+                )}
+                <Button
+                  fluid
+                  primary
+                  loading={buyingId === pkg.id}
+                  disabled={buyingId !== 0}
+                  onClick={() => startPackagePay(pkg)}
+                >
+                  {t('topup.vip.buy')}
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
-      {/* 在线支付区（PayEnabled 时替换套餐外跳槽位） */}
+      {/* 在线充值 + 充值记录：同一卡片模块（PayEnabled 时替换套餐外跳槽位） */}
       {payEnabled ? (
+        <div className='topup-pay-card'>
         <div className='topup-pay'>
           <div className='topup-section-title'>{t('topup.pay.title')}</div>
           <div className='topup-section-sub'>{t('topup.pay.subtitle')}</div>
@@ -407,17 +706,22 @@ const TopUp = () => {
           </div>
           <div className='pay-method-row'>
             <Button.Group basic>
-              <Button active={payMethod === 'alipay'} onClick={() => setPayMethod('alipay')}>
-                {/* SUI 图标字体无 alipay 字形，使用 Simple Icons 官方单色路径，fill 跟随 currentColor */}
-                <svg className='pay-brand-icon' viewBox='0 0 24 24' aria-hidden='true'>
-                  <path d='M19.695 15.07c3.426 1.158 4.203 1.22 4.203 1.22V3.846c0-2.124-1.705-3.845-3.81-3.845H3.914C1.808.001.102 1.722.102 3.846v16.31c0 2.123 1.706 3.845 3.813 3.845h16.173c2.105 0 3.81-1.722 3.81-3.845v-.157s-6.19-2.602-9.315-4.119c-2.096 2.602-4.8 4.181-7.607 4.181-4.75 0-6.361-4.19-4.112-6.949.49-.602 1.324-1.175 2.617-1.497 2.025-.502 5.247.313 8.266 1.317a16.796 16.796 0 0 0 1.341-3.302H5.781v-.952h4.799V6.975H4.77v-.953h5.81V3.591s0-.409.411-.409h2.347v2.84h5.744v.951h-5.744v1.704h4.69a19.453 19.453 0 0 1-1.986 5.06c1.424.52 2.702 1.011 3.654 1.333m-13.81-2.032c-.596.06-1.71.325-2.321.869-1.83 1.608-.735 4.55 2.968 4.55 2.151 0 4.301-1.388 5.99-3.61-2.403-1.182-4.438-2.028-6.637-1.809' />
-                </svg>
-                {t('topup.pay.method_alipay')}
-              </Button>
-              <Button active={payMethod === 'wxpay'} onClick={() => setPayMethod('wxpay')}>
-                <Icon name='wechat' />
-                {t('topup.pay.method_wxpay')}
-              </Button>
+              {/* Task4-10b：支付方式按后端 methods 渲染（直连默认仅微信，开启支付宝后两项都显示） */}
+              {(!payConfig.methods || payConfig.methods.includes('alipay')) && (
+                <Button active={payMethod === 'alipay'} onClick={() => setPayMethod('alipay')}>
+                  {/* SUI 图标字体无 alipay 字形，使用 Simple Icons 官方单色路径，fill 跟随 currentColor */}
+                  <svg className='pay-brand-icon' viewBox='0 0 24 24' aria-hidden='true'>
+                    <path d='M19.695 15.07c3.426 1.158 4.203 1.22 4.203 1.22V3.846c0-2.124-1.705-3.845-3.81-3.845H3.914C1.808.001.102 1.722.102 3.846v16.31c0 2.123 1.706 3.845 3.813 3.845h16.173c2.105 0 3.81-1.722 3.81-3.845v-.157s-6.19-2.602-9.315-4.119c-2.096 2.602-4.8 4.181-7.607 4.181-4.75 0-6.361-4.19-4.112-6.949.49-.602 1.324-1.175 2.617-1.497 2.025-.502 5.247.313 8.266 1.317a16.796 16.796 0 0 0 1.341-3.302H5.781v-.952h4.799V6.975H4.77v-.953h5.81V3.591s0-.409.411-.409h2.347v2.84h5.744v.951h-5.744v1.704h4.69a19.453 19.453 0 0 1-1.986 5.06c1.424.52 2.702 1.011 3.654 1.333m-13.81-2.032c-.596.06-1.71.325-2.321.869-1.83 1.608-.735 4.55 2.968 4.55 2.151 0 4.301-1.388 5.99-3.61-2.403-1.182-4.438-2.028-6.637-1.809' />
+                  </svg>
+                  {t('topup.pay.method_alipay')}
+                </Button>
+              )}
+              {(!payConfig.methods || payConfig.methods.includes('wxpay')) && (
+                <Button active={payMethod === 'wxpay'} onClick={() => setPayMethod('wxpay')}>
+                  <Icon name='wechat' />
+                  {t('topup.pay.method_wxpay')}
+                </Button>
+              )}
             </Button.Group>
             <span className='pay-quota-preview'>
               {quotaPreview > 0
@@ -444,6 +748,59 @@ const TopUp = () => {
               <Message.Content>{t('topup.pay.waiting')}</Message.Content>
             </Message>
           )}
+        </div>
+
+        {/* 充值记录：与在线充值同卡片，分隔线区分 */}
+        <div className='topup-orders-section'>
+          <div className='topup-redeem-title'>
+            <Icon name='list ul' />
+            {t('topup.orders.title')}
+          </div>
+          <Table basic='very' className='orders-table'>
+            <Table.Header>
+              <Table.Row>
+                <Table.HeaderCell>{t('topup.orders.time')}</Table.HeaderCell>
+                <Table.HeaderCell>{t('topup.orders.amount')}</Table.HeaderCell>
+                <Table.HeaderCell>{t('topup.orders.quota')}</Table.HeaderCell>
+                <Table.HeaderCell>{t('topup.orders.method')}</Table.HeaderCell>
+                <Table.HeaderCell>{t('topup.orders.status')}</Table.HeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {orders.length === 0 ? (
+                <Table.Row>
+                  <Table.Cell colSpan={5} className='orders-empty'>
+                    {t('topup.orders.empty')}
+                  </Table.Cell>
+                </Table.Row>
+              ) : (
+                orders.map((order) => (
+                  <Table.Row key={order.id}>
+                    <Table.Cell className='orders-time'>
+                      {new Date(order.created_at * 1000).toLocaleString()}
+                    </Table.Cell>
+                    <Table.Cell>¥{Number(order.amount).toFixed(2)}</Table.Cell>
+                    <Table.Cell>
+                      {order.package_id > 0 ? (
+                        <Label size='small' color='purple'>
+                          {t('topup.vip.order_label')}
+                        </Label>
+                      ) : (
+                        renderQuota(order.quota, t)
+                      )}
+                    </Table.Cell>
+                    <Table.Cell>
+                      {order.payment_method === 'alipay'
+                        ? t('topup.pay.method_alipay')
+                        : t('topup.pay.method_wxpay')}
+                    </Table.Cell>
+                    <Table.Cell>{renderOrderStatus(order.status)}</Table.Cell>
+                  </Table.Row>
+                ))
+              )}
+            </Table.Body>
+          </Table>
+        </div>
         </div>
       ) : (
         <>
@@ -476,52 +833,6 @@ const TopUp = () => {
           </div>
           {!topUpLink && <div className='topup-soon'>{t('topup.packages.soon')}</div>}
         </>
-      )}
-
-      {/* 订单历史（启用在线支付时展示） */}
-      {payEnabled && (
-        <div className='topup-orders'>
-          <div className='topup-redeem-title'>
-            <Icon name='list ul' />
-            {t('topup.orders.title')}
-          </div>
-          <Table basic='very' className='orders-table'>
-            <Table.Header>
-              <Table.Row>
-                <Table.HeaderCell>{t('topup.orders.time')}</Table.HeaderCell>
-                <Table.HeaderCell>{t('topup.orders.amount')}</Table.HeaderCell>
-                <Table.HeaderCell>{t('topup.orders.quota')}</Table.HeaderCell>
-                <Table.HeaderCell>{t('topup.orders.method')}</Table.HeaderCell>
-                <Table.HeaderCell>{t('topup.orders.status')}</Table.HeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {orders.length === 0 ? (
-                <Table.Row>
-                  <Table.Cell colSpan={5} className='orders-empty'>
-                    {t('topup.orders.empty')}
-                  </Table.Cell>
-                </Table.Row>
-              ) : (
-                orders.map((order) => (
-                  <Table.Row key={order.id}>
-                    <Table.Cell className='orders-time'>
-                      {new Date(order.created_at * 1000).toLocaleString()}
-                    </Table.Cell>
-                    <Table.Cell>¥{Number(order.amount).toFixed(2)}</Table.Cell>
-                    <Table.Cell>{renderQuota(order.quota, t)}</Table.Cell>
-                    <Table.Cell>
-                      {order.payment_method === 'alipay'
-                        ? t('topup.pay.method_alipay')
-                        : t('topup.pay.method_wxpay')}
-                    </Table.Cell>
-                    <Table.Cell>{renderOrderStatus(order.status)}</Table.Cell>
-                  </Table.Row>
-                ))
-              )}
-            </Table.Body>
-          </Table>
-        </div>
       )}
 
       {/* 兑换码核销（逻辑不变） */}
@@ -571,7 +882,143 @@ const TopUp = () => {
             ? t('topup.redeem_code.submitting')
             : t('topup.redeem_code.submit')}
         </Button>
+
+        {/* Task4-4：兑换码充值记录（与核销同卡片，分隔线区分） */}
+        <div className='topup-orders-section'>
+          <div className='topup-redeem-title'>
+            <Icon name='list ul' />
+            {t('topup.redeem_records.title')}
+          </div>
+          <Table basic='very' className='orders-table'>
+            <Table.Header>
+              <Table.Row>
+                <Table.HeaderCell>{t('topup.redeem_records.time')}</Table.HeaderCell>
+                <Table.HeaderCell>{t('topup.redeem_records.name')}</Table.HeaderCell>
+                <Table.HeaderCell>{t('topup.redeem_records.quota')}</Table.HeaderCell>
+                <Table.HeaderCell>{t('topup.redeem_records.amount')}</Table.HeaderCell>
+                <Table.HeaderCell>{t('topup.redeem_records.status')}</Table.HeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {redeemRecords.length === 0 ? (
+                <Table.Row>
+                  <Table.Cell colSpan={5} className='orders-empty'>
+                    {t('topup.redeem_records.empty')}
+                  </Table.Cell>
+                </Table.Row>
+              ) : (
+                redeemRecords.map((r) => (
+                  <Table.Row key={r.id}>
+                    <Table.Cell className='orders-time'>
+                      {new Date(r.created_time * 1000).toLocaleString()}
+                    </Table.Cell>
+                    <Table.Cell>
+                      {r.name || '-'}
+                      {r.status === 2 && r.remark ? (
+                        <div
+                          style={{
+                            fontSize: 11,
+                            color: 'var(--text-secondary)',
+                          }}
+                        >
+                          {r.remark}
+                        </div>
+                      ) : null}
+                    </Table.Cell>
+                    <Table.Cell>
+                      {r.status === 1 ? renderQuota(r.quota, t) : '-'}
+                    </Table.Cell>
+                    <Table.Cell>
+                      {r.status === 1 && r.amount > 0
+                        ? `¥${Number(r.amount).toFixed(2)}`
+                        : '-'}
+                    </Table.Cell>
+                    <Table.Cell>
+                      {r.status === 1 ? (
+                        <Label color='green' size='mini'>
+                          {t('topup.redeem_records.status_success')}
+                        </Label>
+                      ) : (
+                        <Label color='grey' size='mini'>
+                          {t('topup.redeem_records.status_failed')}
+                        </Label>
+                      )}
+                    </Table.Cell>
+                  </Table.Row>
+                ))
+              )}
+            </Table.Body>
+          </Table>
+          {redeemTotal > redeemPageSize && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginTop: 4,
+              }}
+            >
+              <Button
+                size='mini'
+                disabled={redeemPage === 0}
+                onClick={() => loadRedemptionRecords(redeemPage - 1).then()}
+              >
+                {t('topup.redeem_records.prev')}
+              </Button>
+              <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>
+                {t('topup.redeem_records.page_info', {
+                  current: redeemPage + 1,
+                  total: Math.ceil(redeemTotal / redeemPageSize),
+                })}
+              </span>
+              <Button
+                size='mini'
+                disabled={(redeemPage + 1) * redeemPageSize >= redeemTotal}
+                onClick={() => loadRedemptionRecords(redeemPage + 1).then()}
+              >
+                {t('topup.redeem_records.next')}
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* 直连模式扫码支付弹窗：微信 Native / 支付宝当面付订单码 */}
+      <Modal
+        open={!!qrPay}
+        onClose={closeQrPay}
+        size='mini'
+        centered={false}
+        closeIcon
+        className='pay-qr-modal'
+      >
+        <Modal.Header>
+          {qrPay && qrPay.method === 'alipay'
+            ? t('topup.pay.scan_title_alipay')
+            : t('topup.pay.scan_title')}
+        </Modal.Header>
+        <Modal.Content style={{ textAlign: 'center' }}>
+          {qrPay && (
+            <>
+              <div className='pay-qr-amount'>¥{Number(qrPay.amount).toFixed(2)}</div>
+              <div className='pay-qr-tip'>
+                {qrPay.method === 'alipay'
+                  ? t('topup.pay.scan_tip_alipay')
+                  : t('topup.pay.scan_tip')}
+              </div>
+              <img
+                src={qrPay.img}
+                alt={qrPay.method === 'alipay' ? 'Alipay QR' : 'WeChat Pay QR'}
+                className='pay-qr-img'
+              />
+              <Message icon info className='pay-waiting'>
+                <Icon name='circle notched' loading />
+                <Message.Content>{t('topup.pay.scan_waiting')}</Message.Content>
+              </Message>
+            </>
+          )}
+        </Modal.Content>
+      </Modal>
     </div>
   );
 };

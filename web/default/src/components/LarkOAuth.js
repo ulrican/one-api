@@ -29,7 +29,7 @@ const LarkOAuth = () => {
         userDispatch({ type: 'login', payload: data });
         localStorage.setItem('user', JSON.stringify(data));
         showSuccess('登录成功！');
-        navigate('/dashboard');
+        navigate('/');
       }
     } else {
       showError(message);

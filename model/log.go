@@ -223,7 +223,7 @@ type LogStatistic struct {
 	CompletionTokens int    `gorm:"column:completion_tokens"`
 }
 
-func SearchLogsByDayAndModel(userId, start, end int) (LogStatistics []*LogStatistic, err error) {
+func SearchLogsByDayAndModel(userId, start, end int, tokenName string) (LogStatistics []*LogStatistic, err error) {
 	groupSelect := "DATE_FORMAT(FROM_UNIXTIME(created_at), '%Y-%m-%d') as day"
 
 	if common.UsingPostgreSQL {
@@ -234,6 +234,13 @@ func SearchLogsByDayAndModel(userId, start, end int) (LogStatistics []*LogStatis
 		groupSelect = "strftime('%Y-%m-%d', datetime(created_at, 'unixepoch')) as day"
 	}
 
+	where := "WHERE type=2 AND user_id= ? AND created_at BETWEEN ? AND ?"
+	args := []interface{}{userId, start, end}
+	if tokenName != "" {
+		where += " AND token_name = ?"
+		args = append(args, tokenName)
+	}
+
 	err = LOG_DB.Raw(`
 		SELECT `+groupSelect+`,
 		model_name, count(1) as request_count,
@@ -241,12 +248,10 @@ func SearchLogsByDayAndModel(userId, start, end int) (LogStatistics []*LogStatis
 		sum(prompt_tokens) as prompt_tokens,
 		sum(completion_tokens) as completion_tokens
 		FROM logs
-		WHERE type=2
-		AND user_id= ?
-		AND created_at BETWEEN ? AND ?
+		`+where+`
 		GROUP BY day, model_name
 		ORDER BY day, model_name
-	`, userId, start, end).Scan(&LogStatistics).Error
+	`, args...).Scan(&LogStatistics).Error
 
 	return LogStatistics, err
 }

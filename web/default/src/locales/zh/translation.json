@@ -1,22 +1,27 @@
 {
   "header": {
     "home": "首页",
-    "channel": "渠道",
-    "token": "令牌",
-    "redemption": "兑换",
+    "channel": "渠道管理",
+    "ratio": "倍率管理",
+    "application": "应用管理",
+    "redemption": "兑换码管理",
     "topup": "充值",
-    "pricing": "价格",
+    "pricing": "模型价格",
     "rankings": "排行榜",
     "marketplace": "模型广场",
-    "user": "用户",
+    "user": "用户管理",
     "dashboard": "总览",
     "log": "日志",
     "setting": "设置",
     "about": "关于",
-    "chat": "聊天",
     "login": "登录",
     "logout": "注销",
-    "register": "注册"
+    "register": "注册",
+    "experience": "模型体验",
+    "operation": "运营管理",
+    "payment": "支付管理",
+    "system": "系统管理",
+    "site": "站点管理"
   },
   "sidenav": {
     "group": {
@@ -28,8 +33,127 @@
     "collapse": "收起菜单",
     "expand": "展开菜单"
   },
+  "ratio": {
+    "subheader": "自动计算 / 手动锁定 / 用户组管理（分组倍率与成员）",
+    "tabs": {
+      "auto": "自动计算倍率",
+      "locks": "手动锁定倍率",
+      "groups": "用户组管理"
+    },
+    "auto": {
+      "stats": {
+        "total": "模型总数",
+        "auto": "自动",
+        "locked": "已锁定"
+      },
+      "formula_label": "倍率公式",
+      "formula_title": "自动计算倍率公式",
+      "formula_note": "换算口径：1 modelRatio = $0.002/1K tokens = ¥14/1M tokens。priceInput/priceOutput 均为七牛官方价目（¥/百万 token）。",
+      "col_model_id": "模型",
+      "col_issuer": "厂商",
+      "col_region": "区域",
+      "col_price_input": "输入价(¥/M)",
+      "col_price_output": "输出价(¥/M)",
+      "col_model_ratio": "模型倍率",
+      "col_completion_ratio": "补全倍率",
+      "col_status": "状态",
+      "status_auto": "自动",
+      "status_locked": "锁定",
+      "loading": "加载中...",
+      "no_data": "暂无 token 计价模型",
+      "no_search": "无匹配结果",
+      "search_placeholder": "搜索模型/厂商/区域",
+      "preview_title": "重算预览（dry_run）",
+      "preview_summary": "共 {{count}} 个模型倍率会变更",
+      "preview_truncated": "（仅展示前 {{limit}} 条）",
+      "preview_btn": "预览重算",
+      "no_change": "当前价目下倍率已全部正确，无需重算",
+      "btn_cancel": "取消",
+      "btn_apply": "立即执行",
+      "pagination": "第 {{page}} / {{total}} 页"
+    }
+  },
+  "groupmanage": {
+    "name": "组名",
+    "ratio": "分组倍率",
+    "members": "成员数",
+    "actions": "操作",
+    "move": "迁移",
+    "delete": "删除",
+    "add": "新增分组",
+    "new_name": "新组名",
+    "new_ratio": "倍率",
+    "save": "保存倍率",
+    "saved": "分组倍率已保存",
+    "reload": "刷新",
+    "loading": "加载中...",
+    "no_data": "暂无分组",
+    "invalid_ratio": "组 {{name}} 的倍率必须为非负数字",
+    "default_required": "default 组必须存在",
+    "default_undeletable": "default 组不可删除",
+    "delete_has_members": "该组还有 {{count}} 名成员，请先迁移后再删除",
+    "duplicate": "组 {{name}} 已存在",
+    "move_title": "迁移组「{{name}}」成员",
+    "move_confirm": "选择目标组，该组全部成员将迁移至目标组：",
+    "move_target_required": "请选择目标组",
+    "moved": "已迁移 {{count}} 名用户",
+    "cancel": "取消",
+    "move_hint": "迁出前请确保渠道已开放目标组"
+  },
+  "packagemanage": {
+    "tip": "套餐购买走在线支付，回调自动开通用户组并按套餐时长到期降级",
+    "add": "新增套餐",
+    "add_title": "新增套餐",
+    "edit_title": "编辑套餐：{{name}}",
+    "edit": "编辑",
+    "delete": "删除",
+    "delete_title": "删除套餐",
+    "delete_confirm": "确定删除套餐「{{name}}」？已购买用户的有效实例不受影响。",
+    "deleted": "套餐已删除",
+    "saved": "套餐已保存",
+    "cancel": "取消",
+    "save": "保存",
+    "loading": "加载中...",
+    "no_data": "暂无套餐，点击右上角新增",
+    "col_name": "名称",
+    "col_group": "开通组",
+    "col_price": "价格(¥)",
+    "col_duration": "有效期",
+    "col_desc": "描述",
+    "col_status": "状态",
+    "col_actions": "操作",
+    "name_placeholder": "如：VIP 月卡",
+    "group_placeholder": "选择开通的用户组",
+    "group_addition": "新增组",
+    "price_invalid": "价格必须为非负数字",
+    "duration_invalid": "有效期必须为非负整数（0 = 永久）",
+    "duration_label": "有效期(天)，0 = 永久",
+    "desc_placeholder": "展示给用户看的套餐说明（可选）",
+    "enabled_label": "上架",
+    "enabled": "已上架",
+    "disabled": "已下架",
+    "permanent": "永久",
+    "days": "{{days}} 天",
+    "name_required": "套餐名称不能为空",
+    "group_required": "请选择开通的用户组"
+  },
+  "payment": {
+    "tabs": {
+      "packages": "套餐管理"
+    }
+  },
   "topup": {
     "title": "充值中心",
+    "vip": {
+      "title": "套餐升级",
+      "subtitle": "开通会员组，享受更优分组倍率与专属模型渠道",
+      "buy": "立即购买",
+      "current_badge": "{{group}} · 至 {{date}}",
+      "permanent": "永久有效",
+      "duration": "{{days}} 天有效",
+      "order_label": "套餐",
+      "group_label": "开通 {{group}} 组"
+    },
     "balance": {
       "label": "账户可用额度",
       "recharge": "在线充值",
@@ -64,6 +188,20 @@
       "request_failed": "请求失败",
       "no_link": "超级管理员未设置充值链接！"
     },
+    "redeem_records": {
+      "title": "兑换记录",
+      "time": "兑换时间",
+      "name": "兑换码",
+      "quota": "到账额度",
+      "amount": "折算金额",
+      "status": "状态",
+      "status_success": "成功",
+      "status_failed": "失败",
+      "empty": "暂无兑换记录",
+      "prev": "上一页",
+      "next": "下一页",
+      "page_info": "第 {{current}} / {{total}} 页"
+    },
     "pay": {
       "title": "在线充值",
       "subtitle": "选择充值金额与支付方式，支付成功后额度实时到账",
@@ -76,7 +214,13 @@
       "poll_timeout": "等待支付超时，若已完成支付请稍后刷新页面查看余额",
       "empty_amount": "请输入充值金额",
       "create_failed": "订单创建失败，请稍后重试",
-      "success": "支付成功，额度已到账！"
+      "success": "支付成功，额度已到账！",
+      "scan_title": "微信扫码支付",
+      "scan_tip": "请使用微信扫一扫完成支付",
+      "scan_title_alipay": "支付宝扫码支付",
+      "scan_tip_alipay": "请使用支付宝扫一扫完成支付",
+      "scan_waiting": "等待支付结果，支付完成后额度自动到账…",
+      "qr_failed": "二维码生成失败，请重试"
     },
     "orders": {
       "title": "充值记录",
@@ -95,10 +239,18 @@
       "tip": "每日签到可随机获得额度奖励",
       "reward_range": "奖励区间：{{min}} ~ {{max}}",
       "button": "立即签到",
-      "checked": "今日已签到",
+      "checked": "已签到",
       "success": "签到成功，获得 {{quota}} 额度",
       "already": "今日已签到，请勿重复签到",
-      "disabled": "签到功能暂未开启"
+      "disabled": "签到功能暂未开启",
+      "continuous": "连续{{days}}天",
+      "month_total": "本月{{days}}天",
+      "month_reward": "奖励{{quota}}",
+      "tiers_title": "连续签到阶梯奖励",
+      "tier_bonus": "，连续签到第{{days}}天额外奖励 {{quota}}",
+      "tier_day_unit": "天",
+      "tier_tooltip": "签到满{{days}}天额外赠送{{quota}}",
+      "cell_checked": "{{date}} 已签到，获得 {{quota}}"
     },
     "aff": {
       "title": "推荐计划",
@@ -261,7 +413,7 @@
       "suggested": "推荐替代模型",
       "official_pricing": "官方定价页",
       "use_now": "立即使用",
-      "go_chat": "去对话",
+      "go_chat": "去体验",
       "price_key": {
         "input": "输入",
         "output": "输出",
@@ -474,8 +626,105 @@
         "model_count": "当前 {{count}} 个可选模型",
         "not_synced": "尚未同步，请点击刷新",
         "secret_required": "请先填写 API Secret",
-        "sync_success": "同步成功，共 {{count}} 个模型入库"
+        "sync_success": "同步成功，共 {{count}} 个模型入库",
+        "picker": {
+          "search_placeholder": "搜索模型名称 / ID / 厂商",
+          "selected_chips": "已选模型：",
+          "region_all": "全部区域",
+          "region_domestic": "国内",
+          "region_overseas": "海外",
+          "issuer_all": "全部厂商",
+          "select_all_filtered": "全选当前筛选（{{count}}）",
+          "unselect_all": "取消全选",
+          "selected_count": "已选",
+          "total_count": "共 {{count}}",
+          "no_match": "没有符合条件的模型",
+          "col_model": "模型",
+          "col_issuer": "厂商",
+          "col_region": "区域"
+        }
       }
+    }
+  },
+  "application": {
+    "title": "应用管理",
+    "search": "搜索应用名称",
+    "no_name": "未命名应用",
+    "unlimited": "无限额度",
+    "never_expire": "永不过期",
+    "all_models": "不限模型",
+    "copy_key": "复制 APIKey",
+    "types": {
+      "chat": "聊天助手",
+      "agent": "智能体",
+      "api": "API 接入",
+      "other": "其他"
+    },
+    "col_name": "应用名称",
+    "col_type": "应用类型",
+    "col_apikey": "APIKey",
+    "col_used": "已用额度",
+    "col_remain": "剩余额度",
+    "col_created": "创建时间",
+    "col_expired": "过期时间",
+    "col_models": "模型信息",
+    "col_status": "状态",
+    "col_actions": "操作",
+    "status_enabled": "已启用",
+    "status_disabled": "已禁用",
+    "status_expired": "已过期",
+    "status_depleted": "已耗尽",
+    "status_unknown": "未知",
+    "empty": {
+      "title": "还没有应用",
+      "desc": "点击下方「新建应用」创建你的第一个应用，将获得专属 APIKey 作为调用凭证"
+    },
+    "buttons": {
+      "add": "新建应用",
+      "refresh": "刷新",
+      "edit": "编辑",
+      "enable": "启用",
+      "disable": "禁用",
+      "delete": "删除",
+      "confirm_delete": "确认删除",
+      "cancel": "取消",
+      "submit": "保存",
+      "copy": "复制 APIKey"
+    },
+    "sort_placeholder": "排序",
+    "sort_default": "默认排序",
+    "sort_remain": "按剩余额度",
+    "sort_used": "按已用额度",
+    "modal": {
+      "title_create": "新建应用",
+      "title_edit": "编辑应用"
+    },
+    "form": {
+      "name": "应用名称",
+      "name_placeholder": "给应用起个名字",
+      "type": "应用类型",
+      "models": "可用模型",
+      "models_placeholder": "不选则允许全部模型",
+      "expire": "过期时间",
+      "expire_placeholder": "留空表示永不过期",
+      "never_expire": "永不过期",
+      "expire_1_month": "一个月",
+      "expire_7_days": "7 天",
+      "expire_1_day": "一天",
+      "quota": "额度限制",
+      "unlimited": "无限额度"
+    },
+    "created": {
+      "title": "应用创建成功",
+      "notice": "APIKey 仅完整展示这一次，请立即复制并妥善保管（列表中仅脱敏显示，无法再次查看）：",
+      "done": "我已保存"
+    },
+    "messages": {
+      "name_required": "应用名称不能为空",
+      "expire_invalid": "过期时间格式无效",
+      "copy_success": "已复制到剪贴板",
+      "operation_success": "操作成功",
+      "update_success": "应用信息已更新"
     }
   },
   "token": {
@@ -575,6 +824,7 @@
   "playground": {
     "title": "Playground",
     "token_placeholder": "选择令牌",
+    "app_placeholder": "选择应用",
     "model_placeholder": "选择模型",
     "system_placeholder": "系统提示词（可选）",
     "input_placeholder": "输入消息 ...",
@@ -586,10 +836,10 @@
     },
     "empty": {
       "title": "开始对话",
-      "desc": "选择令牌与模型后，输入消息开始体验内嵌对话"
+      "desc": "选择应用与模型后，输入消息开始体验内嵌对话"
     },
     "error": {
-      "no_token": "没有可用的令牌，请先创建一个启用的令牌",
+      "no_token": "没有可用的应用，请先在应用管理中创建并启用一个应用",
       "no_model": "没有可用的模型"
     },
     "info": {
@@ -683,6 +933,8 @@
       "username": "用户名",
       "token_name": "令牌名称",
       "token_name_placeholder": "可选值",
+      "application": "应用",
+      "application_placeholder": "选择应用预览调用记录",
       "model_name": "模型名称",
       "model_name_placeholder": "可选值",
       "start_time": "起始时间",
@@ -698,7 +950,8 @@
     "buttons": {
       "query": "操作",
       "submit": "查询",
-      "refresh": "刷新"
+      "refresh": "刷新",
+      "clear_app": "清除选择"
     }
   },
   "user": {
@@ -782,10 +1035,18 @@
     }
   },
   "dashboard": {
+    "filter": {
+      "app": "应用",
+      "app_placeholder": "选择应用预览调用统计",
+      "start": "起始时间",
+      "end": "结束时间"
+    },
+    "filtered": "已按应用过滤",
+    "filtered_all": "全部应用",
     "stat": {
-      "requests": "今日请求",
-      "quota": "今日消费",
-      "tokens": "今日 Tokens",
+      "requests": "请求数",
+      "quota": "消费额度",
+      "tokens": "Tokens",
       "rpm": "RPM（每分钟请求）",
       "tpm": "TPM（每分钟 Tokens）"
     },
@@ -832,7 +1093,9 @@
     "tabs": {
       "personal": "个人设置",
       "operation": "运营设置",
+      "payment": "支付设置",
       "system": "系统设置",
+      "site": "站点设置",
       "other": "其他设置"
     },
     "personal": {
@@ -1069,6 +1332,9 @@
         "enabled": "启用每日签到",
         "min": "最小奖励额度",
         "max": "最大奖励额度",
+        "tiers": "签到阶梯奖励（JSON 数组，days 为累计签到天数，quota 为额外赠送额度）",
+        "tiers_hint": "示例：[{\"days\":3,\"quota\":1000},{\"days\":7,\"quota\":3000},{\"days\":14,\"quota\":5000},{\"days\":21,\"quota\":10000},{\"days\":30,\"quota\":20000}]，每月重置，每档当月仅领一次",
+        "invalid_tiers": "阶梯奖励配置不是合法的 JSON",
         "buttons": {
           "save": "保存签到设置"
         }
@@ -1108,8 +1374,10 @@
           "title": "分组倍率",
           "placeholder": "为一个 JSON 文本，键为分组名称，值为倍率"
         },
+        "invalid_json": "{{name}} 不是合法的 JSON 字符串",
         "buttons": {
-          "save": "保存倍率设置"
+          "save": "保存倍率设置",
+          "saved_success": "倍率设置已保存"
         }
       },
       "ratio_auto": {
@@ -1207,21 +1475,27 @@
         "retry_times_placeholder": "失败重试次数",
         "display_in_currency": "以货币形式显示额度",
         "display_token_stat": "Billing 相关 API 显示令牌额度而非用户额度",
-        "playground_enabled": "启用 Playground 内嵌对话（对话入口指向内置对话页）",
         "approximate_token": "使用近似的方式估算 token 数以减少计算量",
         "buttons": {
           "save": "保存通用设置"
         }
       },
       "pay": {
-        "title": "在线支付设置（易支付）",
+        "title": "在线支付设置",
         "enable": "启用在线支付（关闭时充值页回退为充值链接模式）",
+        "mode_label": "支付模式",
+        "mode_epay": "易支付",
+        "mode_direct": "直接到账（微信/支付宝原生）",
         "address": "支付网关地址",
         "address_placeholder": "例如 https://pay.example.com",
         "pid": "商户 PID",
         "pid_placeholder": "易支付商户 ID",
         "secret": "商户密钥",
         "secret_placeholder": "输入易支付商户密钥，留空表示不修改",
+        "direct_notice_title": "直连支付凭证已内置",
+        "direct_notice_body": "微信支付（Native 扫码）与支付宝（订单码）的商户号、密钥、证书等凭证均已在服务端代码内置，无需在页面配置。微信支付默认开放；支付宝需勾选下方开关后，充值页才会显示支付宝选项。",
+        "alipay_enable": "开启支付宝支付（订单码扫码）",
+        "alipay_enable_hint": "开启后充值模块显示支付宝选项，用户使用支付宝 App 扫码支付",
         "price": "充值价格（元 / 1 美元额度）",
         "price_placeholder": "例如 7.3，即 7.3 元购买 1 美元额度",
         "min_topup": "最低充值金额（元）",
@@ -1384,15 +1658,6 @@
     "back_home": "返回首页",
     "back_console": "进入控制台"
   },
-  "chat": {
-    "title": "在线对话",
-    "open_new": "新窗口打开",
-    "empty": {
-      "title": "对话功能未开启",
-      "description": "管理员尚未配置对话链接，如需使用网页对话功能，请联系管理员开通。",
-      "back_home": "返回首页"
-    }
-  },
   "messages": {
     "success": {
       "login": "登录成功！",
@@ -1409,6 +1674,47 @@
     },
     "notice": {
       "password_copied": "新密码已复制到剪贴板：{{password}}"
+    }
+  },
+  "experience": {
+    "type_hint": "按模型支持的模态类型切换体验窗口",
+    "no_models": "当前类型下没有可体验的模型",
+    "result_label": "结果",
+    "history_label": "历史记录",
+    "text": {
+      "empty": {
+        "title": "开始对话",
+        "desc": "选择应用与模型后，输入消息开始体验文本模型"
+      }
+    },
+    "image": {
+      "upload_title": "点击上传图片",
+      "upload_desc": "支持常见图片格式，最大 10MB",
+      "default_prompt": "请识别并分类这张图片",
+      "submit": "开始识别",
+      "analyzing": "模型识别中 ..."
+    },
+    "audio": {
+      "upload_title": "点击上传音频",
+      "default_prompt": "请将这段语音转写为文本，只输出转写结果。",
+      "upload_desc": "支持常见音频格式，最大 25MB",
+      "submit": "开始转写",
+      "transcribing": "语音转写中 ..."
+    },
+    "unsupported": {
+      "title": "该模态暂不支持在线体验",
+      "desc": "视频类型模型的体验窗口即将上线，敬请期待"
+    },
+    "error": {
+      "no_app": "没有可用的应用，请先在应用管理中创建并启用一个应用",
+      "no_model": "没有可用的模型",
+      "not_image": "请上传图片文件",
+      "image_too_large": "图片大小不能超过 10MB",
+      "no_image": "请先上传图片",
+      "not_audio": "请上传音频文件",
+      "audio_too_large": "音频大小不能超过 25MB",
+      "no_audio": "请先上传音频",
+      "empty_response": "模型返回了空结果"
     }
   }
 }

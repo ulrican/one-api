@@ -13,11 +13,43 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import {Button} from 'semantic-ui-react';
+import {Button, Dropdown, Header, Label, Segment} from 'semantic-ui-react';
 import axios from 'axios';
 import {useTheme} from '../../context/Theme';
 import EmptyState from '../../components/EmptyState';
+import {API, copy, showError, showSuccess, timestamp2string} from '../../helpers';
 import './Dashboard.css';
+
+// Task4-7 应用详情卡辅助（与 LogsTable 保持一致）
+const APP_TYPE_COLORS = {chat: 'blue', agent: 'purple', api: 'teal', other: 'grey'};
+
+function maskKey(key) {
+  if (!key) return '';
+  return `sk-****${String(key).slice(-4)}`;
+}
+
+function renderAppStatus(status, t) {
+  switch (status) {
+    case 1: return <Label basic color='green'>{t('application.status_enabled')}</Label>;
+    case 2: return <Label basic color='red'>{t('application.status_disabled')}</Label>;
+    case 3: return <Label basic color='yellow'>{t('application.status_expired')}</Label>;
+    case 4: return <Label basic color='grey'>{t('application.status_depleted')}</Label>;
+    default: return <Label basic color='black'>{t('application.status_unknown')}</Label>;
+  }
+}
+
+function renderQuota(q, t) {
+  const quota = Number(q) || 0;
+  if (quota >= 1000000) return `${(quota / 1000000).toFixed(2)}M`;
+  if (quota >= 1000) return `${(quota / 1000).toFixed(1)}k`;
+  return String(quota);
+}
+
+// datetime-local 字符串转秒级时间戳
+function dtToTs(dtStr) {
+  if (!dtStr) return 0;
+  return Math.floor(new Date(dtStr).getTime() / 1000);
+}
 
 // recharts 图表色板：SVG 属性不读 CSS 变量，按主题提供具体色值（Task02 阶段 4）
 const chartTheme = {
@@ -87,16 +119,73 @@ const Dashboard = () => {
   const [metrics, setMetrics] = useState({rpm: 0, tpm: 0, top_models: []});
   const [metricMode, setMetricMode] = useState('requests');
 
+  // Task4-7 应用选择 + 时间范围过滤
+  const [applications, setApplications] = useState([]);
+  const [selectedApp, setSelectedApp] = useState(null);
+  const now = new Date();
+  const [startTime, setStartTime] = useState(() => {
+    const d = new Date(now.getTime() - 6 * 24 * 3600 * 1000);
+    d.setHours(0, 0, 0, 0);
+    return d.toISOString().slice(0, 16);
+  });
+  const [endTime, setEndTime] = useState(() => {
+    const d = new Date(now);
+    d.setHours(23, 59, 0, 0);
+    return d.toISOString().slice(0, 16);
+  });
+
+  // 加载应用列表
+  const loadApplications = async () => {
+    try {
+      let all = [];
+      for (let p = 0; p < 100; p++) {
+        const res = await API.get(`/api/application/?p=${p}`);
+        const { success, message, data } = res.data;
+        if (!success) { showError(message); return; }
+        all = all.concat(data);
+        if (data.length < 50) break;
+      }
+      setApplications(all);
+    } catch (error) {
+      showError(error.message);
+    }
+  };
+
+  const handleAppChange = (e, { value }) => {
+    if (!value) { setSelectedApp(null); return; }
+    const app = applications.find((a) => a.id === value);
+    if (app) setSelectedApp(app);
+  };
+
+  const clearAppSelection = () => setSelectedApp(null);
+
+  // 构建查询参数
+  const buildParams = () => {
+    const params = {};
+    if (selectedApp) params.token_name = selectedApp.name;
+    const s = dtToTs(startTime);
+    const e = dtToTs(endTime);
+    if (s > 0) params.start_timestamp = s;
+    if (e > 0) params.end_timestamp = e;
+    return params;
+  };
+
+  useEffect(() => {
+    loadApplications();
+  }, []);
+
   useEffect(() => {
     fetchDashboardData();
     fetchMetrics();
     const timer = setInterval(fetchMetrics, 30000);
     return () => clearInterval(timer);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedApp, startTime, endTime]);
 
   const fetchMetrics = async () => {
     try {
-      const response = await axios.get('/api/user/dashboard/metrics');
+      const params = buildParams();
+      const response = await axios.get('/api/user/dashboard/metrics', { params });
       if (response.data.success) {
         setMetrics(
           response.data.data || {rpm: 0, tpm: 0, top_models: []}
@@ -109,7 +198,8 @@ const Dashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await axios.get('/api/user/dashboard');
+      const params = buildParams();
+      const response = await axios.get('/api/user/dashboard', { params });
       if (response.data.success) {
         const dashboardData = response.data.data || [];
         setData(dashboardData);
@@ -132,17 +222,15 @@ const Dashboard = () => {
       return;
     }
 
-    const today = new Date().toISOString().split('T')[0];
-    const todayData = dashboardData.filter((item) => item.Day === today);
-
+    // Task4-7：汇总所选时间范围内全部数据（而非仅今天），适配应用过滤与自定义时间范围
     const summary = {
-      todayRequests: todayData.reduce(
+      todayRequests: dashboardData.reduce(
         (sum, item) => sum + item.RequestCount,
         0
       ),
       todayQuota:
-        todayData.reduce((sum, item) => sum + item.Quota, 0) / 1000000,
-      todayTokens: todayData.reduce(
+        dashboardData.reduce((sum, item) => sum + item.Quota, 0) / 1000000,
+      todayTokens: dashboardData.reduce(
         (sum, item) => sum + item.PromptTokens + item.CompletionTokens,
         0
       ),
@@ -155,17 +243,15 @@ const Dashboard = () => {
   const processTimeSeriesData = () => {
     const dailyData = {};
 
-    // 获取日期范围
-    const dates = data.map((item) => item.Day);
-    const maxDate = new Date(); // 总是使用今天作为最后一天
-    let minDate =
-      dates.length > 0
-        ? new Date(Math.min(...dates.map((d) => new Date(d))))
-        : new Date();
+    // Task4-7：使用所选时间范围作为图表横轴边界
+    const selStart = new Date(startTime);
+    const selEnd = new Date(endTime);
+    const maxDate = isNaN(selEnd.getTime()) ? new Date() : selEnd;
+    let minDate = isNaN(selStart.getTime()) ? new Date() : selStart;
 
     // 确保至少显示7天的数据
     const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6); // -6是因为包含今天
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
     if (minDate > sevenDaysAgo) {
       minDate = sevenDaysAgo;
     }
@@ -183,9 +269,11 @@ const Dashboard = () => {
 
     // 填充实际数据
     data.forEach((item) => {
-      dailyData[item.Day].requests += item.RequestCount;
-      dailyData[item.Day].quota += item.Quota / 1000000;
-      dailyData[item.Day].tokens += item.PromptTokens + item.CompletionTokens;
+      if (dailyData[item.Day]) {
+        dailyData[item.Day].requests += item.RequestCount;
+        dailyData[item.Day].quota += item.Quota / 1000000;
+        dailyData[item.Day].tokens += item.PromptTokens + item.CompletionTokens;
+      }
     });
 
     return Object.values(dailyData).sort((a, b) =>
@@ -199,15 +287,15 @@ const Dashboard = () => {
 
     // 获取日期范围
     const dates = data.map((item) => item.Day);
-    const maxDate = new Date(); // 总是使用今天作为最后一天
-    let minDate =
-      dates.length > 0
-        ? new Date(Math.min(...dates.map((d) => new Date(d))))
-        : new Date();
+    // Task4-7：使用所选时间范围作为图表横轴边界
+    const selStart = new Date(startTime);
+    const selEnd = new Date(endTime);
+    const maxDate = isNaN(selEnd.getTime()) ? new Date() : selEnd;
+    let minDate = isNaN(selStart.getTime()) ? new Date() : selStart;
 
     // 确保至少显示7天的数据
     const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6); // -6是因为包含今天
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
     if (minDate > sevenDaysAgo) {
       minDate = sevenDaysAgo;
     }
@@ -228,8 +316,10 @@ const Dashboard = () => {
 
     // 填充实际数据
     data.forEach((item) => {
-      timeData[item.Day][item.ModelName] =
-        item.PromptTokens + item.CompletionTokens;
+      if (timeData[item.Day]) {
+        timeData[item.Day][item.ModelName] =
+          item.PromptTokens + item.CompletionTokens;
+      }
     });
 
     return Object.values(timeData).sort((a, b) => a.date.localeCompare(b.date));
@@ -295,6 +385,10 @@ const Dashboard = () => {
   const dateLabel = (label) =>
     `${t('dashboard.statistics.tooltip.date')}: ${formatDate(label)}`;
 
+  const rangeLabel = selectedApp
+    ? `${selectedApp.name || t('application.no_name')} · ${t('dashboard.filtered')}`
+    : t('dashboard.filtered_all');
+
   const statCards = [
     {
       key: 'requests',
@@ -352,7 +446,150 @@ const Dashboard = () => {
 
   return (
     <div className='dashboard-container'>
-      {/* 今日指标卡 */}
+      {/* Task4-7 过滤栏：应用选择 + 时间范围 */}
+      <div className='dash-filter-bar'>
+        <div className='dash-filter-item'>
+          <label className='dash-filter-label'>{t('dashboard.filter.app')}</label>
+          <Dropdown
+            placeholder={t('dashboard.filter.app_placeholder')}
+            fluid
+            search
+            selection
+            clearable
+            options={applications.map((app) => ({
+              key: app.id,
+              value: app.id,
+              text: app.name || t('application.no_name'),
+            }))}
+            value={selectedApp ? selectedApp.id : ''}
+            onChange={handleAppChange}
+          />
+        </div>
+        <div className='dash-filter-item'>
+          <label className='dash-filter-label'>{t('dashboard.filter.start')}</label>
+          <input
+            type='datetime-local'
+            value={startTime}
+            onChange={(e) => setStartTime(e.target.value)}
+            className='dash-datetime'
+          />
+        </div>
+        <div className='dash-filter-item'>
+          <label className='dash-filter-label'>{t('dashboard.filter.end')}</label>
+          <input
+            type='datetime-local'
+            value={endTime}
+            onChange={(e) => setEndTime(e.target.value)}
+            className='dash-datetime'
+          />
+        </div>
+        {selectedApp && (
+          <div className='dash-filter-hint'>
+            {rangeLabel}
+          </div>
+        )}
+      </div>
+
+      {/* Task4-7 应用详情卡 */}
+      {selectedApp && (
+        <Segment
+          padded
+          style={{
+            marginBottom: '12px',
+            background: 'var(--bg-overlay)',
+            border: '1px solid var(--border-color)',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '8px',
+              marginBottom: '8px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Header as='h4' style={{ margin: 0 }}>
+                {selectedApp.name || t('application.no_name')}
+              </Header>
+              <Label basic color={APP_TYPE_COLORS[selectedApp.app_type] || 'grey'}>
+                {t(`application.types.${selectedApp.app_type}`, {
+                  defaultValue: selectedApp.app_type,
+                })}
+              </Label>
+              {renderAppStatus(selectedApp.status, t)}
+            </div>
+            <Button size='mini' basic onClick={clearAppSelection}>
+              {t('log.buttons.clear_app')}
+            </Button>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '16px 24px',
+              fontSize: '13px',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            <div>
+              <span style={{ color: 'var(--text-tertiary)' }}>
+                {t('application.col_apikey')}：
+              </span>
+              <code style={{ marginRight: '6px' }}>
+                {maskKey(selectedApp.key)}
+              </code>
+              <Button
+                size='mini'
+                basic
+                icon='copy'
+                onClick={async () => {
+                  if (await copy(selectedApp.key)) {
+                    showSuccess(t('application.messages.copy_success'));
+                  }
+                }}
+              />
+            </div>
+            <div>
+              <span style={{ color: 'var(--text-tertiary)' }}>
+                {t('application.form.quota')}：
+              </span>
+              {selectedApp.unlimited_quota
+                ? t('application.unlimited')
+                : renderQuota(selectedApp.remain_quota, t)}
+            </div>
+            <div>
+              <span style={{ color: 'var(--text-tertiary)' }}>
+                {t('application.col_used')}：
+              </span>
+              {renderQuota(selectedApp.used_quota || 0, t)}
+            </div>
+            <div>
+              <span style={{ color: 'var(--text-tertiary)' }}>
+                {t('application.col_remain')}：
+              </span>
+              {selectedApp.unlimited_quota
+                ? t('application.unlimited')
+                : renderQuota(
+                    Math.max(0, (selectedApp.remain_quota || 0) - (selectedApp.used_quota || 0)),
+                    t
+                  )}
+            </div>
+            <div>
+              <span style={{ color: 'var(--text-tertiary)' }}>
+                {t('application.col_expired')}：
+              </span>
+              {selectedApp.expired_time === -1
+                ? t('application.never_expire')
+                : timestamp2string(selectedApp.expired_time)}
+            </div>
+          </div>
+        </Segment>
+      )}
+
+      {/* 指标卡 */}
       <div className='stat-row'>
         {statCards.map((card) => (
           <div className='stat-card' key={card.key}>

@@ -22,6 +22,12 @@ func GetFullRequestURL(baseURL string, requestURL string, channelType int) strin
 	}
 	fullRequestURL := fmt.Sprintf("%s%s", baseURL, requestURL)
 
+	// 容错：QiniuLibrary 等类型约定 base_url 不带 /v1（路径由 requestURL 自带），
+	// 若渠道配置误带 /v1 后缀会产生 /v1/v1/... 双前缀导致上游 404，此处自动去重
+	if strings.HasSuffix(strings.TrimSuffix(baseURL, "/"), "/v1") && strings.HasPrefix(requestURL, "/v1/") {
+		fullRequestURL = strings.TrimSuffix(strings.TrimSuffix(baseURL, "/"), "/v1") + requestURL
+	}
+
 	if strings.HasPrefix(baseURL, "https://gateway.ai.cloudflare.com") {
 		switch channelType {
 		case channeltype.OpenAI:

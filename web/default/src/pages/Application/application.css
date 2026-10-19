@@ -1,0 +1,27 @@
+/* Task4-6 应用管理页样式 */
+.app-table .app-key-masked {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.app-table .app-key-masked code {
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.app-expire-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.app-created-key {
+  background: rgba(0, 123, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px 12px;
+  word-break: break-all;
+}
+.app-created-key code {
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  font-size: 13px;
+}

@@ -34,12 +34,34 @@ type Token struct {
 	UsedQuota      int64   `json:"used_quota" gorm:"bigint;default:0"` // used quota
 	Models         *string `json:"models" gorm:"type:text"`            // allowed models
 	Subnet         *string `json:"subnet" gorm:"default:''"`           // allowed subnet
+	// Task4-6 应用管理：复用令牌底层结构。AppType 为空串表示普通令牌（旧数据默认），
+	// 非空（chat/agent/api/other）表示"应用"，两套管理接口据此隔离，relay 鉴权链路零改动。
+	AppType string `json:"app_type" gorm:"index;default:''"`
 }
 
 func GetAllUserTokens(userId int, startIdx int, num int, order string) ([]*Token, error) {
 	var tokens []*Token
 	var err error
-	query := DB.Where("user_id = ?", userId)
+	query := DB.Where("user_id = ? AND app_type = ?", userId, "")
+
+	switch order {
+	case "remain_quota":
+		query = query.Order("unlimited_quota desc, remain_quota desc")
+	case "used_quota":
+		query = query.Order("used_quota desc")
+	default:
+		query = query.Order("id desc")
+	}
+
+	err = query.Limit(num).Offset(startIdx).Find(&tokens).Error
+	return tokens, err
+}
+
+// GetAllUserApplications Task4-6：应用列表（app_type 非空的令牌），排序与令牌一致
+func GetAllUserApplications(userId int, startIdx int, num int, order string) ([]*Token, error) {
+	var tokens []*Token
+	var err error
+	query := DB.Where("user_id = ? AND app_type != ?", userId, "")
 
 	switch order {
 	case "remain_quota":
@@ -55,7 +77,13 @@ func GetAllUserTokens(userId int, startIdx int, num int, order string) ([]*Token
 }
 
 func SearchUserTokens(userId int, keyword string) (tokens []*Token, err error) {
-	err = DB.Where("user_id = ?", userId).Where("name LIKE ?", keyword+"%").Find(&tokens).Error
+	err = DB.Where("user_id = ? AND app_type = ?", userId, "").Where("name LIKE ?", keyword+"%").Find(&tokens).Error
+	return tokens, err
+}
+
+// SearchUserApplications Task4-6：按名称前缀搜索应用
+func SearchUserApplications(userId int, keyword string) (tokens []*Token, err error) {
+	err = DB.Where("user_id = ? AND app_type != ?", userId, "").Where("name LIKE ?", keyword+"%").Find(&tokens).Error
 	return tokens, err
 }
 
@@ -140,6 +168,11 @@ func (t *Token) Update() error {
 	var err error
 	err = DB.Model(t).Select("name", "status", "expired_time", "remain_quota", "unlimited_quota", "models", "subnet").Updates(t).Error
 	return err
+}
+
+// UpdateApplication Task4-6：应用编辑，白名单比令牌多一个 app_type；app_type 仅经此接口修改
+func (t *Token) UpdateApplication() error {
+	return DB.Model(t).Select("name", "status", "expired_time", "remain_quota", "unlimited_quota", "models", "app_type").Updates(t).Error
 }
 
 func (t *Token) SelectUpdate() error {

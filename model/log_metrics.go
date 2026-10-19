@@ -8,10 +8,17 @@ import (
 
 // SumUserRecentUsage 统计用户 since 时间戳之后的消费请求数与总 token 数（type=LogTypeConsume）。
 // 走 logs 表 idx_created_at_type 索引，实时查询不缓存，保证与日志抽样一致。
-func SumUserRecentUsage(userId int, since int64) (requests int64, tokens int64) {
+// tokenName 非空时按应用名过滤（Task4-7 总览页应用维度）。
+func SumUserRecentUsage(userId int, since int64, tokenName string) (requests int64, tokens int64) {
 	ifnull := "ifnull"
 	if common.UsingPostgreSQL {
 		ifnull = "COALESCE"
+	}
+	where := "WHERE type = ? AND user_id = ? AND created_at >= ?"
+	args := []interface{}{LogTypeConsume, userId, since}
+	if tokenName != "" {
+		where += " AND token_name = ?"
+		args = append(args, tokenName)
 	}
 	var result struct {
 		Requests int64 `gorm:"column:requests"`
@@ -21,8 +28,8 @@ func SumUserRecentUsage(userId int, since int64) (requests int64, tokens int64) 
 		SELECT count(1) as requests,
 		`+ifnull+`(sum(prompt_tokens + completion_tokens), 0) as tokens
 		FROM logs
-		WHERE type = ? AND user_id = ? AND created_at >= ?
-	`, LogTypeConsume, userId, since).Scan(&result).Error
+		`+where+`
+	`, args...).Scan(&result).Error
 	if err != nil {
 		return 0, 0
 	}
@@ -38,8 +45,8 @@ type ModelStat struct {
 }
 
 // GetUserModelStats 统计用户 [start, end] 时间段内按模型聚合的请求量/消费额/Token 数，
-// 按请求量降序取 Top N。
-func GetUserModelStats(userId int, start int64, end int64, limit int) ([]*ModelStat, error) {
+// 按请求量降序取 Top N。tokenName 非空时按应用名过滤（Task4-7）。
+func GetUserModelStats(userId int, start int64, end int64, limit int, tokenName string) ([]*ModelStat, error) {
 	ifnull := "ifnull"
 	if common.UsingPostgreSQL {
 		ifnull = "COALESCE"
@@ -47,6 +54,13 @@ func GetUserModelStats(userId int, start int64, end int64, limit int) ([]*ModelS
 	if limit <= 0 {
 		limit = 10
 	}
+	where := "WHERE type = ? AND user_id = ? AND created_at BETWEEN ? AND ?"
+	args := []interface{}{LogTypeConsume, userId, start, end}
+	if tokenName != "" {
+		where += " AND token_name = ?"
+		args = append(args, tokenName)
+	}
+	args = append(args, limit)
 	var stats []*ModelStat
 	err := LOG_DB.Raw(`
 		SELECT model_name,
@@ -54,10 +68,10 @@ func GetUserModelStats(userId int, start int64, end int64, limit int) ([]*ModelS
 		`+ifnull+`(sum(quota), 0) as quota,
 		`+ifnull+`(sum(prompt_tokens + completion_tokens), 0) as tokens
 		FROM logs
-		WHERE type = ? AND user_id = ? AND created_at BETWEEN ? AND ?
+		`+where+`
 		GROUP BY model_name
 		ORDER BY request_count DESC
 		LIMIT ?
-	`, LogTypeConsume, userId, start, end, limit).Scan(&stats).Error
+	`, args...).Scan(&stats).Error
 	return stats, err
 }

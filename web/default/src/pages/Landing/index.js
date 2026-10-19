@@ -132,7 +132,16 @@ const Landing = () => {
   };
 
   const goGetKey = () => {
-    navigate(loggedIn ? '/token' : '/register');
+    // /token 路由已随应用管理（Task4-6）下线，登录后去应用管理获取 Key
+    navigate(loggedIn ? '/application' : '/register');
+  };
+
+  const goApplication = () => {
+    navigate(loggedIn ? '/application' : '/register');
+  };
+
+  const goApiDocs = () => {
+    navigate('/about#section-apis');
   };
 
   return (
@@ -210,14 +219,9 @@ const Landing = () => {
           </button>
           <button
             className='tl-btn tl-btn-ghost tl-btn-lg'
-            onClick={() =>
-              // 未配置 ChatLink 时回退到内置 Playground，避免 /chat 空态
-              navigate(
-                localStorage.getItem('chat_link') ? '/chat' : '/playground'
-              )
-            }
+            onClick={() => navigate('/experience')}
           >
-            💬 体验在线 WebChat
+            🧪 在线体验模型
           </button>
         </div>
 
@@ -250,7 +254,7 @@ const Landing = () => {
                 <p className='tl-card-desc'>{model.desc}</p>
                 <div className='tl-card-footer'>
                   <span>{getCardRate(idx)}</span>
-                  <button className='tl-card-link' onClick={goGetKey}>
+                  <button className='tl-card-link' onClick={goApplication}>
                     调用文档 →
                   </button>
                 </div>
@@ -291,6 +295,9 @@ const Landing = () => {
                   </div>
                 </div>
               </div>
+              <button className='tl-doc-quicklink' onClick={goApiDocs}>
+                查看完整接口文档 →
+              </button>
             </div>
 
             {/* 终端代码窗口 */}
@@ -326,7 +333,24 @@ const Landing = () => {
 
       {/* 5. 页脚 */}
       <footer className='tl-footer'>
-        <p>© {new Date().getFullYear()} {systemName}. Powered by One-API Core.</p>
+        <p>© {new Date().getFullYear()} {systemName}</p>
+        <p className='tl-footer-beian'>
+          <a href='https://beian.miit.gov.cn/' target='_blank' rel='noreferrer'>
+            粤ICP备2026086533号
+          </a>
+          <a
+            href='https://beian.mps.gov.cn/#/query/webSearch?code=44049002001289'
+            target='_blank'
+            rel='noreferrer'
+          >
+            <img
+              src='/images/ghs.png'
+              alt='公安备案徽章'
+              style={{ height: '14px', verticalAlign: '-2px', marginRight: '3px' }}
+            />
+            粤公网安备44049002001289号
+          </a>
+        </p>
       </footer>
     </div>
   );

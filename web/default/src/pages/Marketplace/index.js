@@ -720,7 +720,7 @@ const DetailDrawer = ({ modelId, integrated, onClose }) => {
               </a>
             )}
             {integrated ? (
-              <Link className='mk-d-btn mk-d-btn-primary' to='/playground'>
+              <Link className='mk-d-btn mk-d-btn-primary' to='/experience'>
                 {t('marketplace.detail.go_chat')}
                 <Icon name='arrow right' />
               </Link>

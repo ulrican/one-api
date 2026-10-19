@@ -95,21 +95,55 @@ var QuotaForInvitee int64 = 0
 
 // 在线充值（易支付 Epay）
 var PayEnabled = false
-var PayAddress = ""      // 易支付网关地址
-var EpayId = ""          // 商户 PID
-var EpaySecret = ""      // 商户密钥（key 含 Secret，GetOptions 自动脱敏）
-var PayPrice = 7.3       // 每 1 美元额度的人民币售价
-var MinTopUp = 1.0       // 最低充值金额（元）
-var MaxTopUp = 5000.0    // 最高充值金额（元）
+var PaymentMode = "epay"                          // 支付模式：epay=易支付, direct=直接到账（微信/支付宝原生）
+var PayAddress = ""                               // 易支付网关地址
+var EpayId = ""                                   // 商户 PID
+var EpaySecret = ""                               // 商户密钥（key 含 Secret，GetOptions 自动脱敏）
+var PayPrice = 7.3                                // 每 1 美元额度的人民币售价
+var MinTopUp = 1.0                                // 最低充值金额（元）
+var MaxTopUp = 5000.0                             // 最高充值金额（元）
 var TopupAmountOptions = "[10,30,50,100,200,500]" // 充值金额预设（JSON 数组）
+
+// 直接到账-微信支付配置（PaymentMode=direct 时使用）
+// Task4-10b：凭证代码内置（paycredentials.go + paycerts/ embed），不再接受 DB/页面配置覆盖
+var WeChatPayAppId = WeChatPayAppIDConst           // 微信支付 APPID（公众号/小程序/移动应用）
+var WeChatPayMchId = WeChatPayMchIDConst           // 微信支付商户号
+var WeChatPayApiV3Key = WeChatPayApiV3KeyConst     // 微信支付 API v3 密钥
+var WeChatPaySerialNo = WeChatPaySerialConst       // 微信支付商户证书序列号
+var WeChatPayPrivateKey = WeChatPayPrivateKeyConst // 微信支付商户私钥（PKCS#8 PEM，go:embed 内置）
+
+// 直接到账-支付宝配置（PaymentMode=direct 时使用）
+// 凭证代码内置；AlipayEnabled 是唯一保留在设置页的子开关（支付宝订单码扫码）
+var AlipayAppId = AlipayAppIDConst           // 支付宝应用 APPID
+var AlipayPrivateKey = AlipayPrivateKeyConst // 支付宝应用私钥（PKCS#8 base64）
+var AlipayPublicKey = AlipayPublicKeyConst   // 支付宝公钥（SPKI base64，验签）
+var AlipayEnabled = false                    // 支付宝（订单码）启用开关；微信 Native 凭证内置即恒可用
 // 每日签到
 var CheckInEnabled = false
 var CheckInMinReward int64 = 100
 var CheckInMaxReward int64 = 10000
+
+// CheckInTier 签到阶梯奖励：当月累计签到达到 Days 天时，额外赠送 Quota 额度
+type CheckInTier struct {
+	Days  int   `json:"days"`
+	Quota int64 `json:"quota"`
+}
+
+// CheckInTiers 签到阶梯配置（按 Days 升序），默认 3/7/14/21/30 天五档
+var CheckInTiers = []CheckInTier{
+	{Days: 3, Quota: 1000},
+	{Days: 7, Quota: 3000},
+	{Days: 14, Quota: 5000},
+	{Days: 21, Quota: 10000},
+	{Days: 30, Quota: 20000},
+}
+
 // Playground 内嵌对话（F7）
 var PlaygroundEnabled = false
+
 // F15 公开排行榜
 var RankingEnabled = false
+
 // Task4-1 模型广场（七牛模型库每日同步，公开营销页，默认开启）
 var MarketplaceEnabled = true
 var QiniuApiSecret = "sk-e758eb517d7a76372d911ca3fe2c40e46c0a78eb844ed29e09a8358e5875e6e3"
@@ -136,10 +170,10 @@ var BatchUpdateInterval = env.Int("BATCH_UPDATE_INTERVAL", 5)
 var QuotaWarningInterval = env.Int("QUOTA_WARNING_INTERVAL", 600)
 
 // F11 渠道监控告警（管理端 options 可配）
-var ChannelAlertEnabled = false        // 渠道故障 webhook 告警总开关（邮件通知为原有行为，不受此开关影响）
-var ChannelAlertWebhookUrl = ""        // 告警 webhook 地址
-var ChannelAlertCooldownMinutes = 30   // 同一渠道告警冷却（分钟），恢复事件不受冷却限制
-var ChannelMetricEnabled = true        // 渠道可用率统计（内存滑动窗口；与 env ENABLE_METRIC 为或关系）
+var ChannelAlertEnabled = false      // 渠道故障 webhook 告警总开关（邮件通知为原有行为，不受此开关影响）
+var ChannelAlertWebhookUrl = ""      // 告警 webhook 地址
+var ChannelAlertCooldownMinutes = 30 // 同一渠道告警冷却（分钟），恢复事件不受冷却限制
+var ChannelMetricEnabled = true      // 渠道可用率统计（内存滑动窗口；与 env ENABLE_METRIC 为或关系）
 
 var RelayTimeout = env.Int("RELAY_TIMEOUT", 0) // unit is second
 

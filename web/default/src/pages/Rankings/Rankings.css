@@ -38,6 +38,13 @@
   margin-bottom: 16px;
   flex-wrap: wrap;
 }
+/* tab 按钮统一 1px 左边框，选中时仅改颜色不改宽度，保持视觉一致 */
+:where(html.theme-dark, html.theme-light) .rankings-tabs .ui.button {
+  border-left: 1px solid var(--border-color) !important;
+}
+:where(html.theme-dark, html.theme-light) .rankings-tabs .ui.button.active {
+  border-left-color: var(--brand-blue) !important;
+}
 :where(html.theme-dark, html.theme-light) .rankings-table-wrap {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
@@ -53,15 +60,29 @@
   color: var(--text-secondary) !important;
   border-bottom: 1px solid var(--border-color) !important;
   font-weight: 600;
+  vertical-align: middle !important;
+  /* 上下对称 padding 确保文字垂直居中 */
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+  /* 默认左对齐（名称列），数值列由 Semantic 的 right/center aligned class 覆盖 */
+  text-align: left;
+}
+:where(html.theme-dark, html.theme-light) .rankings-table thead th.right.aligned {
+  text-align: right !important;
+}
+:where(html.theme-dark, html.theme-light) .rankings-table thead th.center.aligned {
+  text-align: center !important;
 }
 :where(html.theme-dark, html.theme-light) .rankings-table tbody td {
   border-bottom: 1px solid var(--border-color) !important;
   color: var(--text-primary);
+  vertical-align: middle !important;
 }
 :where(html.theme-dark, html.theme-light) .rankings-rank {
   font-weight: 700;
   font-family: ui-monospace, Menlo, Consolas, monospace;
   color: var(--brand-blue);
+  text-align: center !important;
 }
 :where(html.theme-dark, html.theme-light) .rankings-name {
   font-weight: 600;
@@ -70,10 +91,12 @@
 :where(html.theme-dark, html.theme-light) .rankings-num {
   font-variant-numeric: tabular-nums;
   font-weight: 500;
+  text-align: right !important;
 }
 :where(html.theme-dark, html.theme-light) .rankings-share {
   font-variant-numeric: tabular-nums;
   color: var(--text-secondary);
+  text-align: right !important;
 }
 :where(html.theme-dark, html.theme-light) .rankings-loading,
 :where(html.theme-dark, html.theme-light) .rankings-empty {

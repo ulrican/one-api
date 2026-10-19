@@ -115,17 +115,51 @@ func init() {
 }
 
 func DashboardListModels(c *gin.Context) {
+	// 屏蔽硬编码 adaptor 模型清单：数据源切换为 market_models（七牛同步），
+	// 保持 map[string][]string 结构以兼容前端 loadChannelModels 缓存
+	ids, err := model.GetMarketModelIds()
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    channelId2Models,
+		"data": gin.H{
+			"52": ids,
+			"53": ids,
+		},
 	})
 }
 
 func ListAllModels(c *gin.Context) {
+	// 屏蔽硬编码全局 models 清单：数据源切换为 market_models（七牛同步），
+	// 保持 OpenAI list 结构兼容既有消费方
+	ids, err := model.GetMarketModelIds()
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	data := make([]OpenAIModels, 0, len(ids))
+	for _, id := range ids {
+		data = append(data, OpenAIModels{
+			Id:      id,
+			Object:  "model",
+			Created: 1626777600,
+			OwnedBy: "qiniu",
+			Root:    id,
+			Parent:  nil,
+		})
+	}
 	c.JSON(200, gin.H{
 		"object": "list",
-		"data":   models,
+		"data":   data,
 	})
 }
 
@@ -210,4 +244,22 @@ func GetUserAvailableModels(c *gin.Context) {
 		"data":    models,
 	})
 	return
+}
+
+// GetUserModelModalities Task4-9 模型体验：market_models 模态投影，
+// 供体验页 模型类型/应用/模型 三级联动判定（管控面查询，relay/ 零改动）
+func GetUserModelModalities(c *gin.Context) {
+	items, err := model.GetMarketModelModalities()
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    items,
+	})
 }

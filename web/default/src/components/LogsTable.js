@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   Button,
+  Dropdown,
   Form,
   Header,
   Label,
@@ -130,6 +131,34 @@ function renderDetail(log) {
   );
 }
 
+// Task4-7 应用详情卡相关常量与辅助函数（与 ApplicationsTable 保持一致）
+const APP_TYPE_COLORS = {
+  chat: 'blue',
+  agent: 'purple',
+  api: 'teal',
+  other: 'grey',
+};
+
+function maskKey(key) {
+  if (!key) return '';
+  return `sk-****${String(key).slice(-4)}`;
+}
+
+function renderStatus(status, t) {
+  switch (status) {
+    case 1:
+      return <Label basic color='green'>{t('application.status_enabled')}</Label>;
+    case 2:
+      return <Label basic color='red'>{t('application.status_disabled')}</Label>;
+    case 3:
+      return <Label basic color='yellow'>{t('application.status_expired')}</Label>;
+    case 4:
+      return <Label basic color='grey'>{t('application.status_depleted')}</Label>;
+    default:
+      return <Label basic color='black'>{t('application.status_unknown')}</Label>;
+  }
+}
+
 const LogsTable = () => {
   const { t } = useTranslation();
   const [logs, setLogs] = useState([]);
@@ -140,6 +169,9 @@ const LogsTable = () => {
   const [searching, setSearching] = useState(false);
   const [logType, setLogType] = useState(0);
   const isAdminUser = isAdmin();
+  // Task4-7 应用选择：应用列表与当前选中的应用对象（用于详情卡展示）
+  const [applications, setApplications] = useState([]);
+  const [selectedApp, setSelectedApp] = useState(null);
   let now = new Date();
   const [inputs, setInputs] = useState({
     username: '',
@@ -174,6 +206,45 @@ const LogsTable = () => {
 
   const handleInputChange = (e, { name, value }) => {
     setInputs((inputs) => ({ ...inputs, [name]: value }));
+  };
+
+  // Task4-7 加载当前用户全部应用（分页拉取，与 Playground 一致）
+  const loadApplications = async () => {
+    try {
+      let all = [];
+      for (let p = 0; p < 100; p++) {
+        const res = await API.get(`/api/application/?p=${p}`);
+        const { success, message, data } = res.data;
+        if (!success) {
+          showError(message);
+          return;
+        }
+        all = all.concat(data);
+        if (data.length < ITEMS_PER_PAGE) break;
+      }
+      setApplications(all);
+    } catch (error) {
+      showError(error.message);
+    }
+  };
+
+  // 选中应用：用应用名作为 token_name 过滤（后端零改动），同时保存对象用于详情卡
+  const handleAppChange = (e, { value }) => {
+    if (!value) {
+      setSelectedApp(null);
+      setInputs((inputs) => ({ ...inputs, token_name: '' }));
+      return;
+    }
+    const app = applications.find((a) => a.id === value);
+    if (app) {
+      setSelectedApp(app);
+      setInputs((inputs) => ({ ...inputs, token_name: app.name }));
+    }
+  };
+
+  const clearAppSelection = () => {
+    setSelectedApp(null);
+    setInputs((inputs) => ({ ...inputs, token_name: '' }));
   };
 
   const getLogSelfStat = async () => {
@@ -264,6 +335,10 @@ const LogsTable = () => {
     refresh().then();
   }, [logType]);
 
+  useEffect(() => {
+    loadApplications();
+  }, []);
+
   const searchLogs = async () => {
     if (searchKeyword === '') {
       // if keyword is blank, load files instead.
@@ -326,15 +401,23 @@ const LogsTable = () => {
       </Header>
       <Form>
         <Form.Group>
-          <Form.Input
+          <Form.Select
             fluid
-            label={t('log.table.token_name')}
+            label={t('log.table.application')}
             size={'small'}
             width={3}
-            value={token_name}
-            placeholder={t('log.table.token_name_placeholder')}
-            name='token_name'
-            onChange={handleInputChange}
+            placeholder={t('log.table.application_placeholder')}
+            name='application'
+            value={selectedApp ? selectedApp.id : ''}
+            options={applications.map((app) => ({
+              key: app.id,
+              text: app.name || t('application.no_name'),
+              value: app.id,
+            }))}
+            onChange={handleAppChange}
+            clearable
+            search
+            selection
           />
           <Form.Input
             fluid
@@ -409,6 +492,106 @@ const LogsTable = () => {
           onChange={(e, { value }) => setSearchKeyword(value)}
         />
       </Form>
+
+      {/* Task4-7 应用详情卡：选中应用后展示 APIKey、额度、过期时间等信息 */}
+      {selectedApp && (
+        <Segment
+          padded
+          style={{
+            marginBottom: '12px',
+            background: 'var(--bg-overlay)',
+            border: '1px solid var(--border-color)',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '8px',
+              marginBottom: '8px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Header as='h4' style={{ margin: 0 }}>
+                {selectedApp.name || t('application.no_name')}
+              </Header>
+              <Label basic color={APP_TYPE_COLORS[selectedApp.app_type] || 'grey'}>
+                {t(`application.types.${selectedApp.app_type}`, {
+                  defaultValue: selectedApp.app_type,
+                })}
+              </Label>
+              {renderStatus(selectedApp.status, t)}
+            </div>
+            <Button size='mini' basic onClick={clearAppSelection}>
+              {t('log.buttons.clear_app')}
+            </Button>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '16px 24px',
+              fontSize: '13px',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            <div>
+              <span style={{ color: 'var(--text-tertiary)' }}>
+                {t('application.col_apikey')}：
+              </span>
+              <code style={{ marginRight: '6px' }}>
+                {maskKey(selectedApp.key)}
+              </code>
+              <Button
+                size='mini'
+                basic
+                icon='copy'
+                onClick={async () => {
+                  if (await copy(selectedApp.key)) {
+                    showSuccess(t('application.messages.copy_success'));
+                  }
+                }}
+              />
+            </div>
+            <div>
+              <span style={{ color: 'var(--text-tertiary)' }}>
+                {t('application.form.quota')}：
+              </span>
+              {selectedApp.unlimited_quota
+                ? t('application.unlimited')
+                : renderQuota(selectedApp.remain_quota, t)}
+            </div>
+            <div>
+              <span style={{ color: 'var(--text-tertiary)' }}>
+                {t('application.col_used')}：
+              </span>
+              {renderQuota(selectedApp.used_quota || 0, t)}
+            </div>
+            <div>
+              <span style={{ color: 'var(--text-tertiary)' }}>
+                {t('application.col_remain')}：
+              </span>
+              {selectedApp.unlimited_quota
+                ? t('application.unlimited')
+                : renderQuota(
+                    Math.max(0, (selectedApp.remain_quota || 0) - (selectedApp.used_quota || 0)),
+                    t
+                  )}
+            </div>
+            <div>
+              <span style={{ color: 'var(--text-tertiary)' }}>
+                {t('application.col_expired')}：
+              </span>
+              {selectedApp.expired_time === -1
+                ? t('application.never_expire')
+                : timestamp2string(selectedApp.expired_time)}
+            </div>
+          </div>
+        </Segment>
+      )}
+
       <Table basic={'very'} compact size='small'>
         <Table.Header>
           <Table.Row>

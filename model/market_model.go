@@ -1,6 +1,8 @@
 package model
 
 import (
+	"strings"
+
 	"github.com/songquanpeng/one-api/common/helper"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -151,6 +153,86 @@ func CountMarketModels() (int64, error) {
 	var count int64
 	err := DB.Model(&MarketModel{}).Count(&count).Error
 	return count, err
+}
+
+// GetMarketModelIds 返回市场同步的全部模型 id（去重、排序，含全部 price_unit）。
+// 供 /api/models、/api/channel/models 屏蔽硬编码 adaptor 模型清单后作为唯一数据源
+func GetMarketModelIds() ([]string, error) {
+	var ids []string
+	err := DB.Model(&MarketModel{}).Distinct("model_id").Order("model_id").Pluck("model_id", &ids).Error
+	if err != nil {
+		return nil, err
+	}
+	return ids, nil
+}
+
+// MarketModelModality 模型模态投影（Task4-9 模型体验：模型类型/应用/模型三级联动）
+type MarketModelModality struct {
+	Id               string   `json:"id"`
+	InputModalities  []string `json:"input_modalities"`
+	OutputModalities []string `json:"output_modalities"`
+}
+
+// splitModalityList 逗号串转非空数组
+func splitModalityList(s string) []string {
+	out := make([]string, 0, 4)
+	if s == "" {
+		return out
+	}
+	for _, p := range strings.Split(s, ",") {
+		p = strings.TrimSpace(p)
+		if p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+// GetMarketModelModalities 全量模型的模态精简投影（193 行级小表，无缓存）
+func GetMarketModelModalities() ([]MarketModelModality, error) {
+	var rows []MarketModel
+	err := DB.Model(&MarketModel{}).
+		Select("model_id", "input_modalities", "output_modalities").
+		Order("model_id").
+		Find(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+	out := make([]MarketModelModality, 0, len(rows))
+	for _, r := range rows {
+		out = append(out, MarketModelModality{
+			Id:               r.ModelId,
+			InputModalities:  splitModalityList(r.InputModalities),
+			OutputModalities: splitModalityList(r.OutputModalities),
+		})
+	}
+	return out, nil
+}
+
+// GetAllMarketModels 返回市场同步的全部模型对象（按 rank 升序，无分页上限）。
+// 供渠道编辑页「模型库」模型选择使用——SearchMarketModels 有 PageSize<=60 的全局上限，
+// 模型库接口需要返回完整模型目录，故单独提供无上限查询。
+func GetAllMarketModels() ([]*MarketModel, error) {
+	var items []*MarketModel
+	err := DB.Model(&MarketModel{}).Order("`rank` ASC, `id` ASC").Find(&items).Error
+	if err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+// SearchAllMarketModels 带筛选条件的全量查询（无 PageSize<=60 上限）。
+// 供渠道编辑页模型选择的服务端筛选使用（keyword/region/issuer），
+// 复用 marketModelListQuery 的 WHERE 条件，按 rank 升序返回。
+func SearchAllMarketModels(q MarketModelQuery) ([]*MarketModel, error) {
+	var items []*MarketModel
+	err := marketModelListQuery(q).
+		Order("`rank` ASC, `id` ASC").
+		Find(&items).Error
+	if err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 // CountMarketModelsByRegion 分区计数（Tab 角标：全部/国内/海外，不受筛选影响）

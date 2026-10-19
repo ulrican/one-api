@@ -25,6 +25,7 @@ type LibraryModelDTO struct {
 	ModelId     string  `json:"model_id"`
 	Name        string  `json:"name"`
 	IssuerName  string  `json:"issuer_name"`
+	Region      string  `json:"region"` // domestic / overseas，供前端区域筛选
 	PriceInput  float64 `json:"price_input"`
 	PriceOutput float64 `json:"price_output"`
 }
@@ -77,12 +78,14 @@ func GetLibraryModels(c *gin.Context) {
 	sourceType := strings.TrimSpace(c.DefaultQuery("source_type", model.LibrarySourceQiniu))
 	switch sourceType {
 	case model.LibrarySourceQiniu:
-		// 复用广场列表查询，取较大一页（200 条）覆盖主流模型
-		items, _, err := model.SearchMarketModels(model.MarketModelQuery{
-			Page:     1,
-			PageSize: 200,
-			Sort:     "rank",
-		})
+		// 支持服务端筛选：keyword（name/model_id 模糊）、region、issuer；
+		// 用 SearchAllMarketModels 绕过 SearchMarketModels 的 PageSize<=60 上限，返回完整目录。
+		q := model.MarketModelQuery{
+			Keyword: strings.TrimSpace(c.Query("keyword")),
+			Region:  strings.TrimSpace(c.Query("region")),
+			Issuer:  strings.TrimSpace(c.Query("issuer")),
+		}
+		items, err := model.SearchAllMarketModels(q)
 		if err != nil {
 			logger.SysError("channel library list models failed: " + err.Error())
 			c.JSON(http.StatusOK, gin.H{"success": false, "message": err.Error()})
@@ -94,6 +97,7 @@ func GetLibraryModels(c *gin.Context) {
 				ModelId:     m.ModelId,
 				Name:        m.Name,
 				IssuerName:  m.IssuerName,
+				Region:      m.Region,
 				PriceInput:  m.PriceInput,
 				PriceOutput: m.PriceOutput,
 			})

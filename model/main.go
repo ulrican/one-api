@@ -178,6 +178,18 @@ func migrateDB() error {
 	if err = DB.AutoMigrate(&ModelRatioLock{}); err != nil { // Task4-3 模型倍率手动锁定
 		return err
 	}
+	if err = DB.AutoMigrate(&RedemptionRecord{}); err != nil { // Task4-4 兑换码充值记录
+		return err
+	}
+	if err = DB.AutoMigrate(&UserCheckinDay{}); err != nil { // 签到日历表
+		return err
+	}
+	if err = DB.AutoMigrate(&Package{}); err != nil { // Task4-11 套餐模版
+		return err
+	}
+	if err = DB.AutoMigrate(&UserPackage{}); err != nil { // Task4-11 用户套餐实例
+		return err
+	}
 	if err = DB.AutoMigrate(&Channel{}); err != nil {
 		return err
 	}

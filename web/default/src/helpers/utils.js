@@ -86,7 +86,13 @@ export function showError(error) {
       switch (error.response.status) {
         case 401:
           // toast.error('错误：未登录或登录已过期，请重新登录！', showErrorOptions);
-          window.location.href = '/login?expired=true';
+          // Task4-4：带上过期前所在路径，登录后回到上次访问页（LoginForm 读取 redirect）
+          if (window.location.pathname !== '/login') {
+            const redirect = encodeURIComponent(
+              window.location.pathname + window.location.search
+            );
+            window.location.href = `/login?expired=true&redirect=${redirect}`;
+          }
           break;
         case 429:
           toast.error('错误：请求次数过多，请稍后再试！', showErrorOptions);

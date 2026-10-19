@@ -1,22 +1,27 @@
 {
   "header": {
     "home": "Home",
-    "channel": "Channel",
-    "token": "Token",
-    "redemption": "Redemption",
+    "channel": "Channels",
+    "ratio": "Ratios",
+    "application": "Applications",
+    "redemption": "Redemption Codes",
     "topup": "Top Up",
     "pricing": "Pricing",
     "rankings": "Rankings",
     "marketplace": "Model Plaza",
-    "user": "User",
+    "user": "Users",
     "dashboard": "Dashboard",
-    "log": "Log",
+    "log": "Logs",
     "setting": "Settings",
     "about": "About",
-    "chat": "Chat",
     "login": "Login",
     "logout": "Logout",
-    "register": "Register"
+    "register": "Register",
+    "experience": "Experience",
+    "operation": "Operations",
+    "payment": "Payments",
+    "system": "System",
+    "site": "Site"
   },
   "sidenav": {
     "group": {
@@ -28,8 +33,127 @@
     "collapse": "Collapse",
     "expand": "Expand"
   },
+  "ratio": {
+    "subheader": "Auto-computed / manual locks / user group management",
+    "tabs": {
+      "auto": "Auto-Computed Ratios",
+      "locks": "Manual Locks",
+      "groups": "User Groups"
+    },
+    "auto": {
+      "stats": {
+        "total": "Total models",
+        "auto": "Auto",
+        "locked": "Locked"
+      },
+      "formula_label": "Formula",
+      "formula_title": "Auto-computation formulas",
+      "formula_note": "Conversion: 1 modelRatio = $0.002/1K tokens = ¥14/1M tokens. priceInput/priceOutput are official Qiniu prices (¥/M tokens).",
+      "col_model_id": "Model",
+      "col_issuer": "Issuer",
+      "col_region": "Region",
+      "col_price_input": "Input ¥/M",
+      "col_price_output": "Output ¥/M",
+      "col_model_ratio": "Model Ratio",
+      "col_completion_ratio": "Completion Ratio",
+      "col_status": "Status",
+      "status_auto": "Auto",
+      "status_locked": "Locked",
+      "loading": "Loading...",
+      "no_data": "No token-priced models",
+      "no_search": "No matches",
+      "search_placeholder": "Search model/issuer/region",
+      "preview_title": "Recompute preview (dry_run)",
+      "preview_summary": "{{count}} models would change",
+      "preview_truncated": " (showing first {{limit}})",
+      "preview_btn": "Preview Recompute",
+      "no_change": "All ratios are already current, no change needed",
+      "btn_cancel": "Cancel",
+      "btn_apply": "Apply Now",
+      "pagination": "Page {{page}} / {{total}}"
+    }
+  },
+  "groupmanage": {
+    "name": "Group",
+    "ratio": "Group Ratio",
+    "members": "Members",
+    "actions": "Actions",
+    "move": "Move",
+    "delete": "Delete",
+    "add": "Add Group",
+    "new_name": "New group name",
+    "new_ratio": "Ratio",
+    "save": "Save Ratios",
+    "saved": "Group ratios saved",
+    "reload": "Reload",
+    "loading": "Loading...",
+    "no_data": "No groups",
+    "invalid_ratio": "Ratio of group {{name}} must be a non-negative number",
+    "default_required": "Group 'default' is required",
+    "default_undeletable": "Group 'default' cannot be deleted",
+    "delete_has_members": "This group still has {{count}} members, move them first",
+    "duplicate": "Group {{name}} already exists",
+    "move_title": "Move members of '{{name}}'",
+    "move_confirm": "Choose the target group. All members of this group will be moved to it:",
+    "move_target_required": "Please select the target group",
+    "moved": "Moved {{count}} users",
+    "cancel": "Cancel",
+    "move_hint": "Make sure channels are open to the target group"
+  },
+  "packagemanage": {
+    "tip": "Packages are purchased via online payment; the callback activates the group and downgrades on expiry automatically",
+    "add": "Add Package",
+    "add_title": "Add Package",
+    "edit_title": "Edit Package: {{name}}",
+    "edit": "Edit",
+    "delete": "Delete",
+    "delete_title": "Delete Package",
+    "delete_confirm": "Delete package '{{name}}'? Active instances of purchased users are not affected.",
+    "deleted": "Package deleted",
+    "saved": "Package saved",
+    "cancel": "Cancel",
+    "save": "Save",
+    "loading": "Loading...",
+    "no_data": "No packages yet, click Add to create one",
+    "col_name": "Name",
+    "col_group": "Group",
+    "col_price": "Price (¥)",
+    "col_duration": "Duration",
+    "col_desc": "Description",
+    "col_status": "Status",
+    "col_actions": "Actions",
+    "name_placeholder": "e.g. VIP Monthly",
+    "group_placeholder": "Select the group to activate",
+    "group_addition": "Add group",
+    "price_invalid": "Price must be a non-negative number",
+    "duration_invalid": "Duration must be a non-negative integer (0 = permanent)",
+    "duration_label": "Duration (days), 0 = permanent",
+    "desc_placeholder": "Description shown to users (optional)",
+    "enabled_label": "Enabled",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "permanent": "Permanent",
+    "days": "{{days}} days",
+    "name_required": "Package name is required",
+    "group_required": "Please select the group to activate"
+  },
+  "payment": {
+    "tabs": {
+      "packages": "Packages"
+    }
+  },
   "topup": {
     "title": "Top Up Center",
+    "vip": {
+      "title": "Membership Packages",
+      "subtitle": "Activate a member group for better group ratios and exclusive model channels",
+      "buy": "Buy Now",
+      "current_badge": "{{group}} · until {{date}}",
+      "permanent": "Permanent",
+      "duration": "{{days}} days",
+      "order_label": "Package",
+      "group_label": "Activate {{group}}"
+    },
     "balance": {
       "label": "Available Quota",
       "recharge": "Top Up Online",
@@ -64,6 +188,20 @@
       "request_failed": "Request failed",
       "no_link": "Admin has not set up the top-up link!"
     },
+    "redeem_records": {
+      "title": "Redemption Records",
+      "time": "Time",
+      "name": "Code",
+      "quota": "Quota Received",
+      "amount": "Est. Amount",
+      "status": "Status",
+      "status_success": "Success",
+      "status_failed": "Failed",
+      "empty": "No redemption records",
+      "prev": "Prev",
+      "next": "Next",
+      "page_info": "Page {{current}} / {{total}}"
+    },
     "pay": {
       "title": "Online Payment",
       "subtitle": "Choose an amount and payment method, quota will be credited instantly after payment",
@@ -76,7 +214,13 @@
       "poll_timeout": "Timed out waiting for payment. If you have paid, refresh the page later to check the balance",
       "empty_amount": "Please enter the amount",
       "create_failed": "Failed to create order, please try again later",
-      "success": "Payment successful, quota credited!"
+      "success": "Payment successful, quota credited!",
+      "scan_title": "WeChat Scan to Pay",
+      "scan_tip": "Scan the QR code with WeChat to complete payment",
+      "scan_title_alipay": "Alipay Scan to Pay",
+      "scan_tip_alipay": "Scan the QR code with the Alipay app to complete payment",
+      "scan_waiting": "Waiting for payment result. Quota will be credited automatically…",
+      "qr_failed": "Failed to render QR code, please retry"
     },
     "orders": {
       "title": "Recharge History",
@@ -95,10 +239,18 @@
       "tip": "Check in daily to earn random quota rewards",
       "reward_range": "Reward range: {{min}} ~ {{max}}",
       "button": "Check in now",
-      "checked": "Checked in today",
+      "checked": "Checked in",
       "success": "Check-in successful, earned {{quota}} quota",
       "already": "Already checked in today",
-      "disabled": "Check-in is not enabled"
+      "disabled": "Check-in is not enabled",
+      "continuous": "{{days}}d streak",
+      "month_total": "{{days}}d this month",
+      "month_reward": "earned {{quota}}",
+      "tiers_title": "Streak tier rewards",
+      "tier_bonus": ", tier bonus for {{days}}-day streak: {{quota}}",
+      "tier_day_unit": "d",
+      "tier_tooltip": "Check in {{days}} days to earn extra {{quota}}",
+      "cell_checked": "{{date}} checked in, earned {{quota}}"
     },
     "aff": {
       "title": "Referral Program",
@@ -261,7 +413,7 @@
       "suggested": "Suggested replacement",
       "official_pricing": "Official pricing",
       "use_now": "Use now",
-      "go_chat": "Start chat",
+      "go_chat": "Try it",
       "price_key": {
         "input": "Input",
         "output": "Output",
@@ -474,8 +626,105 @@
         "model_count": "{{count}} models available",
         "not_synced": "Not synced yet, please click refresh",
         "secret_required": "Please fill in API Secret first",
-        "sync_success": "Sync succeeded, {{count}} models stored"
+        "sync_success": "Sync succeeded, {{count}} models stored",
+        "picker": {
+          "search_placeholder": "Search model name / ID / issuer",
+          "selected_chips": "Selected:",
+          "region_all": "All regions",
+          "region_domestic": "Domestic",
+          "region_overseas": "Overseas",
+          "issuer_all": "All issuers",
+          "select_all_filtered": "Select all filtered ({{count}})",
+          "unselect_all": "Unselect all",
+          "selected_count": "Selected",
+          "total_count": "{{count}} total",
+          "no_match": "No models match the filter",
+          "col_model": "Model",
+          "col_issuer": "Issuer",
+          "col_region": "Region"
+        }
       }
+    }
+  },
+  "application": {
+    "title": "Application Management",
+    "search": "Search by application name",
+    "no_name": "Unnamed app",
+    "unlimited": "Unlimited",
+    "never_expire": "Never expires",
+    "all_models": "All models",
+    "copy_key": "Copy API key",
+    "types": {
+      "chat": "Chat Assistant",
+      "agent": "Agent",
+      "api": "API Integration",
+      "other": "Other"
+    },
+    "col_name": "Name",
+    "col_type": "Type",
+    "col_apikey": "API Key",
+    "col_used": "Used",
+    "col_remain": "Remaining",
+    "col_created": "Created",
+    "col_expired": "Expires",
+    "col_models": "Models",
+    "col_status": "Status",
+    "col_actions": "Actions",
+    "status_enabled": "Enabled",
+    "status_disabled": "Disabled",
+    "status_expired": "Expired",
+    "status_depleted": "Depleted",
+    "status_unknown": "Unknown",
+    "empty": {
+      "title": "No applications yet",
+      "desc": "Click \"New Application\" to create your first app and get a dedicated API key"
+    },
+    "buttons": {
+      "add": "New Application",
+      "refresh": "Refresh",
+      "edit": "Edit",
+      "enable": "Enable",
+      "disable": "Disable",
+      "delete": "Delete",
+      "confirm_delete": "Confirm delete",
+      "cancel": "Cancel",
+      "submit": "Save",
+      "copy": "Copy API Key"
+    },
+    "sort_placeholder": "Sort",
+    "sort_default": "Default",
+    "sort_remain": "By remaining quota",
+    "sort_used": "By used quota",
+    "modal": {
+      "title_create": "New Application",
+      "title_edit": "Edit Application"
+    },
+    "form": {
+      "name": "Name",
+      "name_placeholder": "Name your application",
+      "type": "Type",
+      "models": "Allowed models",
+      "models_placeholder": "Empty means all models",
+      "expire": "Expiry time",
+      "expire_placeholder": "Empty means never expires",
+      "never_expire": "Never",
+      "expire_1_month": "1 month",
+      "expire_7_days": "7 days",
+      "expire_1_day": "1 day",
+      "quota": "Quota limit",
+      "unlimited": "Unlimited quota"
+    },
+    "created": {
+      "title": "Application created",
+      "notice": "The full API key is shown only once. Copy and store it securely (the list only shows a masked key and it cannot be viewed again):",
+      "done": "I saved it"
+    },
+    "messages": {
+      "name_required": "Application name is required",
+      "expire_invalid": "Invalid expiry time",
+      "copy_success": "Copied to clipboard",
+      "operation_success": "Operation succeeded",
+      "update_success": "Application updated"
     }
   },
   "token": {
@@ -575,6 +824,7 @@
   "playground": {
     "title": "Playground",
     "token_placeholder": "Select token",
+    "app_placeholder": "Select application",
     "model_placeholder": "Select model",
     "system_placeholder": "System prompt (optional)",
     "input_placeholder": "Type a message ...",
@@ -586,10 +836,10 @@
     },
     "empty": {
       "title": "Start a conversation",
-      "desc": "Select a token and model, then type a message to start"
+      "desc": "Select an application and model, then type a message to start"
     },
     "error": {
-      "no_token": "No available token, please create an enabled token first",
+      "no_token": "No available application, please create and enable one in Application Management",
       "no_model": "No available model"
     },
     "info": {
@@ -683,6 +933,8 @@
       "username": "Username",
       "token_name": "Token Name",
       "token_name_placeholder": "Optional",
+      "application": "Application",
+      "application_placeholder": "Select an application to preview logs",
       "model_name": "Model Name",
       "model_name_placeholder": "Optional",
       "start_time": "Start Time",
@@ -698,7 +950,8 @@
     "buttons": {
       "query": "Action",
       "submit": "Query",
-      "refresh": "Refresh"
+      "refresh": "Refresh",
+      "clear_app": "Clear Selection"
     }
   },
   "user": {
@@ -782,10 +1035,18 @@
     }
   },
   "dashboard": {
+    "filter": {
+      "app": "Application",
+      "app_placeholder": "Select application to preview stats",
+      "start": "Start Time",
+      "end": "End Time"
+    },
+    "filtered": "Filtered by application",
+    "filtered_all": "All applications",
     "stat": {
-      "requests": "Today's Requests",
-      "quota": "Today's Spend",
-      "tokens": "Today's Tokens",
+      "requests": "Requests",
+      "quota": "Spend",
+      "tokens": "Tokens",
       "rpm": "RPM (Requests/Min)",
       "tpm": "TPM (Tokens/Min)"
     },
@@ -832,7 +1093,9 @@
     "tabs": {
       "personal": "Personal Settings",
       "operation": "Operation Settings",
+      "payment": "Payment Settings",
       "system": "System Settings",
+      "site": "Site Settings",
       "other": "Other Settings"
     },
     "personal": {
@@ -1071,6 +1334,9 @@
         "enabled": "Enable daily check-in",
         "min": "Minimum reward quota",
         "max": "Maximum reward quota",
+        "tiers": "Check-in tier rewards (JSON array: days = consecutive days, quota = extra quota)",
+        "tiers_hint": "Example: [{\"days\":3,\"quota\":1000},{\"days\":7,\"quota\":3000},{\"days\":14,\"quota\":5000},{\"days\":21,\"quota\":10000},{\"days\":30,\"quota\":20000}]. Resets monthly, each tier earned once per month.",
+        "invalid_tiers": "Tier rewards config is not valid JSON",
         "buttons": {
           "save": "Save Check-in Settings"
         }
@@ -1110,8 +1376,10 @@
           "title": "Group Ratio",
           "placeholder": "A JSON text where keys are group names and values are ratios"
         },
+        "invalid_json": "{{name}} is not a valid JSON string",
         "buttons": {
-          "save": "Save Ratio Settings"
+          "save": "Save Ratio Settings",
+          "saved_success": "Ratio settings saved"
         }
       },
       "ratio_auto": {
@@ -1209,21 +1477,27 @@
         "retry_times_placeholder": "Number of retry attempts on failure",
         "display_in_currency": "Display Quota in Currency Format",
         "display_token_stat": "Show Token Quota Instead of User Quota in Billing APIs",
-        "playground_enabled": "Enable embedded Playground (chat entry points to built-in chat page)",
         "approximate_token": "Use Approximate Method to Estimate Token Count",
         "buttons": {
           "save": "Save General Settings"
         }
       },
       "pay": {
-        "title": "Online Payment Settings (Epay)",
+        "title": "Online Payment Settings",
         "enable": "Enable online payment (fallback to top-up link mode when disabled)",
+        "mode_label": "Payment Mode",
+        "mode_epay": "Epay",
+        "mode_direct": "Direct (WeChat/Alipay native)",
         "address": "Payment Gateway Address",
         "address_placeholder": "e.g. https://pay.example.com",
         "pid": "Merchant PID",
         "pid_placeholder": "Epay merchant ID",
         "secret": "Merchant Secret",
         "secret_placeholder": "Enter the Epay merchant secret, leave empty to keep unchanged",
+        "direct_notice_title": "Direct payment credentials are built in",
+        "direct_notice_body": "WeChat Pay (Native QR) and Alipay (order QR) merchant credentials, keys and certificates are all built into the server code. No page configuration needed. WeChat Pay is available by default; Alipay only appears on the top-up page after enabling the switch below.",
+        "alipay_enable": "Enable Alipay (order QR code)",
+        "alipay_enable_hint": "When enabled, the Alipay option appears on the top-up page; users scan with the Alipay app to pay",
         "price": "Price (CNY per 1 USD quota)",
         "price_placeholder": "e.g. 7.3, i.e. 7.3 CNY for 1 USD quota",
         "min_topup": "Minimum Amount (CNY)",
@@ -1382,15 +1656,6 @@
     "back_home": "Back to home",
     "back_console": "Go to console"
   },
-  "chat": {
-    "title": "Web Chat",
-    "open_new": "Open in new window",
-    "empty": {
-      "title": "Chat is not enabled",
-      "description": "The administrator has not configured a chat link yet. Please contact the administrator to enable web chat.",
-      "back_home": "Back to home"
-    }
-  },
   "about": {
     "title": "About",
     "description": "FluxAI is a LLM API aggregation and AI compute distribution platform for developers and enterprises.",
@@ -1413,6 +1678,47 @@
     },
     "notice": {
       "password_copied": "New password copied to clipboard: {{password}}"
+    }
+  },
+  "experience": {
+    "type_hint": "Switch the experience window by model modality",
+    "no_models": "No models available for this modality",
+    "result_label": "Result",
+    "history_label": "History",
+    "text": {
+      "empty": {
+        "title": "Start a conversation",
+        "desc": "Select an application and model, then type a message to try text models"
+      }
+    },
+    "image": {
+      "upload_title": "Click to upload an image",
+      "upload_desc": "Common image formats supported, up to 10MB",
+      "default_prompt": "Please recognize and classify this image",
+      "submit": "Analyze",
+      "analyzing": "Analyzing image ..."
+    },
+    "audio": {
+      "upload_title": "Click to upload audio",
+      "default_prompt": "Please transcribe this audio to text and output only the transcript.",
+      "upload_desc": "Common audio formats supported, up to 25MB",
+      "submit": "Transcribe",
+      "transcribing": "Transcribing audio ..."
+    },
+    "unsupported": {
+      "title": "This modality is not supported yet",
+      "desc": "The experience window for video models is coming soon"
+    },
+    "error": {
+      "no_app": "No available application. Please create and enable one in Application Management first",
+      "no_model": "No available model",
+      "not_image": "Please upload an image file",
+      "image_too_large": "Image size cannot exceed 10MB",
+      "no_image": "Please upload an image first",
+      "not_audio": "Please upload an audio file",
+      "audio_too_large": "Audio size cannot exceed 25MB",
+      "no_audio": "Please upload an audio file first",
+      "empty_response": "The model returned an empty result"
     }
   }
 }

@@ -298,8 +298,19 @@ func GetUserDashboard(c *gin.Context) {
 	now := time.Now()
 	startOfDay := now.Truncate(24*time.Hour).AddDate(0, 0, -6).Unix()
 	endOfDay := now.Truncate(24 * time.Hour).Add(24*time.Hour - time.Second).Unix()
+	tokenName := c.Query("token_name")
+	if startStr := c.Query("start_timestamp"); startStr != "" {
+		if ts, err := strconv.ParseInt(startStr, 10, 64); err == nil {
+			startOfDay = ts
+		}
+	}
+	if endStr := c.Query("end_timestamp"); endStr != "" {
+		if ts, err := strconv.ParseInt(endStr, 10, 64); err == nil {
+			endOfDay = ts
+		}
+	}
 
-	dashboards, err := model.SearchLogsByDayAndModel(id, int(startOfDay), int(endOfDay))
+	dashboards, err := model.SearchLogsByDayAndModel(id, int(startOfDay), int(endOfDay), tokenName)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,

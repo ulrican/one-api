@@ -13,7 +13,9 @@ import { Link } from 'react-router-dom';
 import { API, showError, showSuccess, verifyJSON } from '../helpers';
 import { marked } from 'marked';
 
-const OtherSetting = () => {
+// Task4-10：原 OtherSetting 重命名为 SiteSetting（站点设置），功能不变，
+// 挂载于独立管理页 /site（pages/Site），i18n 仍沿用 setting.other.* 键
+const SiteSetting = () => {
   const { t } = useTranslation();
   let [inputs, setInputs] = useState({
     Footer: '',
@@ -250,4 +252,4 @@ const OtherSetting = () => {
   );
 };
 
-export default OtherSetting;
+export default SiteSetting;

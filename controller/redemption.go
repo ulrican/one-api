@@ -193,3 +193,41 @@ func UpdateRedemption(c *gin.Context) {
 	})
 	return
 }
+
+// GetTopUpRecords Task4-4：查询当前用户的兑换码充值记录（成功/失败流水），分页返回
+func GetTopUpRecords(c *gin.Context) {
+	p, _ := strconv.Atoi(c.Query("p"))
+	if p < 0 {
+		p = 0
+	}
+	pageSize, _ := strconv.Atoi(c.Query("page_size"))
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+	if pageSize > 50 {
+		pageSize = 50
+	}
+	userId := c.GetInt(ctxkey.Id)
+	records, err := model.GetUserRedemptionRecords(userId, p*pageSize, pageSize)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	total, err := model.CountUserRedemptionRecords(userId)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    records,
+		"total":   total,
+	})
+}

@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Container, Segment } from 'semantic-ui-react';
-import { getFooterHTML, getSystemName } from '../helpers';
+import { getFooterHTML } from '../helpers';
 
 const Footer = () => {
-  const { t } = useTranslation();
-  const systemName = getSystemName();
   const [footer, setFooter] = useState(getFooterHTML());
   let remainCheckTimes = 5;
 
@@ -36,21 +33,34 @@ const Footer = () => {
             className='custom-footer'
             dangerouslySetInnerHTML={{ __html: footer }}
           ></div>
-        ) : (
-          <div className='custom-footer'>
-            <a href='https://github.com/songquanpeng/one-api' target='_blank'>
-              {systemName} {process.env.REACT_APP_VERSION}{' '}
-            </a>
-            {t('footer.built_by')}{' '}
-            <a href='https://github.com/songquanpeng' target='_blank'>
-              {t('footer.built_by_name')}
-            </a>{' '}
-            {t('footer.license')}{' '}
-            <a href='https://opensource.org/licenses/mit-license.php'>
-              {t('footer.mit')}
-            </a>
-          </div>
-        )}
+        ) : null}
+        {/* 法定备案信息：无论是否自定义 footer 均恒显示；默认开源署名信息不再展示 */}
+        <div className='app-footer-beian'>
+          <span className='app-footer-beian-item'>
+            © 2026 智航易飞（珠海）科技有限公司
+          </span>
+          <a
+            className='app-footer-beian-item'
+            href='https://beian.miit.gov.cn/'
+            target='_blank'
+            rel='noreferrer'
+          >
+            粤ICP备2026086533号
+          </a>
+          <a
+            className='app-footer-beian-item'
+            href='https://beian.mps.gov.cn/#/query/webSearch?code=44049002001289'
+            target='_blank'
+            rel='noreferrer'
+          >
+            <img
+              src='/images/ghs.png'
+              alt='公安备案徽章'
+              style={{ height: '14px', verticalAlign: '-2px', marginRight: '3px' }}
+            />
+            粤公网安备44049002001289号
+          </a>
+        </div>
       </Container>
     </Segment>
   );

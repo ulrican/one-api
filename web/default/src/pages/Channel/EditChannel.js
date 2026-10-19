@@ -1,15 +1,282 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Button, Card, Form, Input, Message} from 'semantic-ui-react';
+import {Button, Card, Checkbox, Form, Icon, Input, Label, Message, Segment, Table} from 'semantic-ui-react';
 import {useNavigate, useParams} from 'react-router-dom';
 import {API, copy, getChannelModels, showError, showInfo, showSuccess, verifyJSON,} from '../../helpers';
-import {CHANNEL_OPTIONS} from '../../constants';
+import {CHANNEL_OPTIONS, LIBRARY_CHANNEL_KEYS} from '../../constants';
 import {renderChannelTip} from '../../helpers/render';
 
 const MODEL_MAPPING_EXAMPLE = {
   'gpt-3.5-turbo-0301': 'gpt-3.5-turbo',
   'gpt-4-0314': 'gpt-4',
   'gpt-4-32k-0314': 'gpt-4-32k',
+};
+
+// 模型库模型选择面板：支持模糊搜索、按区域/厂商筛选、全选/取消全选。
+// props:
+//   models: 模型列表 [{model_id, name, issuer_name, region, ...}]
+//   selected: 已选 model_id 数组
+//   onChange(selectedIds): 选中变更回调
+const LibraryModelPicker = ({ models, selected, onChange }) => {
+  const { t } = useTranslation();
+  const [filter, setFilter] = useState({ keyword: '', region: 'all', issuer: '' });
+
+  // 厂商选项：从 models 去重得到
+  const issuerOptions = useMemo(() => {
+    const set = new Set();
+    models.forEach((m) => m.issuer_name && set.add(m.issuer_name));
+    return Array.from(set).sort();
+  }, [models]);
+
+  // 前端本地过滤（数据量小，无需每次请求后端）
+  const filtered = useMemo(() => {
+    const kw = filter.keyword.trim().toLowerCase();
+    return models.filter((m) => {
+      if (filter.region !== 'all' && m.region !== filter.region) return false;
+      if (filter.issuer && m.issuer_name !== filter.issuer) return false;
+      if (kw) {
+        const hay = `${m.name} ${m.model_id} ${m.issuer_name}`.toLowerCase();
+        if (!hay.includes(kw)) return false;
+      }
+      return true;
+    });
+  }, [models, filter]);
+
+  const selectedSet = useMemo(() => new Set(selected), [selected]);
+  const allFilteredSelected =
+    filtered.length > 0 && filtered.every((m) => selectedSet.has(m.model_id));
+
+  // model_id -> 显示名（已选 chips 展示用；找不到回退 model_id）
+  const modelNameMap = useMemo(() => {
+    const map = new Map();
+    models.forEach((m) => map.set(m.model_id, m.name || m.model_id));
+    return map;
+  }, [models]);
+
+  const toggle = (modelId) => {
+    if (selectedSet.has(modelId)) {
+      onChange(selected.filter((id) => id !== modelId));
+    } else {
+      onChange([...selected, modelId]);
+    }
+  };
+
+  const selectAllFiltered = () => {
+    const merged = new Set(selected);
+    filtered.forEach((m) => merged.add(m.model_id));
+    onChange(Array.from(merged));
+  };
+
+  const unselectAllFiltered = () => {
+    const remove = new Set(filtered.map((m) => m.model_id));
+    onChange(selected.filter((id) => !remove.has(id)));
+  };
+
+  const regionLabel = (r) =>
+    r === 'domestic'
+      ? t('channel.edit.library.picker.region_domestic')
+      : r === 'overseas'
+        ? t('channel.edit.library.picker.region_overseas')
+        : '';
+
+  return (
+    <Segment style={{ marginTop: 8 }}>
+      {/* 筛选条 */}
+      <Form.Group widths='equal' style={{ marginBottom: 8 }}>
+        <Form.Input
+          icon='search'
+          placeholder={t('channel.edit.library.picker.search_placeholder')}
+          value={filter.keyword}
+          onChange={(e, { value }) =>
+            setFilter((f) => ({ ...f, keyword: value }))
+          }
+        />
+        <Form.Select
+          placeholder={t('channel.edit.library.picker.region_all')}
+          value={filter.region}
+          options={[
+            { key: 'all', text: t('channel.edit.library.picker.region_all'), value: 'all' },
+            { key: 'domestic', text: t('channel.edit.library.picker.region_domestic'), value: 'domestic' },
+            { key: 'overseas', text: t('channel.edit.library.picker.region_overseas'), value: 'overseas' },
+          ]}
+          onChange={(e, { value }) =>
+            setFilter((f) => ({ ...f, region: value }))
+          }
+        />
+        <Form.Select
+          placeholder={t('channel.edit.library.picker.issuer_all')}
+          search
+          value={filter.issuer}
+          options={[
+            { key: '', text: t('channel.edit.library.picker.issuer_all'), value: '' },
+            ...issuerOptions.map((iss) => ({
+              key: iss,
+              text: iss,
+              value: iss,
+            })),
+          ]}
+          onChange={(e, { value }) =>
+            setFilter((f) => ({ ...f, issuer: value }))
+          }
+        />
+      </Form.Group>
+
+      {/* 已选模型 chips 区：按条件选中的模型在顶部集中展示，可单个移除 */}
+      {selected.length > 0 && (
+        <div
+          style={{
+            marginBottom: 8,
+            padding: '6px 8px',
+            background: 'var(--bg-muted, rgba(0,0,0,0.03))',
+            border: '1px solid var(--border-color, #e8e8e8)',
+            borderRadius: 4,
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              flexWrap: 'wrap',
+              maxHeight: 100,
+              overflowY: 'auto',
+            }}
+          >
+            <Label size='mini' style={{ margin: 0 }}>
+              {t('channel.edit.library.picker.selected_chips')}
+            </Label>
+            {selected.map((id) => (
+              <Label key={id} size='small' color='purple'>
+                {modelNameMap.get(id) || id}
+                <Icon
+                  name='close'
+                  style={{ marginLeft: 4, cursor: 'pointer' }}
+                  onClick={() =>
+                    onChange(selected.filter((sid) => sid !== id))
+                  }
+                />
+              </Label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 操作栏：全选/取消全选 + 计数 */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: 8,
+        }}
+      >
+        <div>
+          <Button
+            size='mini'
+            onClick={selectAllFiltered}
+            disabled={filtered.length === 0}
+          >
+            {t('channel.edit.library.picker.select_all_filtered', {
+              count: filtered.length,
+            })}
+          </Button>
+          <Button
+            size='mini'
+            onClick={unselectAllFiltered}
+            disabled={filtered.length === 0}
+          >
+            {t('channel.edit.library.picker.unselect_all')}
+          </Button>
+        </div>
+        <Label>
+          {t('channel.edit.library.picker.selected_count')}{' '}
+          <Label.Detail>{selected.length}</Label.Detail> /{' '}
+          {t('channel.edit.library.picker.total_count', { count: models.length })}
+        </Label>
+      </div>
+
+      {/* 模型列表（可滚动，避免长列表撑高页面） */}
+      <div
+        style={{
+          maxHeight: 320,
+          overflowY: 'auto',
+          border: '1px solid var(--border-color, #e8e8e8)',
+          borderRadius: 4,
+        }}
+      >
+        {filtered.length === 0 ? (
+          <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-secondary)' }}>
+            {t('channel.edit.library.picker.no_match')}
+          </div>
+        ) : (
+          <Table compact size='small' unstackable striped>
+            <Table.Header style={{ position: 'sticky', top: 0, zIndex: 1 }}>
+              <Table.Row>
+                <Table.HeaderCell style={{ width: 40 }}>
+                  <Checkbox
+                    checked={allFilteredSelected}
+                    indeterminate={
+                      !allFilteredSelected &&
+                      filtered.some((m) => selectedSet.has(m.model_id))
+                    }
+                    onChange={() =>
+                      allFilteredSelected
+                        ? unselectAllFiltered()
+                        : selectAllFiltered()
+                    }
+                  />
+                </Table.HeaderCell>
+                <Table.HeaderCell>{t('channel.edit.library.picker.col_model')}</Table.HeaderCell>
+                <Table.HeaderCell>{t('channel.edit.library.picker.col_issuer')}</Table.HeaderCell>
+                <Table.HeaderCell>{t('channel.edit.library.picker.col_region')}</Table.HeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {filtered.map((m) => (
+                <Table.Row
+                  key={m.model_id}
+                  active={selectedSet.has(m.model_id)}
+                  onClick={() => toggle(m.model_id)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <Table.Cell>
+                    <Checkbox
+                      checked={selectedSet.has(m.model_id)}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        toggle(m.model_id);
+                      }}
+                    />
+                  </Table.Cell>
+                  <Table.Cell style={{ wordBreak: 'break-all' }}>
+                    <div>{m.name}</div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: 'var(--text-secondary)',
+                      }}
+                    >
+                      {m.model_id}
+                    </div>
+                  </Table.Cell>
+                  <Table.Cell>{m.issuer_name || '-'}</Table.Cell>
+                  <Table.Cell>
+                    {m.region ? (
+                      <Label size='mini' color={m.region === 'domestic' ? 'blue' : 'teal'}>
+                        {regionLabel(m.region)}
+                      </Label>
+                    ) : (
+                      '-'
+                    )}
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table>
+        )}
+      </div>
+    </Segment>
+  );
 };
 
 function type2secretPrompt(type, t) {
@@ -389,7 +656,10 @@ const EditChannel = () => {
                 name='type'
                 required
                 search
-                options={CHANNEL_OPTIONS}
+                // 屏蔽硬编码渠道类型：仅暴露模型库类型（52/53），数据源为市场同步
+                options={CHANNEL_OPTIONS.filter((o) =>
+                  LIBRARY_CHANNEL_KEYS.includes(o.key)
+                )}
                 value={inputs.type}
                 onChange={handleInputChange}
               />
@@ -550,51 +820,70 @@ const EditChannel = () => {
                 {t('channel.edit.douban_notice_2')}
               </Message>
             )}
-            {inputs.type !== 43 && (
-              <Form.Field>
-                <Form.Dropdown
-                  label={t('channel.edit.models')}
-                  placeholder={t('channel.edit.models_placeholder')}
-                  name='models'
-                  required
-                  fluid
-                  multiple
-                  search
-                  onLabelClick={(e, { value }) => {
-                    copy(value).then();
-                  }}
-                  selection
-                  onChange={handleInputChange}
-                  value={inputs.models}
-                  autoComplete='new-password'
-                  options={modelOptions}
-                />
-              </Form.Field>
-            )}
+            {inputs.type !== 43 &&
+              (inputs.type === 52 || inputs.type === 53 ? (
+                // 模型库类型：用自定义面板（搜索+筛选+全选/取消全选）替代下拉
+                <Form.Field>
+                  <label>{t('channel.edit.models')}</label>
+                  <LibraryModelPicker
+                    models={libraryModels}
+                    selected={inputs.models}
+                    onChange={(ids) =>
+                      setInputs((prev) => ({ ...prev, models: ids }))
+                    }
+                  />
+                </Form.Field>
+              ) : (
+                <Form.Field>
+                  <Form.Dropdown
+                    label={t('channel.edit.models')}
+                    placeholder={t('channel.edit.models_placeholder')}
+                    name='models'
+                    required
+                    fluid
+                    multiple
+                    search
+                    onLabelClick={(e, { value }) => {
+                      copy(value).then();
+                    }}
+                    selection
+                    onChange={handleInputChange}
+                    value={inputs.models}
+                    autoComplete='new-password'
+                    options={modelOptions}
+                  />
+                </Form.Field>
+              ))}
             {inputs.type !== 43 && (
               <div style={{ lineHeight: '40px', marginBottom: '12px' }}>
-                <Button
-                  type={'button'}
-                  onClick={() => {
-                    handleInputChange(null, {
-                      name: 'models',
-                      value: basicModels,
-                    });
-                  }}
-                >
-                  {t('channel.edit.buttons.fill_models')}
-                </Button>
-                <Button
-                  type={'button'}
-                  onClick={() => {
-                    handleInputChange(null, {
-                      name: 'models',
-                      value: fullModels,
-                    });
-                  }}
-                >
-                  {t('channel.edit.buttons.fill_all')}
-                </Button>
+                {/* 屏蔽硬编码模型灌入入口：模型库类型（52/53）下隐藏，
+                    「填入相关/所有模型」的数据源为硬编码 adaptor 清单 */}
+                {(inputs.type !== 52 && inputs.type !== 53) && (
+                  <>
+                    <Button
+                      type={'button'}
+                      onClick={() => {
+                        handleInputChange(null, {
+                          name: 'models',
+                          value: basicModels,
+                        });
+                      }}
+                    >
+                      {t('channel.edit.buttons.fill_models')}
+                    </Button>
+                    <Button
+                      type={'button'}
+                      onClick={() => {
+                        handleInputChange(null, {
+                          name: 'models',
+                          value: fullModels,
+                        });
+                      }}
+                    >
+                      {t('channel.edit.buttons.fill_all')}
+                    </Button>
+                  </>
+                )}
                 <Button
                   type={'button'}
                   onClick={() => {

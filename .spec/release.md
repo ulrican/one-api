@@ -6,6 +6,14 @@
 
 ***
 
+## 七牛模型渠道配置
+BaseUrl： https://api.qiniu.com/v1  
+          https://api.qnaigc.com/v1
+
+配置信息：
+URL: https://openai.qiniu.com
+KEY: sk-e758eb517d7a76372d911ca3fe2c40e46c0a78eb844ed29e09a8358e5875e6e3
+
 ## 0. 前置准备清单
 
 | 项目       | 说明                                    | 状态 |
@@ -27,12 +35,12 @@
 ### 1.2 安装 Docker 与 Docker Compose
 
 ```bash
-# Ubuntu
+# CentOS（get.docker.com 脚本同时适配 CentOS/Ubuntu，自动配置 docker-ce 官方仓库）
 curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun
 systemctl enable --now docker
 
-# 安装 docker compose 插件（v2）
-apt-get install -y docker-compose-plugin
+# 安装 docker compose 插件（v2；get.docker.com 脚本已配好 docker-ce 官方 yum 仓库）
+dnf install -y docker-compose-plugin
 docker compose version
 ```
 
@@ -72,21 +80,21 @@ systemctl restart docker
 ```powershell
 # 1. 构建生产镜像
 cd e:\97_OneAI\one-api
-docker build -t fluxai:v1.0.0 .
+docker build -t fluxai:v3.0.0 .
 
 # 2. 登录阿里云容器镜像服务（先在控制台创建命名空间 fluxai）
 docker login --username=gezimygood@163.com crpi-yrax2qagqc9gjyr1.cn-shenzhen.personal.cr.aliyuncs.com
 
 # 3. 打标签并推送（region 替换为你的区域，如 hangzhou）
-docker tag fluxai:v1.0.0 crpi-yrax2qagqc9gjyr1.cn-shenzhen.personal.cr.aliyuncs.com/flux-ai/fluxai:v1.0.0
-docker push crpi-yrax2qagqc9gjyr1.cn-shenzhen.personal.cr.aliyuncs.com/flux-ai/fluxai:v1.0.0
+docker tag fluxai:v3.0.0 crpi-yrax2qagqc9gjyr1.cn-shenzhen.personal.cr.aliyuncs.com/flux-ai/fluxai:v3.0.0
+docker push crpi-yrax2qagqc9gjyr1.cn-shenzhen.personal.cr.aliyuncs.com/flux-ai/fluxai:v3.0.0
 ```
 
 ### 2.2 方案 B：ECS 上直接构建（简单但慢，需 4G+ 内存）
 
 ```bash
 # 在 ECS 上
-apt install -y git
+dnf install -y git
 git clone <你的代码仓库> /opt/fluxai
 cd /opt/fluxai
 docker build -t fluxai:v1.0.0 .
@@ -122,13 +130,16 @@ services:
       - ./logs:/app/logs
     environment:
       - SQL_DSN=fluxai:flux1234@tcp(db:3306)/fluxai?charset=utf8mb4&parseTime=True&loc=Local
-      - REDIS_CONN_STRING=redis://redis:6379
+      - REDIS_CONN_STRING=redis://:flux1234@redis:6379
+      - SYNC_FREQUENCY=60          # 必须设置！缺省时 Redis 被静默禁用（日志：SYNC_FREQUENCY not set, Redis is disabled）
       - SESSION_SECRET=yrax2qagqc9gjyr1
       - TZ=Asia/Shanghai
       - PORT=3000
     depends_on:
-      - redis
-      - db
+      redis:
+        condition: service_healthy   # 等 Redis 就绪再启动
+      db:
+        condition: service_healthy   # 等 MySQL 就绪再启动，根治启动时 connection refused 反复重试
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O - http://localhost:3000/api/status | grep -o '\"success\":\\s*true' | awk -F: '{print $2}'"]
       interval: 30s
@@ -142,6 +153,11 @@ services:
     volumes:
       - ./redis-data:/data
     command: redis-server --appendonly yes --requirepass flux1234
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "flux1234", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   db:
     image: mysql:8.2.0
@@ -156,8 +172,14 @@ services:
       MYSQL_PASSWORD: flux1234
       MYSQL_DATABASE: fluxai
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD-SHELL", "mysql -uroot -pRoot@12345 -e 'SELECT 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10   # 首次启动初始化数据目录耗时较长，多留重试次数
 ```
 
+# docker exec fluxai-mysql mysql -ufluxai -pflux1234 fluxai   -e "SELECT id, name, type, CONCAT('[', base_url, ']') AS base_url_raw FROM channels;"
 > 关键变化（相比开发版 docker-compose.yml）：
 >
 > - 端口绑定 `127.0.0.1:3000:3000` → 只允许本机 Nginx 访问，不直接暴露公网
@@ -168,27 +190,21 @@ services:
 ### 3.2 Nginx 反向代理配置
 
 ```bash
-apt install -y nginx
+# CentOS 8/Stream 用 dnf；CentOS 7 改用 yum install -y nginx
+dnf install -y nginx
+systemctl enable --now nginx
+
+# CentOS 默认启用 firewalld（阿里云安全组之外的本机防火墙），必须放行 80/443
+firewall-cmd --permanent --add-service=http --add-service=https
+firewall-cmd --reload
 ```
 
-创建 `/etc/nginx/conf.d/fluxai.conf`：
+创建 `/etc/nginx/conf.d/fluxai.conf`（**初始只配 80 端口**，HTTPS 配置由 3.3 节 Certbot 自动插入）：
 
 ```nginx
 server {
     listen 80;
-    server_name 你的域名.com;
-    return 301 https://$host$request_uri;   # HTTP 强制跳转 HTTPS
-}
-
-server {
-    listen 443 ssl http2;
-    server_name 你的域名.com;
-
-    # SSL 证书路径（阿里云控制台下载后上传到 ECS）
-    ssl_certificate     /etc/nginx/ssl/fluxai.pem;
-    ssl_certificate_key /etc/nginx/ssl/fluxai.key;
-    ssl_protocols       TLSv1.2 TLSv1.3;
-    ssl_ciphers         HIGH:!aNULL:!MD5;
+    server_name api.hyenlab.cn;
 
     # 客户端上传/请求体大小限制
     client_max_body_size 100m;
@@ -210,14 +226,161 @@ server {
 }
 ```
 
-上传 SSL 证书并启动：
+使初始配置生效：
 
 ```bash
-mkdir -p /etc/nginx/ssl
-# 把阿里云下载的证书文件上传到 /etc/nginx/ssl/
-
 nginx -t && systemctl reload nginx
+curl -I http://api.hyenlab.cn/api/status   # 确认 80 端口 HTTP 已可访问
 ```
+
+### 3.3 SSL 证书：Let's Encrypt + Certbot 自动续期（方案 A，推荐）
+
+Certbot 会自动完成「申请证书 → 改写 Nginx 配置插入 443 server 块与 80→443 跳转 → 注册定时续期」，**配置一次永久免手工续期**。
+
+#### 3.3.1 前置条件检查（申请前必须全部满足）
+
+| 检查项 | 验证命令 | 说明 |
+| --- | --- | --- |
+| 域名 DNS 已解析到 ECS 公网 IP | `nslookup api.hyenlab.cn` | Let's Encrypt 回源验证依赖解析生效 |
+| 安全组已开放 80、443 端口 | 阿里云控制台安全组规则 | HTTP-01 验证必须 80 端口公网可达 |
+| 80 端口站点可访问 | `curl -I http://api.hyenlab.cn/api/status` | 3.2 节初始配置已生效 |
+| Nginx 配置含 `server_name api.hyenlab.cn;` | `nginx -T \| grep server_name` | certbot --nginx 靠它定位要改写的 server 块 |
+
+#### 3.3.2 安装 Certbot（snap 官方推荐方式）
+
+```bash
+# CentOS 需先从 EPEL 安装 snapd（CentOS 7 把 dnf 换成 yum）
+dnf install -y epel-release
+dnf install -y snapd
+systemctl enable --now snapd.socket
+ln -sf /var/lib/snapd/snap /snap
+
+# 使 snap 命令路径在当前 shell 生效（或重新登录 SSH）
+source /etc/profile.d/snapd.sh 2>/dev/null || true
+
+# 安装 Certbot
+snap install core && snap refresh core
+snap install --classic certbot
+ln -sf /snap/bin/certbot /usr/bin/certbot
+certbot --version
+```
+
+> 备选：CentOS 无 snapd 环境时可用 pip 方式 `dnf install -y python3 augeas-libs && python3 -m pip install certbot certbot-nginx`，但 snap 方式升级维护最省心。
+
+#### 3.3.3 一键申请证书并自动配置 Nginx
+
+```bash
+certbot --nginx -d api.hyenlab.cn \
+  --email 530028130@qq.com \
+  --agree-tos --no-eff-email \
+  --redirect
+```
+
+参数说明：
+
+- `--nginx`：调用 Nginx 插件，自动完成回源验证 + 改写 `fluxai.conf`（插入 `listen 443 ssl`、`ssl_certificate` 指向 `/etc/letsencrypt/live/api.hyenlab.cn/`、HTTP→HTTPS 301 跳转）
+- `--redirect`：强制 HTTP 跳转 HTTPS（推荐；不想要跳转可去掉）
+- 成功后输出 `Congratulations!` 与证书路径、到期日期
+
+> ⚠️ Let's Encrypt 有频率限制（同一域名每周 5 次成功签发），命令确认无误再执行；调试请用 `--dry-run` 或 `--staging`。
+
+#### 3.3.4 验证 HTTPS 生效
+
+```bash
+nginx -t                                # certbot 改写后配置语法校验
+curl -vI https://api.hyenlab.cn/api/status 2>&1 | grep -E "SSL connection|HTTP/"
+# 期望：SSL connection using TLSv1.3 ... 和 HTTP/2 200
+```
+
+浏览器访问 `https://api.hyenlab.cn` 应显示锁形图标，点击可查看证书（颁发者 R10/R11/Let's Encrypt，有效期 90 天）。
+
+#### 3.3.5 自动续期机制与验证
+
+snap 安装的 Certbot 已自动注册 systemd 定时器，**每天检查两次，剩余有效期 ≤30 天时自动续期**，无需任何手工干预。
+
+```bash
+# 1. 确认续期定时器已激活
+systemctl list-timers | grep certbot
+# 期望输出：certbot.timer ... certbot.service
+
+# 2. 演练一次续期（不实际签发，验证全流程可用）
+certbot renew --dry-run
+# 期望输出：Congratulations, all simulated renewals succeeded
+```
+
+续期后自动生效说明：
+
+- `--nginx` 插件安装的证书，续期后 Certbot 会**自动 reload Nginx**，无需重启 fluxai 容器
+- 如需显式钩子（双保险）：`echo 'deploy-hook = systemctl reload nginx' >> /etc/letsencrypt/cli.ini`
+- 证书文件固定位于 `/etc/letsencrypt/live/api.hyenlab.cn/fullchain.pem` 与 `privkey.pem`，续期只更新内容、路径不变
+
+#### 3.3.6 常见问题
+
+| 问题 | 排查 |
+| --- | --- |
+| 申请失败 `Timeout during connect` | 安全组 80 端口未开放 / DNS 未生效 / ECS 上 80 被占用 |
+| 申请失败 `Invalid response` | 域名解析到了其他 IP；CDN/云防护拦截了 `/.well-known/acme-challenge/` |
+| 后续修改了 fluxai.conf | 不要动 certbot 插入的 `# managed by Certbot` 注释行；改完 `nginx -t && systemctl reload nginx` |
+| 换域名/加域名 | 重新执行 3.3.3 命令（`-d 新域名`），旧证书可 `certbot delete` 清理 |
+
+---
+
+### 3.4 备选：阿里云免费 DV 证书（方案 B，手工续期）
+
+若不想装 Certbot（如 80 端口不便开放回源验证），可用阿里云免费证书，但**有效期仅 3 个月、到期必须手工重新申请**：
+
+1. **申请**：阿里云控制台 → 数字证书管理服务 → 免费证书 → 0 元购买 → 证书申请（绑 `api.hyenlab.cn`，DNS 自动验证）→ 约 1~10 分钟签发
+2. **下载**：证书列表 → 下载 → 服务器类型选 **Nginx**，解压得 `api.hyenlab.cn.pem` + `api.hyenlab.cn.key`
+3. **上传安装**（本地 PowerShell 执行 scp，再在 ECS 归位）：
+
+   ```powershell
+   scp .\api.hyenlab.cn.pem .\api.hyenlab.cn.key root@<ECS公网IP>:/root/
+   ```
+
+   ```bash
+   mkdir -p /etc/nginx/ssl
+   mv /root/api.hyenlab.cn.pem /etc/nginx/ssl/fluxai.pem
+   mv /root/api.hyenlab.cn.key /etc/nginx/ssl/fluxai.key
+   chmod 600 /etc/nginx/ssl/fluxai.key && chmod 644 /etc/nginx/ssl/fluxai.pem
+   ```
+
+4. **改写 fluxai.conf 为完整 HTTPS 版**（在 3.2 节配置基础上追加跳转与 443 server 块）：
+
+   ```nginx
+   server {
+       listen 80;
+       server_name api.hyenlab.cn;
+       return 301 https://$host$request_uri;
+   }
+
+   server {
+       listen 443 ssl http2;
+       server_name api.hyenlab.cn;
+       ssl_certificate     /etc/nginx/ssl/fluxai.pem;
+       ssl_certificate_key /etc/nginx/ssl/fluxai.key;
+       ssl_protocols       TLSv1.2 TLSv1.3;
+       ssl_ciphers         HIGH:!aNULL:!MD5;
+       client_max_body_size 100m;
+
+       location / {
+           proxy_pass http://127.0.0.1:3000;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header X-Forwarded-Proto $scheme;
+           proxy_http_version 1.1;
+           proxy_set_header Connection "";
+           proxy_buffering off;
+           proxy_read_timeout 300s;
+       }
+   }
+   ```
+
+   ```bash
+   nginx -t && systemctl reload nginx
+   ```
+
+5. **续期**：到期前重新申请 → 下载 → 覆盖 `/etc/nginx/ssl/` 两个文件 → `nginx -t && systemctl reload nginx`（无需重启容器）。务必设置**到期前 15 天日历提醒**。
 
 ***
 
@@ -239,12 +402,12 @@ curl http://127.0.0.1:3000/api/status
 # 应返回 {"success":true,"data":{...}}
 
 # 公网访问验证
-curl https://你的域名.com/api/status
+curl https://api.hyenlab.cn/api/status
 ```
 
 ### 4.2 初始管理员登录
 
-- 访问 `https://你的域名.com`
+- 访问 `https://api.hyenlab.cn`
 - 默认管理员账号：**root**，密码：**123456**（首次登录后立即修改）
 
 ***
@@ -257,7 +420,7 @@ curl https://你的域名.com/api/status
 
 | 配置项                       | 值                  | 说明                              |
 | ------------------------- | ------------------ | ------------------------------- |
-| **服务器地址 (ServerAddress)** | `https://你的域名.com` | ⚠️ 支付回调地址由此拼接，必须配公网 HTTPS 域名    |
+| **服务器地址 (ServerAddress)** | `https://api.hyenlab.cn` | ⚠️ 支付回调地址由此拼接，必须配公网 HTTPS 域名    |
 | 系统名称                      | FluxAI             | 已改，确认                           |
 | 聊天页面链接 (ChatLink)         | 可选                 | 第三方聊天前端地址，不配则按钮回退到内置 Playground |
 
@@ -272,7 +435,7 @@ curl https://你的域名.com/api/status
 | 充值价格      | 默认 7.3（元/1美元额度）                    |
 | 最低/最高充值金额 | 按需（默认 1 / 5000）                    |
 
-> 支付回调地址由系统自动拼接为：`https://你的域名.com/api/user/pay/notify`，确保公网可达。
+> 支付回调地址由系统自动拼接为：`https://api.hyenlab.cn/api/user/pay/notify`，确保公网可达。
 
 ### 5.3 模型与倍率
 
@@ -358,7 +521,7 @@ docker exec -it fluxai-mysql mysql -u fluxai -p fluxai
 1. 本地构建新版本镜像并推送到阿里云镜像仓库
 2. 修改 ECS 上 `docker-compose.yml` 的镜像 tag
 3. `docker compose pull && docker compose up -d`
-4. 验证 `https://你的域名.com/api/status` 返回 success
+4. 验证 `https://api.hyenlab.cn/api/status` 返回 success
 
 ### 8.3 监控建议
 

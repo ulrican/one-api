@@ -28,6 +28,66 @@ type ratioGroupsRequest struct {
 	Groups map[string]float64 `json:"groups"`
 }
 
+// GetAutoRatioList GET /api/ratio/auto-list
+// 只读展示所有 market_models 中 token 计价模型的当前倍率（从七牛价目自动计算或已锁定的倍率），
+// 供前端"自动计算倍率"表格渲染。返回每个模型的 model_ratio、completion_ratio、价格、锁定状态。
+func GetAutoRatioList(c *gin.Context) {
+	type autoRatioRow struct {
+		ModelId          string  `json:"model_id"`
+		Issuer           string  `json:"issuer"`
+		Region           string  `json:"region"`
+		PriceInput       float64 `json:"price_input"`
+		PriceOutput      float64 `json:"price_output"`
+		ModelRatio       float64 `json:"model_ratio"`
+		CompletionRatio  float64 `json:"completion_ratio"`
+		HasCompletion    bool    `json:"has_completion"`
+		Locked           bool    `json:"locked"`
+		LockedNote       string  `json:"locked_note,omitempty"`
+	}
+	// 扫所有 token 计价且 price_input>0 的市场模型
+	var items []model.MarketModel
+	if err := model.DB.Where("price_unit = ? AND price_input > 0", model.MarketPriceUnitToken).
+		Find(&items).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": err.Error()})
+		return
+	}
+	// 锁定表
+	lockedMap, err := model.GetModelRatioLockMap()
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": err.Error()})
+		return
+	}
+	rows := make([]autoRatioRow, 0, len(items))
+	for _, m := range items {
+		mr, _ := billingratio.PeekModelRatio(m.ModelId)
+		cr, crOk := billingratio.PeekCompletionRatio(m.ModelId)
+		_, isLocked := lockedMap[m.ModelId]
+		note := ""
+		if isLocked {
+			if snap := lockedMap[m.ModelId]; snap != nil {
+				note = snap.Note
+			}
+		}
+		rows = append(rows, autoRatioRow{
+			ModelId:         m.ModelId,
+			Issuer:          m.IssuerName,
+			Region:          m.Region,
+			PriceInput:      m.PriceInput,
+			PriceOutput:     m.PriceOutput,
+			ModelRatio:      mr,
+			CompletionRatio: cr,
+			HasCompletion:   crOk,
+			Locked:          isLocked,
+			LockedNote:      note,
+		})
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    rows,
+	})
+}
+
 // AutoRecomputeRatios POST /api/ratio/auto-recompute
 // body: {"dry_run": true|false}；dry_run 仅预览变更不落库
 func AutoRecomputeRatios(c *gin.Context) {

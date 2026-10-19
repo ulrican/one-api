@@ -1,20 +1,13 @@
 // Task3-1/3-2：导航菜单共享配置（SideNav 左侧菜单栏 与 Header 移动端抽屉共用）
 // 分组顺序即菜单渲染顺序；item.admin 仅管理员可见
-// Task3-2：聊天为独立模块置顶（getChatItem）；总览/令牌/日志归入「常规」组
+// 对话功能已移除（Playground 下线），对话类体验统一由「模型体验」/experience 承接
 
-// 独立聊天入口（Task3-4：常驻侧栏顶部，不再因功能开关而缺失）
-// - 开启 Playground 时指向内置对话页 /playground
-// - 未开启 Playground 但配置了外部对话链接 chat_link 时走 iframe 页 /chat
-// - 两者都无（默认）时仍指向内置 /playground（登录后控制台可用），保证聊天入口始终存在
-export const getChatItem = () => {
-  if (
-    localStorage.getItem('playground_enabled') !== 'true' &&
-    localStorage.getItem('chat_link')
-  ) {
-    return { name: 'header.chat', to: '/chat', icon: 'comments' };
-  }
-  return { name: 'header.chat', to: '/playground', icon: 'comments' };
-};
+// Task4-9：模型体验独立入口（侧栏置顶，Header 移动端抽屉同步）
+export const getExperienceItem = () => ({
+  name: 'header.experience',
+  to: '/experience',
+  icon: 'flask',
+});
 
 export const getNavGroups = () => [
   {
@@ -22,7 +15,7 @@ export const getNavGroups = () => [
     titleKey: 'sidenav.group.general',
     items: [
       { name: 'header.dashboard', to: '/dashboard', icon: 'chart bar' },
-      { name: 'header.token', to: '/token', icon: 'key' },
+      { name: 'header.application', to: '/application', icon: 'cubes' },
       { name: 'header.log', to: '/log', icon: 'book' },
     ],
   },
@@ -31,13 +24,14 @@ export const getNavGroups = () => [
     titleKey: 'sidenav.group.resource',
     items: [
       { name: 'header.topup', to: '/topup', icon: 'cart' },
-      { name: 'header.pricing', to: '/pricing', icon: 'dollar' },
       {
         name: 'header.marketplace',
         to: '/marketplace',
         icon: 'shop',
         statusFlag: 'marketplace_enabled',
       },
+      // Task4-11：模型价格页补入口（页面 /pricing 已存在，此前无导航入口）
+      { name: 'header.pricing', to: '/pricing', icon: 'tags' },
       { name: 'header.rankings', to: '/rankings', icon: 'trophy' },
     ],
   },
@@ -53,15 +47,27 @@ export const getNavGroups = () => [
     key: 'admin',
     titleKey: 'sidenav.group.admin',
     admin: true,
+    // Task4-11：管理组命名统一「××管理」（渠道/倍率/用户/运营/支付/系统/站点）
+    // 顺序：实体管理 → 运营配置 → 支付配置 → 系统配置 → 站点配置
+    // Task4-10 调整：兑换码管理合并进 /payment 的「兑换」Tab，删除独立兑换菜单
     items: [
       { name: 'header.channel', to: '/channel', icon: 'sitemap', admin: true },
+      { name: 'header.ratio', to: '/ratio', icon: 'balance scale', admin: true },
+      { name: 'header.user', to: '/user', icon: 'user', admin: true },
       {
-        name: 'header.redemption',
-        to: '/redemption',
-        icon: 'dollar sign',
+        name: 'header.operation',
+        to: '/operation',
+        icon: 'settings',
         admin: true,
       },
-      { name: 'header.user', to: '/user', icon: 'user', admin: true },
+      {
+        name: 'header.payment',
+        to: '/payment',
+        icon: 'credit card',
+        admin: true,
+      },
+      { name: 'header.system', to: '/system', icon: 'server', admin: true },
+      { name: 'header.site', to: '/site', icon: 'globe', admin: true },
     ],
   },
 ];
@@ -80,8 +86,10 @@ export const getVisibleNavGroups = () =>
     .filter((group) => group.items.length > 0);
 
 // 顶部导航链接组（菜单项与首页顶部导航栏一致，锚点对应控制台真实路由）
+// Task4-11：新增模型价格入口
 export const topNavLinks = [
   { name: 'header.home', to: '/' },
+  { name: 'header.marketplace', to: '/marketplace' },
   { name: 'header.pricing', to: '/pricing' },
   { name: 'header.rankings', to: '/rankings' },
   { name: 'header.about', to: '/about' },

@@ -34,7 +34,12 @@ func UnmarshalBodyReusable(c *gin.Context, v any) error {
 		err = json.Unmarshal(requestBody, &v)
 	} else {
 		c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
-		err = c.ShouldBind(&v)
+		// Task4-9：v(any) 内部已持有调用方传入的结构体指针（如 *ModelRequest）。
+		// gin form 绑定（multipart/form-data）无法穿透 *interface{} 间接层，
+		// 必须传 v 本身；JSON 分支依赖 encoding/json 对 interface 的特殊解包，仍用 &v。
+		// 修复前 multipart 请求的 model 字段绑定为空，audio 转写回退为 whisper-1，
+		// 导致令牌模型白名单校验 403、渠道选路错误（上游既有缺陷）。
+		err = c.ShouldBind(v)
 	}
 	if err != nil {
 		return err

@@ -9,6 +9,7 @@ import (
 
 	"github.com/songquanpeng/one-api/common"
 	"github.com/songquanpeng/one-api/common/helper"
+	"github.com/songquanpeng/one-api/common/logger"
 )
 
 const (
@@ -59,6 +60,8 @@ func Redeem(ctx context.Context, key string, userId int) (quota int64, err error
 		return 0, errors.New("无效的 user id")
 	}
 	redemption := &Redemption{}
+	// Task4-4：失败流水在事务回滚后于事务外落库
+	var failRecord *RedemptionRecord
 
 	keyCol := "`key`"
 	if common.UsingPostgreSQL {
@@ -68,9 +71,11 @@ func Redeem(ctx context.Context, key string, userId int) (quota int64, err error
 	err = DB.Transaction(func(tx *gorm.DB) error {
 		err := tx.Set("gorm:query_option", "FOR UPDATE").Where(keyCol+" = ?", key).First(redemption).Error
 		if err != nil {
+			failRecord = newRedemptionRecord(userId, 0, key, "", 0, RedemptionRecordStatusFailed, "无效的兑换码")
 			return errors.New("无效的兑换码")
 		}
 		if redemption.Status != RedemptionCodeStatusEnabled {
+			failRecord = newRedemptionRecord(userId, redemption.Id, key, redemption.Name, redemption.Quota, RedemptionRecordStatusFailed, "该兑换码已被使用或禁用")
 			return errors.New("该兑换码已被使用")
 		}
 		err = tx.Model(&User{}).Where("id = ?", userId).Update("quota", gorm.Expr("quota + ?", redemption.Quota)).Error
@@ -80,9 +85,20 @@ func Redeem(ctx context.Context, key string, userId int) (quota int64, err error
 		redemption.RedeemedTime = helper.GetTimestamp()
 		redemption.Status = RedemptionCodeStatusUsed
 		err = tx.Save(redemption).Error
-		return err
+		if err != nil {
+			return err
+		}
+		// 成功流水与加额度同事务，保证不丢不重
+		return insertRedemptionRecordTx(tx, newRedemptionRecord(
+			userId, redemption.Id, key, redemption.Name, redemption.Quota,
+			RedemptionRecordStatusSuccess, ""))
 	})
 	if err != nil {
+		if failRecord != nil {
+			if recordErr := InsertRedemptionRecord(failRecord); recordErr != nil {
+				logger.SysError("failed to insert redemption fail record: " + recordErr.Error())
+			}
+		}
 		return 0, errors.New("兑换失败，" + err.Error())
 	}
 	RecordLog(ctx, userId, LogTypeTopup, fmt.Sprintf("通过兑换码充值 %s", common.LogQuota(redemption.Quota)))

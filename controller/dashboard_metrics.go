@@ -20,15 +20,16 @@ const dashboardTopModelsCacheTTL = 60 * time.Second
 func GetUserDashboardMetrics(c *gin.Context) {
 	userId := c.GetInt(ctxkey.Id)
 	now := time.Now()
+	tokenName := c.Query("token_name")
 
 	// RPM/TPM：最近 60 秒实时统计（不缓存，保证与日志抽样一致）
-	rpm, tpm := model.SumUserRecentUsage(userId, now.Add(-time.Minute).Unix())
+	rpm, tpm := model.SumUserRecentUsage(userId, now.Add(-time.Minute).Unix(), tokenName)
 
 	// 模型维度：最近 7 天 Top 10（Redis 缓存 60s，无 Redis 直查 DB）
 	end := now.Unix()
 	start := now.AddDate(0, 0, -6).Unix()
 	stats := make([]*model.ModelStat, 0)
-	cacheKey := fmt.Sprintf("dash_metrics:top_models:%d", userId)
+	cacheKey := fmt.Sprintf("dash_metrics:top_models:%d:%s", userId, tokenName)
 	cached := false
 	if common.RedisEnabled {
 		if val, err := common.RedisGet(cacheKey); err == nil && val != "" {
@@ -39,7 +40,7 @@ func GetUserDashboardMetrics(c *gin.Context) {
 	}
 	if !cached {
 		var err error
-		stats, err = model.GetUserModelStats(userId, start, end, 10)
+		stats, err = model.GetUserModelStats(userId, start, end, 10, tokenName)
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,

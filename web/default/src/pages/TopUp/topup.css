@@ -26,8 +26,8 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
-  padding: 26px 30px;
-  margin-bottom: 28px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
   position: relative;
   overflow: hidden;
 }
@@ -44,6 +44,14 @@
     transparent 70%
   );
   pointer-events: none;
+}
+:where(html.theme-dark, html.theme-light) .topup-hero-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
 }
 :where(html.theme-dark, html.theme-light) .topup-hero-label {
   font-size: 13px;
@@ -63,6 +71,8 @@
   background-clip: text;
   color: transparent;
   font-variant-numeric: tabular-nums;
+  width: 100%;
+  text-align: left;
 }
 :where(html.theme-dark, html.theme-light) .topup-hero-tip {
   font-size: 12px;
@@ -71,6 +81,46 @@
 }
 :where(html.theme-dark, html.theme-light) .topup-hero-btn {
   border-radius: var(--radius-md) !important;
+}
+
+/* ---------- 顶部两栏（左：余额+推荐计划 / 右：签到日历） ---------- */
+.topup-top-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 9fr) minmax(0, 15fr);
+  gap: 16px;
+  align-items: stretch;
+  margin-bottom: 16px;
+}
+.topup-top-grid.solo {
+  grid-template-columns: minmax(0, 1fr);
+}
+.topup-top-left {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.topup-top-grid .topup-hero {
+  margin-bottom: 0;
+}
+/* 左栏推荐计划卡弹性撑高，使左右两栏等高 */
+.topup-top-left .topup-aff-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.topup-top-left .topup-aff-card .ui.button {
+  margin-top: auto;
+}
+/* 右栏签到卡撑满行高，日历格子自适应拉伸（尽量方形） */
+.topup-checkin-card {
+  display: flex;
+  flex-direction: column;
+}
+@media (max-width: 1024px) {
+  .topup-top-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* ---------- 套餐区 ---------- */
@@ -163,12 +213,20 @@
   border: 1px solid var(--warning-soft-border);
   border-radius: var(--radius-md);
   padding: 10px 14px;
-  margin-bottom: 28px;
+  margin-bottom: 16px;
 }
 
-/* ---------- 在线支付区（F1 钱包页） ---------- */
+/* ---------- 在线充值 + 充值记录（同一卡片模块，F1 钱包页） ---------- */
+:where(html.theme-dark, html.theme-light) .topup-pay-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
 :where(html.theme-dark, html.theme-light) .topup-pay {
-  margin-bottom: 28px;
+  margin-bottom: 0;
 }
 :where(html.theme-dark, html.theme-light) .pay-amount-chips {
   display: flex;
@@ -260,16 +318,44 @@
   margin-top: 16px;
 }
 
-/* ---------- 订单历史 ---------- */
-:where(html.theme-dark, html.theme-light) .topup-orders {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  padding: 24px 26px;
-  margin-bottom: 28px;
+/* ---------- Task4-8 直连模式：微信 Native 扫码弹窗 ---------- */
+:where(html.theme-dark, html.theme-light) .pay-qr-amount {
+  font-size: 28px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  margin-top: 4px;
 }
-:where(html.theme-dark, html.theme-light) .topup-orders .topup-redeem-title .icon {
+:where(html.theme-dark, html.theme-light) .pay-qr-tip {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 6px 0 16px;
+}
+/* 二维码图固定白底，保证双主题下扫码对比度 */
+:where(html.theme-dark, html.theme-light) .pay-qr-img {
+  width: 220px;
+  height: 220px;
+  background: #ffffff;
+  border-radius: var(--radius-md);
+  padding: 10px;
+  border: 1px solid var(--border-color);
+}
+:where(html.theme-dark, html.theme-light) .pay-qr-modal .pay-waiting {
+  margin-top: 16px;
+  margin-bottom: 0;
+  text-align: left;
+}
+
+/* ---------- 充值记录（在线充值卡片内部小节，分隔线区分） ---------- */
+:where(html.theme-dark, html.theme-light) .topup-orders-section {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-color);
+}
+:where(html.theme-dark, html.theme-light) .topup-orders-section .topup-redeem-title {
+  margin-bottom: 10px;
+}
+:where(html.theme-dark, html.theme-light) .topup-orders-section .topup-redeem-title .icon {
   color: var(--brand-blue);
 }
 :where(html.theme-dark, html.theme-light) .orders-time {
@@ -280,7 +366,7 @@
 :where(html.theme-dark, html.theme-light) .orders-empty {
   text-align: center;
   color: var(--text-disabled);
-  padding: 28px 0 !important;
+  padding: 24px 0 !important;
 }
 
 /* ---------- 兑换码区 ---------- */
@@ -289,7 +375,7 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
-  padding: 24px 26px;
+  padding: 20px 24px;
 }
 :where(html.theme-dark, html.theme-light) .topup-redeem-title {
   font-size: 15px;
@@ -325,7 +411,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 :where(html.theme-dark, html.theme-light) .topup-extra-card {
   background: var(--bg-surface);
@@ -372,5 +458,170 @@
 @media (max-width: 640px) {
   :where(html.theme-dark, html.theme-light) .topup-extra-row {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- 签到日历（右栏卡片） ---------- */
+:where(html.theme-dark, html.theme-light) .topup-checkin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+:where(html.theme-dark, html.theme-light) .topup-checkin-month {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-left: 8px;
+}
+:where(html.theme-dark, html.theme-light) .topup-checkin-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  min-width: 0;
+}
+:where(html.theme-dark, html.theme-light) .topup-checkin-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+:where(html.theme-dark, html.theme-light) .topup-checkin-stat-reward {
+  color: var(--brand-green);
+  font-weight: 600;
+}
+:where(html.theme-dark, html.theme-light) .topup-checkin-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+:where(html.theme-dark, html.theme-light) .topup-checkin-stat .icon {
+  color: var(--brand-blue);
+}
+
+/* 阶梯规则提示（右上角图标 hover 弹出） */
+.topup-tier-info {
+  cursor: help;
+  color: var(--text-tertiary);
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+}
+.topup-tier-info:hover {
+  color: var(--brand-blue);
+}
+.topup-tier-pop {
+  min-width: 190px;
+  font-size: 12px;
+}
+.topup-tier-pop-title {
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+.topup-tier-pop-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+  color: var(--text-secondary);
+}
+.topup-tier-pop-row.earned {
+  color: var(--brand-green);
+}
+
+/* 日历网格 */
+:where(html.theme-dark, html.theme-light) .topup-calendar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin: 8px 0 0;
+}
+:where(html.theme-dark, html.theme-light) .topup-calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+}
+:where(html.theme-dark, html.theme-light) .topup-calendar-wd {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  padding: 4px 0;
+}
+:where(html.theme-dark, html.theme-light) .topup-calendar-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 4px;
+}
+:where(html.theme-dark, html.theme-light) .topup-cal-cell {
+  position: relative;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm, 8px);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  font-size: 13px;
+  color: var(--text-primary);
+  transition: all 0.15s ease;
+}
+:where(html.theme-dark, html.theme-light) .topup-cal-cell.blank {
+  background: transparent;
+  border: none;
+}
+:where(html.theme-dark, html.theme-light) .topup-cal-cell.future {
+  color: var(--text-disabled);
+  background: transparent;
+  border: 1px dashed var(--border-color);
+}
+:where(html.theme-dark, html.theme-light) .topup-cal-cell.today {
+  border: 2px solid var(--brand-blue);
+  font-weight: 700;
+}
+:where(html.theme-dark, html.theme-light) .topup-cal-cell.checked {
+  background: var(--brand-gradient);
+  color: var(--on-primary);
+  border-color: transparent;
+}
+:where(html.theme-dark, html.theme-light) .topup-cal-cell.checked.tier {
+  background: linear-gradient(135deg, var(--brand-green), var(--brand-blue));
+}
+:where(html.theme-dark, html.theme-light) .topup-cal-check {
+  position: absolute;
+  bottom: 2px;
+  right: 3px;
+  font-size: 10px;
+  opacity: 0.9;
+}
+:where(html.theme-dark, html.theme-light) .topup-cal-tier-badge {
+  position: absolute;
+  top: 1px;
+  left: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--warning-text, #f59e0b);
+}
+:where(html.theme-dark, html.theme-light) .topup-checkin-btn {
+  min-width: 0;
+  font-size: 12px;
+  padding: 0.45em 0.75em !important;
+  border-radius: var(--radius-md) !important;
+}
+@media (max-width: 640px) {
+  :where(html.theme-dark, html.theme-light) .topup-cal-cell {
+    font-size: 12px;
   }
 }

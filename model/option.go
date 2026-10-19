@@ -1,12 +1,14 @@
 package model
 
 import (
-	"github.com/songquanpeng/one-api/common/config"
-	"github.com/songquanpeng/one-api/common/logger"
-	billingratio "github.com/songquanpeng/one-api/relay/billing/ratio"
+	"encoding/json"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/songquanpeng/one-api/common/config"
+	"github.com/songquanpeng/one-api/common/logger"
+	billingratio "github.com/songquanpeng/one-api/relay/billing/ratio"
 )
 
 type Option struct {
@@ -73,6 +75,7 @@ func InitOptionMap() {
 	config.OptionMap["TopUpLink"] = config.TopUpLink
 	config.OptionMap["ChatLink"] = config.ChatLink
 	config.OptionMap["PayEnabled"] = strconv.FormatBool(config.PayEnabled)
+	config.OptionMap["PaymentMode"] = config.PaymentMode
 	config.OptionMap["PayAddress"] = config.PayAddress
 	config.OptionMap["EpayId"] = config.EpayId
 	config.OptionMap["EpaySecret"] = config.EpaySecret
@@ -80,9 +83,16 @@ func InitOptionMap() {
 	config.OptionMap["MinTopUp"] = strconv.FormatFloat(config.MinTopUp, 'f', -1, 64)
 	config.OptionMap["MaxTopUp"] = strconv.FormatFloat(config.MaxTopUp, 'f', -1, 64)
 	config.OptionMap["TopupAmountOptions"] = config.TopupAmountOptions
+	// Task4-10b：微信/支付宝商户凭证已代码内置（common/config/paycredentials.go），
+	// 不再注册 OptionMap / updateOption 分支，DB 同名残留行无法覆盖内置凭证。
+	// 直连模式仅保留支付宝启用开关（AlipayEnabled）。
+	config.OptionMap["AlipayEnabled"] = strconv.FormatBool(config.AlipayEnabled)
 	config.OptionMap["CheckInEnabled"] = strconv.FormatBool(config.CheckInEnabled)
 	config.OptionMap["CheckInMinReward"] = strconv.FormatInt(config.CheckInMinReward, 10)
 	config.OptionMap["CheckInMaxReward"] = strconv.FormatInt(config.CheckInMaxReward, 10)
+	if tiersJSON, err := json.Marshal(config.CheckInTiers); err == nil {
+		config.OptionMap["CheckInTiers"] = string(tiersJSON)
+	}
 	config.OptionMap["PlaygroundEnabled"] = strconv.FormatBool(config.PlaygroundEnabled)
 	config.OptionMap["RankingEnabled"] = strconv.FormatBool(config.RankingEnabled)
 	// Task4-1 模型广场
@@ -177,6 +187,9 @@ func updateOptionMap(key string, value string) (err error) {
 			config.DisplayTokenStatEnabled = boolValue
 		case "PayEnabled":
 			config.PayEnabled = boolValue
+		case "AlipayEnabled":
+			// Task4-10b：直连模式支付宝（订单码）开关，微信 Native 恒可用
+			config.AlipayEnabled = boolValue
 		case "CheckInEnabled":
 			config.CheckInEnabled = boolValue
 		case "PlaygroundEnabled":
@@ -271,6 +284,10 @@ func updateOptionMap(key string, value string) (err error) {
 		config.ChatLink = value
 	case "PayAddress":
 		config.PayAddress = value
+	case "PaymentMode":
+		// Task4-8：支付模式（epay/direct）不以 Enabled 结尾，须在 bool 开关分支之外同步，
+		// 否则 DB 保存后运行时 config.PaymentMode 不生效（修复原 case 错嵌 Enabled 块的 bug）
+		config.PaymentMode = value
 	case "EpayId":
 		config.EpayId = value
 	case "EpaySecret":
@@ -285,10 +302,16 @@ func updateOptionMap(key string, value string) (err error) {
 		config.MaxTopUp, _ = strconv.ParseFloat(value, 64)
 	case "TopupAmountOptions":
 		config.TopupAmountOptions = value
+	// Task4-10b：WeChatPay*/Alipay* 凭证更新分支已移除（代码内置，DB 不可覆盖）
 	case "CheckInMinReward":
 		config.CheckInMinReward, _ = strconv.ParseInt(value, 10, 64)
 	case "CheckInMaxReward":
 		config.CheckInMaxReward, _ = strconv.ParseInt(value, 10, 64)
+	case "CheckInTiers":
+		var tiers []config.CheckInTier
+		if err := json.Unmarshal([]byte(value), &tiers); err == nil && len(tiers) > 0 {
+			config.CheckInTiers = tiers
+		}
 	case "ChannelDisableThreshold":
 		config.ChannelDisableThreshold, _ = strconv.ParseFloat(value, 64)
 	case "ChannelAlertWebhookUrl":

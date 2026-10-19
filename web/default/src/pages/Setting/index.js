@@ -1,66 +1,17 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { Card, Tab } from 'semantic-ui-react';
-import SystemSetting from '../../components/SystemSetting';
-import { isRoot } from '../../helpers';
-import OtherSetting from '../../components/OtherSetting';
+import { Card } from 'semantic-ui-react';
 import PersonalSetting from '../../components/PersonalSetting';
-import OperationSetting from '../../components/OperationSetting';
 
+// Task4-10 设置页面瘦身：/setting 仅保留个人设置，单页直出无 Tab。
+// Task4-10 调整：页面标题与侧栏菜单名重复，去除 Card.Header。
+// 原管理员「运营/系统/其他」三个 Tab 拆至独立管理页：
+// /operation、/payment、/system、/site（见 navConfig.js admin 组）
 const Setting = () => {
-  const { t } = useTranslation();
-
-  let panes = [
-    {
-      menuItem: t('setting.tabs.personal'),
-      render: () => (
-        <Tab.Pane attached={false}>
-          <PersonalSetting />
-        </Tab.Pane>
-      ),
-    },
-  ];
-
-  if (isRoot()) {
-    panes.push({
-      menuItem: t('setting.tabs.operation'),
-      render: () => (
-        <Tab.Pane attached={false}>
-          <OperationSetting />
-        </Tab.Pane>
-      ),
-    });
-    panes.push({
-      menuItem: t('setting.tabs.system'),
-      render: () => (
-        <Tab.Pane attached={false}>
-          <SystemSetting />
-        </Tab.Pane>
-      ),
-    });
-    panes.push({
-      menuItem: t('setting.tabs.other'),
-      render: () => (
-        <Tab.Pane attached={false}>
-          <OtherSetting />
-        </Tab.Pane>
-      ),
-    });
-  }
-
   return (
     <div className='dashboard-container'>
       <Card fluid className='chart-card'>
         <Card.Content>
-          <Card.Header className='header'>{t('setting.title')}</Card.Header>
-          <Tab
-            menu={{
-              secondary: true,
-              pointing: true,
-              className: 'settings-tab',
-            }}
-            panes={panes}
-          />
+          <PersonalSetting />
         </Card.Content>
       </Card>
     </div>

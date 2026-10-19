@@ -1,0 +1,76 @@
+/* Ratio 页面三段式 Tab 样式 */
+.ratio-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.ratio-title-sub {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.ratio-auto-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 4px 0 8px;
+}
+.ratio-auto-stats {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.ratio-badge-auto { background: rgba(42, 157, 143, 0.12) !important; color: #2a9d8f !important; }
+.ratio-badge-locked { background: rgba(233, 137, 56, 0.12) !important; color: #e98938 !important; }
+
+.ratio-formula-help {
+  cursor: help;
+  color: var(--brand-blue);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.ratio-formula-help:hover { opacity: 0.85; }
+
+.ratio-formula-pop { font-size: 12px; min-width: 280px; }
+.ratio-formula-pop-title { font-weight: 700; font-size: 13px; margin-bottom: 6px; }
+.ratio-formula-line { padding: 2px 0; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 12px; }
+.ratio-formula-note {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-color);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  line-height: 1.5;
+}
+
+.ratio-auto-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ratio-auto-table { margin-top: 4px; }
+.ratio-auto-table .ratio-mr { color: var(--brand-green); font-family: 'JetBrains Mono', Consolas, monospace; font-size: 12px; }
+.ratio-auto-table .ratio-cr { color: var(--brand-purple, #9b5de5); font-family: 'JetBrains Mono', Consolas, monospace; font-size: 12px; }
+.ratio-auto-table .ratio-lock-icon { color: var(--brand-orange, #e98938); margin-left: 4px; font-size: 10px; }
+.ratio-row-locked { background: rgba(233, 137, 56, 0.05) !important; }
+
+.ratio-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+.ratio-pagination-info {
+  font-size: 12px;
+  color: var(--text-secondary);
+}

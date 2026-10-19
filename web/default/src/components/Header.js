@@ -20,7 +20,11 @@ import {
   showSuccess,
 } from '../helpers';
 import ThemeToggle from './ThemeToggle';
-import { getChatItem, getVisibleNavGroups, topNavLinks } from './navConfig';
+import {
+  getExperienceItem,
+  getVisibleNavGroups,
+  topNavLinks,
+} from './navConfig';
 import '../index.css';
 
 // Task3-1：顶部导航菜单项与首页顶部导航栏一致（topNavLinks），
@@ -52,20 +56,20 @@ const Header = () => {
 
   const isActive = (to) => pathname === to || pathname.startsWith(to + '/');
 
-  // 移动端抽屉：聊天独立项置顶 + 按 navConfig 分组渲染功能菜单
+  // 移动端抽屉：模型体验独立项置顶 + 按 navConfig 分组渲染功能菜单
   const renderSideGroups = () => {
-    const chatItem = getChatItem();
+    const experienceItem = getExperienceItem();
     return (
       <>
-        {chatItem && (
+        {experienceItem && (
           <Menu.Item
             as={Link}
-            to={chatItem.to}
-            className={isActive(chatItem.to) ? 'app-nav-active' : ''}
+            to={experienceItem.to}
+            className={isActive(experienceItem.to) ? 'app-nav-active' : ''}
             onClick={() => setShowSidebar(false)}
           >
-            <Icon name={chatItem.icon} />
-            {t(chatItem.name)}
+            <Icon name={experienceItem.icon} />
+            {t(experienceItem.name)}
           </Menu.Item>
         )}
         {getVisibleNavGroups()

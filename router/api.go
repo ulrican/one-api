@@ -33,6 +33,9 @@ func SetApiRouter(router *gin.Engine) {
 		// 在线支付异步回调（公开接口，签名校验在 controller 内完成）
 		apiRouter.GET("/user/pay/notify", controller.PayNotify)
 		apiRouter.POST("/user/pay/notify", controller.PayNotify)
+		// 直接到账回调（微信/支付宝原生支付，公开接口）
+		apiRouter.POST("/user/pay/wechat/notify", controller.WeChatPayNotify)
+		apiRouter.POST("/user/pay/alipay/notify", controller.AlipayNotify)
 		apiRouter.GET("/pricing", controller.GetPricing) // 公开模型价格页
 		apiRouter.GET("/rankings", controller.GetRankings) // F15 公开排行榜
 		// Task4-1 模型广场（公开查询 + 管理员手动同步）
@@ -58,11 +61,13 @@ func SetApiRouter(router *gin.Engine) {
 				selfRoute.GET("/token", controller.GenerateAccessToken)
 				selfRoute.GET("/aff", controller.GetAffCode)
 				selfRoute.POST("/topup", controller.TopUp)
+				selfRoute.GET("/topup/records", controller.GetTopUpRecords)
 				selfRoute.GET("/pay/config", controller.GetPayConfig)
 				selfRoute.POST("/pay/create", controller.CreatePayOrder)
 				selfRoute.GET("/pay/status", controller.GetPayOrderStatus)
 				selfRoute.GET("/orders", controller.GetUserOrders)
 				selfRoute.GET("/available_models", controller.GetUserAvailableModels)
+				selfRoute.GET("/models/modalities", controller.GetUserModelModalities)
 				selfRoute.POST("/check_in", controller.CheckIn)
 				selfRoute.GET("/check_in/status", controller.GetCheckInStatus)
 				selfRoute.GET("/setting", controller.GetSelfSetting)
@@ -122,6 +127,7 @@ func SetApiRouter(router *gin.Engine) {
 		ratioRoute.Use(middleware.AdminAuth())
 		{
 			ratioRoute.POST("/auto-recompute", controller.AutoRecomputeRatios)
+			ratioRoute.GET("/auto-list", controller.GetAutoRatioList)
 			ratioRoute.GET("/locks", controller.GetRatioLocks)
 			ratioRoute.POST("/lock", controller.LockModelRatio)
 			ratioRoute.DELETE("/lock", controller.UnlockModelRatio) // model_id 走 query（七牛 id 含 "/"）
@@ -137,6 +143,16 @@ func SetApiRouter(router *gin.Engine) {
 			tokenRoute.POST("/", controller.AddToken)
 			tokenRoute.PUT("/", controller.UpdateToken)
 			tokenRoute.DELETE("/:id", controller.DeleteToken)
+		}
+		// Task4-6 应用管理：与令牌平行的接口族，数据层复用 tokens 表（app_type 非空）
+		applicationRoute := apiRouter.Group("/application")
+		applicationRoute.Use(middleware.UserAuth())
+		{
+			applicationRoute.GET("/", controller.GetAllApplications)
+			applicationRoute.GET("/search", controller.SearchApplications)
+			applicationRoute.POST("/", controller.AddApplication)
+			applicationRoute.PUT("/", controller.UpdateApplication)
+			applicationRoute.DELETE("/:id", controller.DeleteApplication)
 		}
 		redemptionRoute := apiRouter.Group("/redemption")
 		redemptionRoute.Use(middleware.AdminAuth())
@@ -156,10 +172,24 @@ func SetApiRouter(router *gin.Engine) {
 		logRoute.GET("/search", middleware.AdminAuth(), controller.SearchAllLogs)
 		logRoute.GET("/self", middleware.UserAuth(), controller.GetUserLogs)
 		logRoute.GET("/self/search", middleware.UserAuth(), controller.SearchUserLogs)
-		groupRoute := apiRouter.Group("/group")
-		groupRoute.Use(middleware.AdminAuth())
-		{
-			groupRoute.GET("/", controller.GetGroups)
-		}
+	groupRoute := apiRouter.Group("/group")
+	groupRoute.Use(middleware.AdminAuth())
+	{
+		groupRoute.GET("/", controller.GetGroups)
+		// Task4-11 用户组管理：组列表（倍率+成员数）+ 批量迁移
+		groupRoute.GET("/manage", controller.GetGroupManage)
+		groupRoute.POST("/move", controller.MoveGroup)
+	}
+	// Task4-11 套餐自助升级：购买链路复用支付回调；管理端 CRUD
+	packageRoute := apiRouter.Group("/package")
+	{
+		packageRoute.GET("/available", middleware.UserAuth(), controller.GetAvailablePackages)
+		packageRoute.GET("/my", middleware.UserAuth(), controller.GetMyPackages)
+		packageRoute.POST("/purchase", middleware.UserAuth(), controller.PurchasePackage)
+		packageRoute.GET("/", middleware.AdminAuth(), controller.GetAllPackagesAdmin)
+		packageRoute.POST("/", middleware.AdminAuth(), controller.AddPackage)
+		packageRoute.PUT("/", middleware.AdminAuth(), controller.UpdatePackage)
+		packageRoute.DELETE("/:id", middleware.AdminAuth(), controller.DeletePackageById)
+	}
 	}
 }

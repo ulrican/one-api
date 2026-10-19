@@ -95,18 +95,22 @@ const Rankings = () => {
             <Table basic='very' className='rankings-table'>
               <Table.Header>
                 <Table.Row>
-                  <Table.HeaderCell>{t('rankings.columns.rank')}</Table.HeaderCell>
-                  <Table.HeaderCell>{t('rankings.columns.name')}</Table.HeaderCell>
-                  <Table.HeaderCell textAlign='right'>
+                  <Table.HeaderCell textAlign='center' width={1}>
+                    {t('rankings.columns.rank')}
+                  </Table.HeaderCell>
+                  <Table.HeaderCell>
+                    {t('rankings.columns.name')}
+                  </Table.HeaderCell>
+                  <Table.HeaderCell textAlign='right' width={2}>
                     {t('rankings.columns.requests')}
                   </Table.HeaderCell>
-                  <Table.HeaderCell textAlign='right'>
+                  <Table.HeaderCell textAlign='right' width={2}>
                     {t('rankings.columns.tokens')}
                   </Table.HeaderCell>
-                  <Table.HeaderCell textAlign='right'>
+                  <Table.HeaderCell textAlign='right' width={2}>
                     {t('rankings.columns.quota')}
                   </Table.HeaderCell>
-                  <Table.HeaderCell textAlign='right'>
+                  <Table.HeaderCell textAlign='right' width={1}>
                     {t('rankings.columns.share')}
                   </Table.HeaderCell>
                 </Table.Row>
@@ -129,7 +133,7 @@ const Rankings = () => {
                     <Table.Row key={item.name + idx}>
                       <Table.Cell className='rankings-rank'>{idx + 1}</Table.Cell>
                       <Table.Cell className='rankings-name'>{item.name}</Table.Cell>
-                      <Table.Cell textAlign='right' className='rankings-num'>
+                      <Table.Cell textAlign='center' className='rankings-num'>
                         {fmtNum(item.request_count)}
                       </Table.Cell>
                       <Table.Cell textAlign='right' className='rankings-num'>

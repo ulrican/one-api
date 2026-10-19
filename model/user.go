@@ -368,6 +368,9 @@ func GetUserEmail(id int) (email string, err error) {
 	return email, err
 }
 
+// GetUserGroup 查询用户组（Task4-11 起内建套餐到期惰性降级）：
+// 仅当用户在 user_packages 有套餐记录且当前组全部到期时，才降级为 default；
+// 管理员手工分配的组（无套餐记录）不受影响。命中降级时同步清理 Redis user_group 缓存。
 func GetUserGroup(id int) (group string, err error) {
 	groupCol := "`group`"
 	if common.UsingPostgreSQL {
@@ -375,7 +378,95 @@ func GetUserGroup(id int) (group string, err error) {
 	}
 
 	err = DB.Model(&User{}).Where("id = ?", id).Select(groupCol).Find(&group).Error
-	return group, err
+	if err != nil {
+		return "", err
+	}
+	if group != "" && group != "default" {
+		downgraded, checkErr := tryDowngradeExpiredPackage(id, group, groupCol)
+		if checkErr != nil {
+			// 检查失败不阻断鉴权，按当前组返回
+			logger.SysError("check expired package failed: " + checkErr.Error())
+			return group, nil
+		}
+		if downgraded {
+			group = "default"
+			if common.RedisEnabled {
+				_ = common.RedisDel(fmt.Sprintf("user_group:%d", id))
+			}
+		}
+	}
+	return group, nil
+}
+
+// tryDowngradeExpiredPackage 套餐到期惰性降级（Task4-11）
+// 无套餐记录 → 手工分配组，不处理；有记录但无有效实例 → 降级 default 并失效历史实例
+func tryDowngradeExpiredPackage(userId int, group string, groupCol string) (bool, error) {
+	var hist int64
+	if err := DB.Model(&UserPackage{}).
+		Where("user_id = ? and group_name = ?", userId, group).
+		Count(&hist).Error; err != nil {
+		return false, err
+	}
+	if hist == 0 {
+		return false, nil
+	}
+	var active int64
+	if err := DB.Model(&UserPackage{}).
+		Where("user_id = ? and group_name = ? and status = ? and (expire_at = 0 or expire_at > ?)",
+			userId, group, UserPackageStatusActive, helper.GetTimestamp()).
+		Count(&active).Error; err != nil {
+		return false, err
+	}
+	if active > 0 {
+		return false, nil
+	}
+	err := DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&User{}).
+			Where("id = ? and "+groupCol+" = ?", userId, group).
+			Update("group", "default").Error; err != nil {
+			return err
+		}
+		return DeactivateUserPackages(tx, userId, group)
+	})
+	if err != nil {
+		return false, err
+	}
+	logger.SysLog(fmt.Sprintf("user %d package group %q expired, downgraded to default", userId, group))
+	return true, nil
+}
+
+// CountUsersByGroup 统计各用户组成员数（Task4-11 用户组管理）
+func CountUsersByGroup() (map[string]int64, error) {
+	groupCol := "`group`"
+	if common.UsingPostgreSQL {
+		groupCol = `"group"`
+	}
+	// 别名避开 group/count 保留字；scan 到带 gorm column tag 的匿名结构
+	var rows []struct {
+		GroupName string `gorm:"column:gname"`
+		Cnt       int64  `gorm:"column:cnt"`
+	}
+	err := DB.Model(&User{}).Select(groupCol+" as gname, count(*) as cnt").
+		Group(groupCol).Find(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+	result := make(map[string]int64, len(rows))
+	for _, row := range rows {
+		result[row.GroupName] = row.Cnt
+	}
+	return result, nil
+}
+
+// MoveUserGroup 批量迁移用户组（Task4-11）：把 from_group 的全部用户迁到 to_group
+// 迁移语义 = 整组移动；返回迁移人数。不处理 Redis user_group 缓存（短 TTL 自然过期）
+func MoveUserGroup(fromGroup string, toGroup string) (int64, error) {
+	groupCol := "`group`"
+	if common.UsingPostgreSQL {
+		groupCol = `"group"`
+	}
+	res := DB.Model(&User{}).Where(groupCol+" = ?", fromGroup).Update("group", toGroup)
+	return res.RowsAffected, res.Error
 }
 
 func IncreaseUserQuota(id int, quota int64) (err error) {
@@ -392,6 +483,14 @@ func IncreaseUserQuota(id int, quota int64) (err error) {
 func increaseUserQuota(id int, quota int64) (err error) {
 	err = DB.Model(&User{}).Where("id = ?", id).Update("quota", gorm.Expr("quota + ?", quota)).Error
 	return err
+}
+
+// IncreaseUserQuotaWithTx 事务内原子加额度（签到/兑换等需与流水同事务的场景）
+func IncreaseUserQuotaWithTx(tx *gorm.DB, id int, quota int64) error {
+	if quota < 0 {
+		return errors.New("quota 不能为负数！")
+	}
+	return tx.Model(&User{}).Where("id = ?", id).Update("quota", gorm.Expr("quota + ?", quota)).Error
 }
 
 func DecreaseUserQuota(id int, quota int64) (err error) {

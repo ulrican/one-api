@@ -16,24 +16,27 @@ import PasswordResetConfirm from './components/PasswordResetConfirm';
 import { UserContext } from './context/User';
 import { StatusContext } from './context/Status';
 import Channel from './pages/Channel';
-import Token from './pages/Token';
-import EditToken from './pages/Token/EditToken';
+import Application from './pages/Application';
 import EditChannel from './pages/Channel/EditChannel';
-import Redemption from './pages/Redemption';
 import EditRedemption from './pages/Redemption/EditRedemption';
+import Ratio from './pages/Ratio';
 import TopUp from './pages/TopUp';
 import Pricing from './pages/Pricing';
 import Rankings from './pages/Rankings';
 import Marketplace from './pages/Marketplace';
 import Log from './pages/Log';
-import Chat from './pages/Chat';
 import LarkOAuth from './components/LarkOAuth';
 import Dashboard from './pages/Dashboard';
+import Experience from './pages/Experience';
+// Task4-10 设置页面拆分：运营/支付/系统/站点 4 个管理页
+import Operation from './pages/Operation';
+import Payment from './pages/Payment';
+import System from './pages/System';
+import Site from './pages/Site';
 
 const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
 const Landing = lazy(() => import('./pages/Landing'));
-const Playground = lazy(() => import('./pages/Playground'));
 
 function App() {
   const [userState, userDispatch] = useContext(UserContext);
@@ -63,11 +66,6 @@ function App() {
           localStorage.setItem('chat_link', data.chat_link);
         } else {
           localStorage.removeItem('chat_link');
-        }
-        if (data.playground_enabled === true) {
-          localStorage.setItem('playground_enabled', 'true');
-        } else {
-          localStorage.removeItem('playground_enabled');
         }
         if (data.ranking_enabled === true) {
           localStorage.setItem('ranking_enabled', 'true');
@@ -141,6 +139,47 @@ function App() {
         }
       />
       <Route
+        path='/ratio'
+        element={
+          <PrivateRoute>
+            <Ratio />
+          </PrivateRoute>
+        }
+      />
+      {/* Task4-10 设置页面拆分：运营/支付/系统/站点 4 个管理页 */}
+      <Route
+        path='/operation'
+        element={
+          <PrivateRoute>
+            <Operation />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path='/payment'
+        element={
+          <PrivateRoute>
+            <Payment />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path='/system'
+        element={
+          <PrivateRoute>
+            <System />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path='/site'
+        element={
+          <PrivateRoute>
+            <Site />
+          </PrivateRoute>
+        }
+      />
+      <Route
         path='/channel/edit/:id'
         element={
           <Suspense fallback={<Loading></Loading>}>
@@ -157,36 +196,17 @@ function App() {
         }
       />
       <Route
-        path='/token'
+        path='/application'
         element={
           <PrivateRoute>
-            <Token />
+            <Application />
           </PrivateRoute>
         }
       />
-      <Route
-        path='/token/edit/:id'
-        element={
-          <Suspense fallback={<Loading></Loading>}>
-            <EditToken />
-          </Suspense>
-        }
-      />
-      <Route
-        path='/token/add'
-        element={
-          <Suspense fallback={<Loading></Loading>}>
-            <EditToken />
-          </Suspense>
-        }
-      />
+      {/* Task4-10 调整：兑换码管理已合并进 /payment 页「兑换」Tab，旧路由重定向兼容书签 */}
       <Route
         path='/redemption'
-        element={
-          <PrivateRoute>
-            <Redemption />
-          </PrivateRoute>
-        }
+        element={<Navigate to='/payment?tab=redemption' replace />}
       />
       <Route
         path='/redemption/edit/:id'
@@ -345,20 +365,10 @@ function App() {
         }
       />
       <Route
-        path='/chat'
-        element={
-          <Suspense fallback={<Loading></Loading>}>
-            <Chat />
-          </Suspense>
-        }
-      />
-      <Route
-        path='/playground'
+        path='/experience'
         element={
           <PrivateRoute>
-            <Suspense fallback={<Loading></Loading>}>
-              <Playground />
-            </Suspense>
+            <Experience />
           </PrivateRoute>
         }
       />

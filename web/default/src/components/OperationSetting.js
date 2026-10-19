@@ -8,7 +8,6 @@ import {
   timestamp2string,
   verifyJSON,
 } from '../helpers';
-import RatioAutoSetting from './RatioAutoSetting';
 
 const OperationSetting = () => {
   const { t } = useTranslation();
@@ -33,15 +32,11 @@ const OperationSetting = () => {
     DisplayTokenStatEnabled: '',
     ApproximateTokenEnabled: '',
     RetryTimes: 0,
-    PayEnabled: '',
-    PayAddress: '',
-    EpayId: '',
-    EpaySecret: '',
-    PayPrice: 0,
+    // Task4-10 支付相关字段已拆至 components/PaymentSetting.js（/payment 页）
     CheckInEnabled: '',
     CheckInMinReward: 0,
     CheckInMaxReward: 0,
-    PlaygroundEnabled: '',
+    CheckInTiers: '',
     RankingEnabled: '',
     MarketplaceEnabled: '',
     QiniuApiSecret: '',
@@ -71,7 +66,8 @@ const OperationSetting = () => {
         if (
           item.key === 'ModelRatio' ||
           item.key === 'GroupRatio' ||
-          item.key === 'CompletionRatio'
+          item.key === 'CompletionRatio' ||
+          item.key === 'CheckInTiers'
         ) {
           item.value = JSON.stringify(JSON.parse(item.value), null, 2);
         }
@@ -156,29 +152,6 @@ const OperationSetting = () => {
           );
         }
         break;
-      case 'ratio':
-        if (originInputs['ModelRatio'] !== inputs.ModelRatio) {
-          if (!verifyJSON(inputs.ModelRatio)) {
-            showError('模型倍率不是合法的 JSON 字符串');
-            return;
-          }
-          await updateOption('ModelRatio', inputs.ModelRatio);
-        }
-        if (originInputs['GroupRatio'] !== inputs.GroupRatio) {
-          if (!verifyJSON(inputs.GroupRatio)) {
-            showError('分组倍率不是合法的 JSON 字符串');
-            return;
-          }
-          await updateOption('GroupRatio', inputs.GroupRatio);
-        }
-        if (originInputs['CompletionRatio'] !== inputs.CompletionRatio) {
-          if (!verifyJSON(inputs.CompletionRatio)) {
-            showError('补全倍率不是合法的 JSON 字符串');
-            return;
-          }
-          await updateOption('CompletionRatio', inputs.CompletionRatio);
-        }
-        break;
       case 'quota':
         if (originInputs['QuotaForNewUser'] !== inputs.QuotaForNewUser) {
           await updateOption('QuotaForNewUser', inputs.QuotaForNewUser);
@@ -199,6 +172,13 @@ const OperationSetting = () => {
         }
         if (originInputs['CheckInMaxReward'] !== inputs.CheckInMaxReward) {
           await updateOption('CheckInMaxReward', inputs.CheckInMaxReward);
+        }
+        if (originInputs['CheckInTiers'] !== inputs.CheckInTiers) {
+          if (!verifyJSON(inputs.CheckInTiers)) {
+            showError(t('setting.operation.checkin.invalid_tiers'));
+            return;
+          }
+          await updateOption('CheckInTiers', inputs.CheckInTiers);
         }
         break;
       case 'marketplace':
@@ -223,37 +203,11 @@ const OperationSetting = () => {
           await updateOption('RetryTimes', inputs.RetryTimes);
         }
         break;
-      case 'pay':
-        if (originInputs['PayAddress'] !== inputs.PayAddress) {
-          await updateOption('PayAddress', inputs.PayAddress);
-        }
-        if (originInputs['EpayId'] !== inputs.EpayId) {
-          await updateOption('EpayId', inputs.EpayId);
-        }
-        if (inputs.EpaySecret) {
-          // 密钥留空（或后端未下发）表示不修改
-          await updateOption('EpaySecret', inputs.EpaySecret);
-        }
-        if (originInputs['PayPrice'] !== inputs.PayPrice) {
-          await updateOption('PayPrice', inputs.PayPrice);
-        }
-        if (originInputs['MinTopUp'] !== inputs.MinTopUp) {
-          await updateOption('MinTopUp', inputs.MinTopUp);
-        }
-        if (originInputs['MaxTopUp'] !== inputs.MaxTopUp) {
-          await updateOption('MaxTopUp', inputs.MaxTopUp);
-        }
-        if (originInputs['TopupAmountOptions'] !== inputs.TopupAmountOptions) {
-          if (!verifyJSON(inputs.TopupAmountOptions)) {
-            showError('充值金额预设不是合法的 JSON 字符串');
-            return;
-          }
-          await updateOption('TopupAmountOptions', inputs.TopupAmountOptions);
-        }
-        // PayEnabled 为复选框，勾选/取消时已由 handleInputChange 即时保存，
-        // 此处不可再次提交：updateOption 会对 *Enabled 键取反，重复提交会把刚保存的状态翻转
-        break;
+      // Task4-10 'pay' 分支已拆至 components/PaymentSetting.js
     }
+    // 保存成功后同步已保存基线，否则同一字段二次修改（如 epay→direct 来回切换）
+    // 会因与首次加载基线相同被误判为“无变化”而漏发更新
+    setOriginInputs({ ...inputs });
   };
 
   const syncMarketplace = async () => {
@@ -375,6 +329,17 @@ const OperationSetting = () => {
               min='0'
             />
           </Form.Group>
+          <Form.TextArea
+            label={t('setting.operation.checkin.tiers')}
+            name='CheckInTiers'
+            onChange={handleInputChange}
+            value={inputs.CheckInTiers}
+            rows={6}
+            style={{ fontFamily: 'var(--font-mono)', fontSize: 13 }}
+          />
+          <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: -8, marginBottom: 12 }}>
+            {t('setting.operation.checkin.tiers_hint')}
+          </div>
           <Form.Button
             onClick={() => {
               submitConfig('checkin').then();
@@ -444,50 +409,6 @@ const OperationSetting = () => {
               ? t('setting.operation.marketplace.syncing')
               : t('setting.operation.marketplace.sync_now')}
           </Form.Button>
-          <Divider />
-          <Header as='h3'>{t('setting.operation.ratio.title')}</Header>
-          <Form.Group widths='equal'>
-            <Form.TextArea
-              label={t('setting.operation.ratio.model.title')}
-              name='ModelRatio'
-              onChange={handleInputChange}
-              style={{ minHeight: 250, fontFamily: 'JetBrains Mono, Consolas' }}
-              autoComplete='new-password'
-              value={inputs.ModelRatio}
-              placeholder={t('setting.operation.ratio.model.placeholder')}
-            />
-          </Form.Group>
-          <Form.Group widths='equal'>
-            <Form.TextArea
-              label={t('setting.operation.ratio.completion.title')}
-              name='CompletionRatio'
-              onChange={handleInputChange}
-              style={{ minHeight: 250, fontFamily: 'JetBrains Mono, Consolas' }}
-              autoComplete='new-password'
-              value={inputs.CompletionRatio}
-              placeholder={t('setting.operation.ratio.completion.placeholder')}
-            />
-          </Form.Group>
-          <Form.Group widths='equal'>
-            <Form.TextArea
-              label={t('setting.operation.ratio.group.title')}
-              name='GroupRatio'
-              onChange={handleInputChange}
-              style={{ minHeight: 250, fontFamily: 'JetBrains Mono, Consolas' }}
-              autoComplete='new-password'
-              value={inputs.GroupRatio}
-              placeholder={t('setting.operation.ratio.group.placeholder')}
-            />
-          </Form.Group>
-          <Form.Button
-            onClick={() => {
-              submitConfig('ratio').then();
-            }}
-          >
-            {t('setting.operation.ratio.buttons.save')}
-          </Form.Button>
-          {/* Task4-3 倍率自动计算 + 分组倍率维护（与上方手动 JSON 区块并存） */}
-          <RatioAutoSetting onRatioChanged={getOptions} />
           <Divider />
           <Header as='h3'>{t('setting.operation.log.title')}</Header>
           <Form.Group inline>
@@ -675,15 +596,6 @@ const OperationSetting = () => {
               name='ApproximateTokenEnabled'
               onChange={handleInputChange}
             />
-            <Form.Checkbox
-              checked={
-                inputs.PlaygroundEnabled === 'true' ||
-                inputs.PlaygroundEnabled === true
-              }
-              label={t('setting.operation.general.playground_enabled')}
-              name='PlaygroundEnabled'
-              onChange={handleInputChange}
-            />
           </Form.Group>
           <Form.Button
             onClick={() => {
@@ -692,93 +604,7 @@ const OperationSetting = () => {
           >
             {t('setting.operation.general.buttons.save')}
           </Form.Button>
-
-          <Divider />
-          <Header as='h3'>{t('setting.operation.pay.title')}</Header>
-          <Form.Group inline>
-            <Form.Checkbox
-              checked={inputs.PayEnabled === 'true'}
-              label={t('setting.operation.pay.enable')}
-              name='PayEnabled'
-              onChange={handleInputChange}
-            />
-          </Form.Group>
-          <Form.Group widths={3}>
-            <Form.Input
-              label={t('setting.operation.pay.address')}
-              name='PayAddress'
-              onChange={handleInputChange}
-              autoComplete='new-password'
-              value={inputs.PayAddress}
-              type='link'
-              placeholder={t('setting.operation.pay.address_placeholder')}
-            />
-            <Form.Input
-              label={t('setting.operation.pay.pid')}
-              name='EpayId'
-              onChange={handleInputChange}
-              autoComplete='new-password'
-              value={inputs.EpayId}
-              placeholder={t('setting.operation.pay.pid_placeholder')}
-            />
-            <Form.Input
-              label={t('setting.operation.pay.secret')}
-              name='EpaySecret'
-              onChange={handleInputChange}
-              autoComplete='new-password'
-              value={inputs.EpaySecret || ''}
-              type='password'
-              placeholder={t('setting.operation.pay.secret_placeholder')}
-            />
-          </Form.Group>
-          <Form.Group widths={4}>
-            <Form.Input
-              label={t('setting.operation.pay.price')}
-              name='PayPrice'
-              onChange={handleInputChange}
-              autoComplete='new-password'
-              value={inputs.PayPrice}
-              type='number'
-              step='0.01'
-              min='0'
-              placeholder={t('setting.operation.pay.price_placeholder')}
-            />
-            <Form.Input
-              label={t('setting.operation.pay.min_topup')}
-              name='MinTopUp'
-              onChange={handleInputChange}
-              autoComplete='new-password'
-              value={inputs.MinTopUp}
-              type='number'
-              step='0.01'
-              min='0'
-            />
-            <Form.Input
-              label={t('setting.operation.pay.max_topup')}
-              name='MaxTopUp'
-              onChange={handleInputChange}
-              autoComplete='new-password'
-              value={inputs.MaxTopUp}
-              type='number'
-              step='0.01'
-              min='0'
-            />
-            <Form.Input
-              label={t('setting.operation.pay.amount_options')}
-              name='TopupAmountOptions'
-              onChange={handleInputChange}
-              autoComplete='new-password'
-              value={inputs.TopupAmountOptions}
-              placeholder={t('setting.operation.pay.amount_options_placeholder')}
-            />
-          </Form.Group>
-          <Form.Button
-            onClick={() => {
-              submitConfig('pay').then();
-            }}
-          >
-            {t('setting.operation.pay.buttons.save')}
-          </Form.Button>
+          {/* Task4-10 支付设置区块已拆至 components/PaymentSetting.js（/payment 页） */}
         </Form>
       </Grid.Column>
     </Grid>

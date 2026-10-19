@@ -17,7 +17,9 @@ func GetOptions(c *gin.Context) {
 	var options []*model.Option
 	config.OptionMapRWMutex.Lock()
 	for k, v := range config.OptionMap {
-		if strings.HasSuffix(k, "Token") || strings.HasSuffix(k, "Secret") {
+		// 凭证脱敏：私钥/密钥类配置不回显（与 *Secret 后缀策略一致），留空表示不修改
+		if strings.HasSuffix(k, "Token") || strings.HasSuffix(k, "Secret") ||
+			strings.HasSuffix(k, "PrivateKey") || strings.HasSuffix(k, "ApiV3Key") {
 			continue
 		}
 		options = append(options, &model.Option{
@@ -41,6 +43,18 @@ func UpdateOption(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": i18n.Translate(c, "invalid_parameter"),
+		})
+		return
+	}
+	// Task4-10b：微信/支付宝支付凭证已代码内置，禁止通过接口写入（即使手工调用 API），
+	// 既不入库也不进入 OptionMap，杜绝凭证被页面外途径覆盖/回显
+	switch option.Key {
+	case "WeChatPayAppId", "WeChatPayMchId", "WeChatPayApiV3Key",
+		"WeChatPaySerialNo", "WeChatPayPrivateKey",
+		"AlipayAppId", "AlipayPrivateKey", "AlipayPublicKey":
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "支付商户凭证已在代码中内置，不支持通过页面或接口修改",
 		})
 		return
 	}

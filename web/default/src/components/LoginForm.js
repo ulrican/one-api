@@ -6,7 +6,7 @@ import {
   Image,
   Modal,
 } from 'semantic-ui-react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { UserContext } from '../context/User';
 import { API, showError, showInfo, showSuccess, showWarning } from '../helpers';
@@ -26,6 +26,22 @@ const LoginForm = () => {
   const { username, password } = inputs;
   const [userState, userDispatch] = useContext(UserContext);
   let navigate = useNavigate();
+  const location = useLocation();
+  // Task4-4：登录后优先回到上次访问页。
+  // 优先级：query.redirect（401 拦截器会话过期时携带）> state.from（PrivateRoute 守卫）> 首页
+  const isValidRedirect = (v) =>
+    typeof v === 'string' && v.startsWith('/') && v !== '/login';
+  const getRedirectTo = () => {
+    const queryRedirect = searchParams.get('redirect');
+    if (isValidRedirect(queryRedirect)) {
+      return queryRedirect;
+    }
+    const from = location.state?.from?.pathname;
+    if (isValidRedirect(from)) {
+      return from;
+    }
+    return '/';
+  };
   const [status, setStatus] = useState({});
 
   useEffect(() => {
@@ -57,7 +73,7 @@ const LoginForm = () => {
     if (success) {
       userDispatch({ type: 'login', payload: data });
       localStorage.setItem('user', JSON.stringify(data));
-      navigate('/dashboard');
+      navigate(getRedirectTo());
       showSuccess(t('messages.success.login'));
       setShowWeChatLoginModal(false);
     } else {
@@ -73,14 +89,12 @@ const LoginForm = () => {
   const completeLogin = (data) => {
     userDispatch({ type: 'login', payload: data });
     localStorage.setItem('user', JSON.stringify(data));
+    showSuccess(t('messages.success.login'));
+    // root 仍使用默认密码时仅强提醒改密，不再强制跳转用户页（Task4-4）
     if (data.username === 'root' && inputs.password === '123456') {
-      navigate('/user/edit');
-      showSuccess(t('messages.success.login'));
       showWarning(t('messages.error.root_password'));
-    } else {
-      navigate('/dashboard');
-      showSuccess(t('messages.success.login'));
     }
+    navigate(getRedirectTo());
   };
 
   async function handleSubmit(e) {

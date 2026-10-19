@@ -14,9 +14,16 @@ import { API, showError, showSuccess, timestamp2string } from '../helpers';
 
 // Task4-3 倍率自动计算 + 分组倍率维护（与既有手动 JSON 倍率区块并存，互不替代）。
 // onRatioChanged：实际重算/锁定生效后回调父组件刷新 JSON 文本域，避免展示旧值被误存。
+// hideAutoRecompute：为 true 时跳过"自动重算"区块，仅渲染锁定表+分组表（Ratio 页三段式 Tab 用）。
+// showLocks / showGroups：控制锁定表、分组表是否渲染（默认均 true），Ratio 页把两者拆成独立 Tab。
 const PREVIEW_LIMIT = 200;
 
-const RatioAutoSetting = ({ onRatioChanged }) => {
+const RatioAutoSetting = ({
+  onRatioChanged,
+  hideAutoRecompute = false,
+  showLocks = true,
+  showGroups = true,
+}) => {
   const { t } = useTranslation();
 
   // ---------- 自动重算 ----------
@@ -289,31 +296,37 @@ const RatioAutoSetting = ({ onRatioChanged }) => {
 
   return (
     <>
-      <Divider />
-      <Header as='h3'>{t('setting.operation.ratio_auto.title')}</Header>
-      <p style={{ color: 'var(--text-secondary)', marginTop: -8 }}>
-        {t('setting.operation.ratio_auto.desc')}
-      </p>
-      <Form.Group inline>
-        <Button
-          primary
-          loading={previewing}
-          onClick={() => {
-            previewRecompute().then();
-          }}
-        >
-          {t('setting.operation.ratio_auto.preview_btn')}
-        </Button>
-        <Button
-          onClick={() => {
-            loadLocks().then();
-          }}
-        >
-          {t('setting.operation.ratio_auto.refresh_locks')}
-        </Button>
-      </Form.Group>
+      {!hideAutoRecompute && (
+        <>
+          <Divider />
+          <Header as='h3'>{t('setting.operation.ratio_auto.title')}</Header>
+          <p style={{ color: 'var(--text-secondary)', marginTop: -8 }}>
+            {t('setting.operation.ratio_auto.desc')}
+          </p>
+          <Form.Group inline>
+            <Button
+              primary
+              loading={previewing}
+              onClick={() => {
+                previewRecompute().then();
+              }}
+            >
+              {t('setting.operation.ratio_auto.preview_btn')}
+            </Button>
+            <Button
+              onClick={() => {
+                loadLocks().then();
+              }}
+            >
+              {t('setting.operation.ratio_auto.refresh_locks')}
+            </Button>
+          </Form.Group>
+        </>
+      )}
 
-      <Header as='h4' style={{ marginTop: 16 }}>
+      {showLocks && (
+      <>
+      <Header as='h4' style={{ marginTop: hideAutoRecompute ? 0 : 16 }}>
         {t('setting.operation.ratio_auto.locks_title')}
         <Label circular size='small' style={{ marginLeft: 8 }}>
           {locks.length}
@@ -392,9 +405,14 @@ const RatioAutoSetting = ({ onRatioChanged }) => {
           ))}
         </Table.Body>
       </Table>
+      </>
+      )}
 
-      <Divider />
-      <Header as='h3'>{t('setting.operation.group_ratio.title')}</Header>
+      {showGroups && (
+      <>
+      {showLocks && <Divider />}
+      <Header as='h3' style={{ marginTop: showLocks ? undefined : 0 }}>
+        {t('setting.operation.group_ratio.title')}</Header>
       <p style={{ color: 'var(--text-secondary)', marginTop: -8 }}>
         {t('setting.operation.group_ratio.desc')}
       </p>
@@ -462,8 +480,11 @@ const RatioAutoSetting = ({ onRatioChanged }) => {
           {t('setting.operation.group_ratio.btn_save')}
         </Button>
       </Form.Group>
+      </>
+      )}
 
       {/* dry_run 变更预览 → 确认执行 */}
+      {!hideAutoRecompute && (
       <Modal
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}
@@ -545,8 +566,10 @@ const RatioAutoSetting = ({ onRatioChanged }) => {
           </Button>
         </Modal.Actions>
       </Modal>
+      )}
 
       {/* 新增/编辑锁定 */}
+      {showLocks && (
       <Modal open={lockOpen} onClose={() => setLockOpen(false)} size='small'>
         <Modal.Header>{t('setting.operation.ratio_auto.lock_form.title')}</Modal.Header>
         <Modal.Content>
@@ -614,6 +637,7 @@ const RatioAutoSetting = ({ onRatioChanged }) => {
           </Button>
         </Modal.Actions>
       </Modal>
+      )}
     </>
   );
 };

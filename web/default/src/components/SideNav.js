@@ -4,11 +4,11 @@ import { Icon, Menu } from 'semantic-ui-react';
 import { useTranslation } from 'react-i18next';
 
 import { isAdmin } from '../helpers';
-import { getChatItem, getVisibleNavGroups } from './navConfig';
+import { getExperienceItem, getVisibleNavGroups } from './navConfig';
 
 // Task3-2：桌面端左侧菜单栏
 // - 全高固定（sticky，从 Header 下沿至视口底），表面色 + 右边框分隔
-// - 顶部独立聊天入口（品牌渐变），其下分组菜单：常规/资源/账户/管理（仅管理员）
+// - 顶部模型体验入口，其下分组菜单：常规/资源/账户/管理（仅管理员）
 // - 可展开/收缩：展开 212px 显图标+文字，收缩 64px 仅图标，状态持久化 localStorage
 const COLLAPSE_KEY = 'app_sidenav_collapsed';
 
@@ -27,7 +27,7 @@ const SideNav = () => {
 
   const isActive = (to) => pathname === to || pathname.startsWith(to + '/');
 
-  const chatItem = getChatItem();
+  const experienceItem = getExperienceItem();
   const groups = getVisibleNavGroups().filter(
     (group) => !group.admin || isAdmin()
   );
@@ -37,16 +37,16 @@ const SideNav = () => {
       className={`app-sidenav${collapsed ? ' app-sidenav-collapsed' : ''}`}
     >
       <div className='app-sidenav-scroll'>
-        {chatItem && (
+        {experienceItem && (
           <Link
-            to={chatItem.to}
-            className={`app-sidenav-chat${
-              isActive(chatItem.to) ? ' app-sidenav-chat-active' : ''
+            to={experienceItem.to}
+            className={`app-sidenav-chat app-sidenav-exp${
+              isActive(experienceItem.to) ? ' app-sidenav-exp-active' : ''
             }`}
-            title={t(chatItem.name)}
+            title={t(experienceItem.name)}
           >
-            <Icon name={chatItem.icon} />
-            <span className='app-sidenav-label'>{t(chatItem.name)}</span>
+            <Icon name={experienceItem.icon} />
+            <span className='app-sidenav-label'>{t(experienceItem.name)}</span>
           </Link>
         )}
         <Menu vertical borderless fluid className='app-sidenav-menu'>

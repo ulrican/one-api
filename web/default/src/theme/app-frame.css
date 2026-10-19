@@ -276,6 +276,29 @@ html.theme-light .app-header .item.app-nav-active {
   line-height: 1.4;
 }
 
+/* ---------- 法定备案信息行（恒显示，不随自定义 footer 覆盖） ---------- */
+:where(html.theme-dark, html.theme-light) .app-footer .app-footer-beian {
+  margin-top: 6px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.8;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 14px;
+}
+
+:where(html.theme-dark, html.theme-light) .app-footer .app-footer-beian-item {
+  color: var(--text-tertiary);
+  text-decoration: none;
+}
+
+:where(html.theme-dark, html.theme-light)
+  .app-footer
+  a.app-footer-beian-item:hover {
+  color: var(--text-secondary);
+}
+
 /* ---------- 科技风加载态 ---------- */
 :where(html.theme-dark, html.theme-light) .app-loading {
   display: flex;
@@ -854,3 +877,28 @@ html.theme-light .app-sidenav-collapsed .ui.vertical.menu .item,
   padding: 0.2em 1em; color: var(--text-secondary);
 }
 .flux-guide hr { border: none; border-top: 1px solid var(--border-strong); margin: 1.2em 0; }
+
+/* Task4-9 模型体验独立入口（聊天项正下方）：布局复用聊天项类，视觉对齐常规菜单项
+   （图标用次级色，不占用聊天的品牌蓝图标与渐变激活态；激活态对齐 .app-sidenav-active） */
+:where(html.theme-dark, html.theme-light) .app-sidenav-chat.app-sidenav-exp {
+  margin: -4px 0 12px;
+}
+:where(html.theme-dark, html.theme-light) .app-sidenav-chat.app-sidenav-exp .icon {
+  color: var(--text-secondary);
+}
+:where(html.theme-dark, html.theme-light) .app-sidenav-chat.app-sidenav-exp:hover .icon {
+  color: var(--text-primary);
+}
+:where(html.theme-dark, html.theme-light) .app-sidenav-exp-active {
+  color: var(--brand-blue);
+  background: var(--bg-active);
+  font-weight: 600;
+}
+:where(html.theme-dark, html.theme-light) .app-sidenav-exp-active:hover {
+  color: var(--brand-blue);
+  background: var(--bg-active);
+}
+:where(html.theme-dark, html.theme-light) .app-sidenav-exp-active .icon {
+  color: var(--brand-blue);
+  opacity: 1;
+}

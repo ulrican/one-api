@@ -37,6 +37,7 @@ type Order struct {
 	Quota         int64   `json:"quota"`                                   // 到账额度
 	Status        int     `json:"status" gorm:"default:0"`                 // 0 未支付 1 已支付 2 已超时
 	PaymentMethod string  `json:"payment_method" gorm:"type:varchar(20)"`  // alipay / wxpay
+	PackageId     int     `json:"package_id" gorm:"default:0;index"`       // Task4-11 套餐购买订单：>0 时回调不开通额度而是开通套餐
 	CreatedAt     int64   `json:"created_at" gorm:"bigint;index"`
 	UpdatedAt     int64   `json:"updated_at" gorm:"bigint"`
 }
@@ -86,18 +87,34 @@ func TryExpireOrder(order *Order) {
 	}
 }
 
+// MarkOrderExpired 平台侧已终态（已关闭/撤销/支付失败/退款）时，立即将本地待支付订单
+// 标记为已超时（对齐 pay-demo.md 5.3：平台 CLOSED 需同步关闭本地订单，用户需重新下单）。
+// 仅条件更新 status=pending → expired：订单若已被回调/查单入账（paid）则不生效，
+// 返回是否发生了状态变更。
+func MarkOrderExpired(tradeNo string) bool {
+	res := DB.Model(&Order{}).
+		Where("trade_no = ? and status = ?", tradeNo, OrderStatusPending).
+		Update("status", OrderStatusExpired)
+	if res.Error != nil {
+		logger.SysError("failed to mark order expired: " + res.Error.Error())
+		return false
+	}
+	return res.RowsAffected > 0
+}
+
 // FinishOrderTrade 完成订单（支付平台异步回调入账）：
 //  1. 事务 + 行锁（FOR UPDATE）防并发回调重复入账
-//  2. 幂等：订单已支付（平台重复回调）直接返回 credited=false，不再加额度、不写日志
+//  2. 幂等：订单已支付（平台重复回调）直接返回 credited=false，不再入账、不写日志
 //  3. 未支付/已超时订单均可正常入账：超时只影响前端展示，用户晚支付的成功回调
 //     必须入账，避免"用户已扣款但额度不到账"
 //  4. 强校验回调金额与订单金额一致（签名之外的第二道防线）
-//  5. 事务内原子增加用户额度（gorm.Expr）并写入充值日志（同事务提交，杜绝重复回调写重复日志）
+//  5. 普通充值单：事务内原子增加用户额度（gorm.Expr）并写入充值日志；
+//     套餐购买单（Task4-11，package_id>0）：事务内开通套餐（失效旧实例 + 写
+//     user_packages + 切换 users.group），不开通额度
 //
-// 返回 (userId, quota, credited, err)：credited=true 表示本次为首次入账，调用方需刷新用户额度缓存。
-func FinishOrderTrade(ctx context.Context, tradeNo string, outTradeNo string, paidAmount float64) (int, int64, bool, error) {
-	var userId int
-	var quota int64
+// 返回 (order, credited, err)：credited=true 表示本次为首次入账，调用方需刷新用户缓存。
+func FinishOrderTrade(ctx context.Context, tradeNo string, outTradeNo string, paidAmount float64) (*Order, bool, error) {
+	var finished *Order
 	var credited bool
 	var latePaid bool
 	err := DB.Transaction(func(tx *gorm.DB) error {
@@ -108,8 +125,7 @@ func FinishOrderTrade(ctx context.Context, tradeNo string, outTradeNo string, pa
 			return errors.New("订单不存在：" + tradeNo)
 		}
 		if order.Status == OrderStatusPaid { // 幂等：重复回调直接返回成功，不重复入账
-			userId = order.UserId
-			quota = order.Quota
+			finished = &order
 			return nil
 		}
 		if order.Status != OrderStatusPending && order.Status != OrderStatusExpired {
@@ -130,41 +146,77 @@ func FinishOrderTrade(ctx context.Context, tradeNo string, outTradeNo string, pa
 		if err != nil {
 			return err
 		}
-		// 原子增加用户额度（SQL 表达式，禁止先查后算）；用户不存在时 RowsAffected=0，不能假装成功
-		res := tx.Model(&User{}).Where("id = ?", order.UserId).
-			UpdateColumn("quota", gorm.Expr("quota + ?", order.Quota))
-		if res.Error != nil {
-			return res.Error
-		}
-		if res.RowsAffected == 0 {
+		// 用户存在性校验（事务内）：不能依赖 quota/group 更新的 RowsAffected——
+		// MySQL 默认返回"实际变更行数"，quota+0（套餐单）或组值未变（续费同组）都会是 0
+		var payer User
+		if err := tx.Select("id").Where("id = ?", order.UserId).First(&payer).Error; err != nil {
 			return fmt.Errorf("订单 %s 对应用户 %d 不存在，入账失败", tradeNo, order.UserId)
 		}
-		// 充值日志随事务一起提交：重复回调不会写第二条日志
+		logContent := fmt.Sprintf("在线支付充值 %d 额度（订单号 %s）", order.Quota, tradeNo)
+		if order.PackageId > 0 {
+			// Task4-11 套餐订单：事务内开通套餐并切换用户组（不开通额度）
+			var pkg Package
+			if err := tx.Where("id = ?", order.PackageId).First(&pkg).Error; err != nil {
+				return fmt.Errorf("订单 %s 对应套餐 %d 不存在：%w", tradeNo, order.PackageId, err)
+			}
+			// 失效同组旧有效实例 → 写新实例 → 切换用户组
+			if err := DeactivateUserPackages(tx, order.UserId, pkg.GroupName); err != nil {
+				return err
+			}
+			now := helper.GetTimestamp()
+			var expireAt int64
+			if pkg.DurationDays > 0 {
+				expireAt = now + int64(pkg.DurationDays)*86400
+			}
+			up := &UserPackage{
+				UserId:       order.UserId,
+				PackageId:    pkg.Id,
+				GroupName:    pkg.GroupName,
+				OrderTradeNo: order.TradeNo,
+				StartAt:      now,
+				ExpireAt:     expireAt,
+				Status:       UserPackageStatusActive,
+				CreatedAt:    now,
+			}
+			if err := tx.Create(up).Error; err != nil {
+				return err
+			}
+			if err := tx.Model(&User{}).Where("id = ?", order.UserId).
+				Update("group", pkg.GroupName).Error; err != nil {
+				return err
+			}
+			logContent = fmt.Sprintf("购买套餐「%s」（订单号 %s）", pkg.Name, tradeNo)
+		} else {
+			// 普通充值单：原子增加用户额度（SQL 表达式，禁止先查后算）
+			if err := tx.Model(&User{}).Where("id = ?", order.UserId).
+				UpdateColumn("quota", gorm.Expr("quota + ?", order.Quota)).Error; err != nil {
+				return err
+			}
+		}
 		topupLog := &Log{
 			UserId:    order.UserId,
 			Username:  GetUsernameById(order.UserId),
 			CreatedAt: helper.GetTimestamp(),
 			Type:      LogTypeTopup,
-			Content:   fmt.Sprintf("在线支付充值 %d 额度（订单号 %s）", order.Quota, tradeNo),
+			Content:   logContent,
 			Quota:     int(order.Quota),
 		}
 		if err := tx.Create(topupLog).Error; err != nil {
 			return err
 		}
-		userId = order.UserId
-		quota = order.Quota
+		finished = &order
 		credited = true
 		return nil
 	})
 	if err != nil {
-		return 0, 0, false, err
+		return nil, false, err
 	}
 	if latePaid {
-		logger.SysError(fmt.Sprintf("order %s paid after expiry: user %d +quota %d", tradeNo, userId, quota))
+		logger.SysError(fmt.Sprintf("order %s paid after expiry: user %d +quota %d", tradeNo, finished.UserId, finished.Quota))
 	} else if credited {
-		logger.SysLog(fmt.Sprintf("order %s finished: user %d +quota %d", tradeNo, userId, quota))
+		logger.SysLog(fmt.Sprintf("order %s finished: user %d +quota %d", tradeNo, finished.UserId, finished.Quota))
 	}
-	return userId, quota, credited, nil
+	return finished, credited, nil
 }
 
 // StartOrderExpireSweeper 后台定时把超时未支付订单批量置为已超时，
